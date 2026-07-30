@@ -6,9 +6,9 @@ import {
   Plus, Search, Eye, EyeOff,
   CheckCircle, XCircle, Edit, Star, Trash2, Loader2, Crown, X,
 } from 'lucide-react';
-import { StatusBadge } from './status-badge';
+import { StatusBadge, type BadgeVariant } from './status-badge';
 import dynamic from 'next/dynamic';
-import { getProviders, deleteProvider, toggleVisibility, promotePlan, Provider } from '@/lib/api';
+import { getProviders, deleteProvider, toggleVisibility, promotePlan, Provider, ProviderType } from '@/lib/api';
 
 // Modales: carga diferida (no se incluyen en el bundle inicial de la lista).
 const CreateProviderModal = dynamic(
@@ -35,6 +35,7 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(initialPage);
   const [search, setSearch] = useState(initialSearch);
+  const [typeFilter, setTypeFilter] = useState<ProviderType | ''>('');
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
@@ -56,7 +57,7 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await getProviders(page, search);
+      const data = await getProviders(page, search, typeFilter || undefined);
       setProviders(data.data);
       setTotal(data.total);
     } catch (error) {
@@ -64,7 +65,7 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
     } finally {
       setIsLoading(false);
     }
-  }, [page, search]);
+  }, [page, search, typeFilter]);
 
   useEffect(() => {
     // Implementamos un pequeño debounce manual para la búsqueda
@@ -109,8 +110,8 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
       setDeletingProvider(null);
       setDeleteReason('');
       await load();
-    } catch (e: any) {
-      toast.error(e?.message ?? 'No se pudo eliminar el perfil');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'No se pudo eliminar el perfil');
     } finally {
       setDeleteLoading(false);
     }
@@ -123,8 +124,8 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
       toast.success(`Plan ${plan === 'PREMIUM' ? 'Premium' : 'Estándar'} activado · notificación enviada`);
       setPromotingProvider(null);
       await load();
-    } catch (e: any) {
-      toast.error(e?.message ?? 'Error al promover plan');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error al promover plan');
     } finally {
       setPromotePlanLoading(false);
     }
@@ -132,16 +133,17 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
 
   const typeBadge = (type: string) => {
     const map: Record<string, { label: string; cls: string }> = {
-      NEGOCIO:      { label: 'Negocio',     cls: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
-      BUSINESS:     { label: 'Negocio',     cls: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
-      OFICIO:       { label: 'Profesional', cls: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
-      PROFESSIONAL: { label: 'Profesional', cls: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+      NEGOCIO:      { label: 'Negocio', cls: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
+      BUSINESS:     { label: 'Negocio', cls: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
+      OFICIO:       { label: 'Oficio',  cls: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+      PROFESSIONAL: { label: 'Oficio',  cls: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+      PROFESIONAL:  { label: 'Profesional', cls: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
     };
     return map[type] ?? { label: type, cls: 'text-gray-400 bg-white/5 border-white/10' };
   };
 
   const availabilityBadge = (av: string) => {
-    const map: Record<string, { label: string; variant: any }> = {
+    const map: Record<string, { label: string; variant: BadgeVariant }> = {
       DISPONIBLE: { label: 'Disponible', variant: 'success' },
       OCUPADO: { label: 'Ocupado', variant: 'danger' },
       CON_DEMORA: { label: 'Demora', variant: 'warning' },
@@ -151,7 +153,7 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
   };
 
   const verificationBadge = (status: string) => {
-    const map: Record<string, { label: string; variant: any }> = {
+    const map: Record<string, { label: string; variant: BadgeVariant }> = {
       APROBADO:  { label: 'Aprobado',      variant: 'success' },
       PENDIENTE: { label: 'En revisión',   variant: 'warning' },
       RECHAZADO: { label: 'Rechazado',     variant: 'danger'  },
@@ -163,16 +165,28 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
     <div className="space-y-4">
       {/* Herramientas */}
       <div className="flex flex-wrap gap-3 items-center justify-between">
-        <div className="relative w-full max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-          <input
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Buscar por nombre, teléfono o correo..."
-            className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm focus:border-blue-500/50 outline-none transition-all"
-          />
+        <div className="flex flex-wrap gap-3 items-center">
+          <div className="relative w-full max-w-sm">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              placeholder="Buscar por nombre, teléfono o correo..."
+              className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm focus:border-blue-500/50 outline-none transition-all"
+            />
+          </div>
+          <select
+            value={typeFilter}
+            onChange={(e) => { setTypeFilter(e.target.value as ProviderType | ''); setPage(1); }}
+            className="bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-blue-500/50 outline-none transition-all"
+          >
+            <option value="">Todos</option>
+            <option value="OFICIO">Oficios</option>
+            <option value="PROFESIONAL">Profesionales</option>
+            <option value="NEGOCIO">Negocios</option>
+          </select>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
             {total} resultados
@@ -445,7 +459,7 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
                     {deletingProvider.businessName}
                   </p>
                   <p className="text-gray-500 text-[11px] mt-0.5">
-                    {deletingProvider.type === 'NEGOCIO' ? 'Negocio' : 'Profesional'} ·
+                    {typeBadge(deletingProvider.type).label} ·
                     ID {deletingProvider.id}
                   </p>
                 </div>

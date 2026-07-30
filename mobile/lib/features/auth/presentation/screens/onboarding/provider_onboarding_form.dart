@@ -79,6 +79,14 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
   final _telegramCtrl = TextEditingController();
   final _whatsappBizCtrl = TextEditingController();
 
+  // ── Controllers exclusivos de PROFESIONAL ────────────────
+  final _professionalSpecialtyCtrl = TextEditingController();
+  final _professionalInstitutionCtrl = TextEditingController();
+  final _professionalYearsExperienceCtrl = TextEditingController();
+  final _professionalTitleCtrl = TextEditingController();
+  final _professionalRegistrationNumberCtrl = TextEditingController();
+  final _professionalRegistrationIssuerCtrl = TextEditingController();
+
   // ── State ────────────────────────────────────────────────
   String _phone = '';
   String _whatsapp = '';
@@ -108,6 +116,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
   final int _maxPhotos = 3;
 
   bool get _isOficio => widget.providerType != 'NEGOCIO';
+  bool get _isProfesional => widget.providerType == 'PROFESIONAL';
   bool get _hasAdminLocation =>
       _department != null && _province != null && _district != null;
 
@@ -121,6 +130,18 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
       return 'Completa los datos de tu negocio para aparecer en el directorio.';
     }
     return 'Completa tu perfil para que clientes puedan encontrarte.';
+  }
+
+  IconData get _nameFieldIcon {
+    if (widget.providerType == 'NEGOCIO') return Icons.storefront_outlined;
+    if (_isProfesional) return Icons.school_outlined;
+    return Icons.handyman_outlined;
+  }
+
+  String get _nameFieldHint {
+    if (widget.providerType == 'NEGOCIO') return 'Ej: Restaurante El Sabor';
+    if (_isProfesional) return 'Ej: Juan Pérez, Abogado';
+    return 'Ej: Juan Electricista';
   }
 
   @override
@@ -139,6 +160,18 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
       _rucController.text = d['ruc'] ?? '';
       _phone = (d['phone'] as String?) ?? '';
       _whatsapp = (d['whatsapp'] as String?) ?? '';
+
+      _professionalSpecialtyCtrl.text =
+          (d['professionalSpecialty'] as String?) ?? '';
+      _professionalInstitutionCtrl.text =
+          (d['professionalInstitution'] as String?) ?? '';
+      _professionalYearsExperienceCtrl.text =
+          (d['professionalYearsExperience'] as num?)?.toInt().toString() ?? '';
+      _professionalTitleCtrl.text = (d['professionalTitle'] as String?) ?? '';
+      _professionalRegistrationNumberCtrl.text =
+          (d['professionalRegistrationNumber'] as String?) ?? '';
+      _professionalRegistrationIssuerCtrl.text =
+          (d['professionalRegistrationIssuer'] as String?) ?? '';
 
       _hasDelivery = (d['hasDelivery'] as bool?) ?? false;
       _plenaCoordinacion = (d['plenaCoordinacion'] as bool?) ?? false;
@@ -202,6 +235,12 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
     _twitterCtrl.dispose();
     _telegramCtrl.dispose();
     _whatsappBizCtrl.dispose();
+    _professionalSpecialtyCtrl.dispose();
+    _professionalInstitutionCtrl.dispose();
+    _professionalYearsExperienceCtrl.dispose();
+    _professionalTitleCtrl.dispose();
+    _professionalRegistrationNumberCtrl.dispose();
+    _professionalRegistrationIssuerCtrl.dispose();
     super.dispose();
   }
 
@@ -235,6 +274,12 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
     'whatsappBiz': _whatsappBizCtrl.text,
     'phone': _phone,
     'whatsapp': _whatsapp,
+    'professionalSpecialty': _professionalSpecialtyCtrl.text,
+    'professionalInstitution': _professionalInstitutionCtrl.text,
+    'professionalYearsExperience': _professionalYearsExperienceCtrl.text,
+    'professionalTitle': _professionalTitleCtrl.text,
+    'professionalRegistrationNumber': _professionalRegistrationNumberCtrl.text,
+    'professionalRegistrationIssuer': _professionalRegistrationIssuerCtrl.text,
     'hasDelivery': _hasDelivery,
     'plenaCoordinacion': _plenaCoordinacion,
     'acquirePremium': _acquirePremium,
@@ -252,7 +297,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
       _businessNameController.text.trim().isNotEmpty ||
       _descriptionController.text.trim().isNotEmpty ||
       _phone.isNotEmpty ||
-      _selectedCategories.isNotEmpty;
+      _selectedCategories.isNotEmpty ||
+      _professionalSpecialtyCtrl.text.trim().isNotEmpty;
 
   Future<void> _saveDraft() async {
     if (!_draftHasContent) return;
@@ -284,6 +330,17 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
       _twitterCtrl.text = (d['twitterX'] as String?) ?? '';
       _telegramCtrl.text = (d['telegram'] as String?) ?? '';
       _whatsappBizCtrl.text = (d['whatsappBiz'] as String?) ?? '';
+      _professionalSpecialtyCtrl.text =
+          (d['professionalSpecialty'] as String?) ?? '';
+      _professionalInstitutionCtrl.text =
+          (d['professionalInstitution'] as String?) ?? '';
+      _professionalYearsExperienceCtrl.text =
+          (d['professionalYearsExperience'] as String?) ?? '';
+      _professionalTitleCtrl.text = (d['professionalTitle'] as String?) ?? '';
+      _professionalRegistrationNumberCtrl.text =
+          (d['professionalRegistrationNumber'] as String?) ?? '';
+      _professionalRegistrationIssuerCtrl.text =
+          (d['professionalRegistrationIssuer'] as String?) ?? '';
 
       final restoredCats = ((d['categories'] as List?) ?? const [])
           .whereType<Map<String, dynamic>>()
@@ -462,6 +519,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
     if (!_isOficio && ruc.isNotEmpty && !RegExp(r'^\d{11}$').hasMatch(ruc)) {
       return false;
     }
+    if (_isProfesional && _professionalSpecialtyCtrl.text.trim().length < 2) {
+      return false;
+    }
     return true;
   }
 
@@ -536,6 +596,27 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
       _showSnack('El RUC debe tener exactamente 11 dígitos.', isError: true);
       return false;
     }
+    if (_isProfesional) {
+      final specialty = _professionalSpecialtyCtrl.text.trim();
+      if (specialty.length < 2 || specialty.length > 120) {
+        _showSnack(
+          'Ingresa tu especialidad profesional (mínimo 2 caracteres).',
+          isError: true,
+        );
+        return false;
+      }
+      final yearsText = _professionalYearsExperienceCtrl.text.trim();
+      if (yearsText.isNotEmpty) {
+        final years = int.tryParse(yearsText);
+        if (years == null || years < 0 || years > 80) {
+          _showSnack(
+            'Los años de experiencia deben ser un número entre 0 y 80.',
+            isError: true,
+          );
+          return false;
+        }
+      }
+    }
     return true;
   }
 
@@ -607,6 +688,30 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
       hasDelivery: !_isOficio ? _hasDelivery : false,
       plenaCoordinacion: !_isOficio ? _plenaCoordinacion : false,
       hasHomeService: _isOficio ? _hasDelivery : false,
+      professionalSpecialty: _isProfesional
+          ? _professionalSpecialtyCtrl.text.trim()
+          : null,
+      professionalInstitution:
+          _isProfesional && _professionalInstitutionCtrl.text.trim().isNotEmpty
+          ? _professionalInstitutionCtrl.text.trim()
+          : null,
+      professionalYearsExperience: _isProfesional
+          ? int.tryParse(_professionalYearsExperienceCtrl.text.trim())
+          : null,
+      professionalTitle:
+          _isProfesional && _professionalTitleCtrl.text.trim().isNotEmpty
+          ? _professionalTitleCtrl.text.trim()
+          : null,
+      professionalRegistrationNumber:
+          _isProfesional &&
+              _professionalRegistrationNumberCtrl.text.trim().isNotEmpty
+          ? _professionalRegistrationNumberCtrl.text.trim()
+          : null,
+      professionalRegistrationIssuer:
+          _isProfesional &&
+              _professionalRegistrationIssuerCtrl.text.trim().isNotEmpty
+          ? _professionalRegistrationIssuerCtrl.text.trim()
+          : null,
       description: _descriptionController.text.trim(),
       address: _addressController.text.trim(),
       categoryIds: _selectedCategories.isEmpty
@@ -891,7 +996,7 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (widget.providerType != null) ...[
-                TypeBadge(isOficio: _isOficio),
+                TypeBadge(providerType: widget.providerType!),
                 const SizedBox(height: 14),
               ],
 
@@ -925,12 +1030,8 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
                     label: _isOficio
                         ? 'Nombre del profesional *'
                         : 'Nombre del negocio *',
-                    hint: _isOficio
-                        ? 'Ej: Juan Electricista'
-                        : 'Ej: Restaurante El Sabor',
-                    icon: _isOficio
-                        ? Icons.handyman_outlined
-                        : Icons.storefront_outlined,
+                    hint: _nameFieldHint,
+                    icon: _nameFieldIcon,
                   ),
                   const SizedBox(height: 14),
                   if (_isOficio) ...[
@@ -941,6 +1042,66 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
                       icon: Icons.badge_outlined,
                       keyboardType: TextInputType.number,
                       maxLength: 8,
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+                  if (_isProfesional) ...[
+                    FormFieldTile(
+                      controller: _professionalSpecialtyCtrl,
+                      label: 'Especialidad *',
+                      hint: 'Ej: Abogado corporativo, Contador tributario…',
+                      icon: Icons.school_outlined,
+                      maxLength: 120,
+                    ),
+                    const SizedBox(height: 14),
+                    FormFieldTile(
+                      controller: _professionalTitleCtrl,
+                      label: 'Título o certificado (opcional)',
+                      hint: 'Ej: Abogado colegiado, CPC N° 12345',
+                      icon: Icons.workspace_premium_outlined,
+                      maxLength: 160,
+                    ),
+                    const SizedBox(height: 14),
+                    FormFieldTile(
+                      controller: _professionalInstitutionCtrl,
+                      label: 'Universidad o institución (opcional)',
+                      hint: 'Ej: Universidad Nacional del Centro',
+                      icon: Icons.account_balance_outlined,
+                      maxLength: 160,
+                    ),
+                    const SizedBox(height: 14),
+                    FormFieldTile(
+                      controller: _professionalYearsExperienceCtrl,
+                      label: 'Años de experiencia (opcional)',
+                      hint: 'Ej: 5',
+                      icon: Icons.timelapse_outlined,
+                      keyboardType: TextInputType.number,
+                      maxLength: 2,
+                    ),
+                    const SizedBox(height: 14),
+                    FormFieldTile(
+                      controller: _professionalRegistrationNumberCtrl,
+                      label: 'N° de colegiatura o registro (opcional)',
+                      hint: 'Ej: CAL 12345',
+                      icon: Icons.confirmation_number_outlined,
+                      maxLength: 100,
+                    ),
+                    const SizedBox(height: 14),
+                    FormFieldTile(
+                      controller: _professionalRegistrationIssuerCtrl,
+                      label: 'Entidad que lo emite (opcional)',
+                      hint: 'Ej: Colegio de Abogados de Lima',
+                      icon: Icons.apartment_outlined,
+                      maxLength: 160,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6, left: 4),
+                      child: Text(
+                        'El título, la institución y la colegiatura son '
+                        'opcionales, pero generan más confianza con tus '
+                        'clientes.',
+                        style: TextStyle(color: c.textMuted, fontSize: 11),
+                      ),
                     ),
                     const SizedBox(height: 14),
                   ],

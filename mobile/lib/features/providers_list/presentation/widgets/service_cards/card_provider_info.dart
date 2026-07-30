@@ -29,6 +29,41 @@ class ProviderInfo extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 4),
+        Text(
+          provider.type.label,
+          style: TextStyle(
+            color: provider.type == ProviderType.negocio
+                ? AppColors.tintOn(AppColors.business, c.isDark)
+                : AppColors.primary,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        if (provider.specialty != null &&
+            provider.specialty!.trim().isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  provider.specialty!,
+                  style: TextStyle(color: c.textSecondary, fontSize: 12),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (provider.credentialVerified) ...[
+                const SizedBox(width: 5),
+                const Icon(
+                  Icons.verified_user_rounded,
+                  color: AppColors.verified,
+                  size: 14,
+                ),
+              ],
+            ],
+          ),
+        ],
+        const SizedBox(height: 2),
         // Especialidad principal (isPrimary) destacada.
         Text(
           provider.categoryName,

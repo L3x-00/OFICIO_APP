@@ -23,6 +23,7 @@ import '../../../chat/presentation/screens/chat_list_screen.dart';
 import '../../../referrals/presentation/screens/referral_screen.dart';
 import 'change_password_screen.dart';
 import 'edit_profile_screen.dart';
+import 'professional_migration_screen.dart';
 import 'saved_accounts_screen.dart';
 
 export '../widgets/profile/guest_profile_view.dart';
@@ -297,6 +298,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // ── Mis perfiles (UNIFICADO) ──────────────────────
           // ═══════════════════════════════════════════════════
           if (auth.hasOficioProfile ||
+              auth.hasProfessionalProfile ||
               auth.hasNegocioProfile ||
               auth.canBecomeRole('OFICIO') ||
               auth.canBecomeRole('NEGOCIO'))
@@ -306,7 +308,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 // ── OFICIO ──────────────────────────────────
                 if (auth.hasOficioProfile) ...[
-                  if (auth.verificationStatusFor('OFICIO') == 'APROBADO')
+                  if (auth.verificationStatusFor('OFICIO') == 'APROBADO') ...[
                     SectionItem(
                       icon: Icons.handyman_rounded,
                       label: 'Panel Profesional',
@@ -314,13 +316,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         context,
                         'OFICIO',
                       ),
-                    )
-                  else
+                    ),
+                    SectionItem(
+                      icon: Icons.school_rounded,
+                      label: auth.hasPendingProfessionalMigration
+                          ? 'Migración a Servicio profesional (en revisión)'
+                          : 'Migrar a Servicio profesional',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const ProfessionalMigrationScreen(),
+                        ),
+                      ),
+                    ),
+                  ] else
                     PendingApprovalBanner(
                       providerType: 'OFICIO',
                       status:
                           auth.verificationStatusFor('OFICIO') ?? 'PENDIENTE',
                       rejectionReason: auth.rejectionReasonFor('OFICIO'),
+                    ),
+                ] else if (auth.hasProfessionalProfile) ...[
+                  // ── PROFESIONAL (mutuamente excluyente con OFICIO) ──
+                  if (auth.verificationStatusFor('PROFESIONAL') == 'APROBADO')
+                    SectionItem(
+                      icon: Icons.school_rounded,
+                      label: 'Panel de Servicio profesional',
+                      onTap: () => ProfileNavigationHelper.openProviderPanel(
+                        context,
+                        'PROFESIONAL',
+                      ),
+                    )
+                  else
+                    PendingApprovalBanner(
+                      providerType: 'PROFESIONAL',
+                      status:
+                          auth.verificationStatusFor('PROFESIONAL') ??
+                          'PENDIENTE',
+                      rejectionReason: auth.rejectionReasonFor('PROFESIONAL'),
                     ),
                 ] else if (auth.canBecomeRole('OFICIO'))
                   SectionItem(
@@ -330,10 +362,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       context,
                       'OFICIO',
                     ),
+                  )
+                else if (auth.canBecomeRole('PROFESIONAL'))
+                  SectionItem(
+                    icon: Icons.school_rounded,
+                    label: 'Ofrecer un servicio profesional',
+                    onTap: () => ProfileNavigationHelper.openAddProfile(
+                      context,
+                      'PROFESIONAL',
+                    ),
                   ),
 
                 // ── Separador ───────────────────────────────
-                if ((auth.hasOficioProfile || auth.canBecomeRole('OFICIO')) &&
+                if ((auth.hasOficioProfile ||
+                        auth.hasProfessionalProfile ||
+                        auth.canBecomeRole('OFICIO') ||
+                        auth.canBecomeRole('PROFESIONAL')) &&
                     (auth.hasNegocioProfile || auth.canBecomeRole('NEGOCIO')))
                   const SizedBox(height: 4),
 
@@ -379,7 +423,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               CategoryFilterToggleRow(prov: prov),
               // Toggle visibilidad del asistente Ofi.
               // Solo para clientes puros (sin perfil de proveedor).
-              if (!auth.hasOficioProfile && !auth.hasNegocioProfile) ...[
+              if (!auth.hasOficioProfile &&
+                  !auth.hasProfessionalProfile &&
+                  !auth.hasNegocioProfile) ...[
                 const SizedBox(height: 8),
                 OfiVisibilityToggleRow(prov: prov),
               ],

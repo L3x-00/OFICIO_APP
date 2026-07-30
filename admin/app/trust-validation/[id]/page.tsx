@@ -13,6 +13,18 @@ import {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+// Label por tipo de proveedor — 3 vías. PROFESIONAL es un tipo real desde la
+// migración de servicios profesionales; ya no se puede etiquetar OFICIO como
+// "Profesional" (colisión de nombre con el nuevo tipo).
+const PROVIDER_TYPE_LABEL: Record<string, string> = {
+  OFICIO: 'Oficio',
+  PROFESIONAL: 'Profesional',
+  NEGOCIO: 'Negocio',
+};
+function providerTypeLabel(type: string) {
+  return PROVIDER_TYPE_LABEL[type] ?? type;
+}
+
 export default function TrustValidationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router  = useRouter();
@@ -37,7 +49,7 @@ export default function TrustValidationDetailPage() {
     try {
       await approveTrustValidation(Number(id));
       router.push('/trust-validation');
-    } catch (e: any) { alert(e.message); }
+    } catch (e) { alert(e instanceof Error ? e.message : 'Error al procesar la solicitud'); }
     finally { setActing(false); }
   };
 
@@ -47,7 +59,7 @@ export default function TrustValidationDetailPage() {
     try {
       await rejectTrustValidation(Number(id), reason.trim());
       router.push('/trust-validation');
-    } catch (e: any) { alert(e.message); }
+    } catch (e) { alert(e instanceof Error ? e.message : 'Error al procesar la solicitud'); }
     finally { setActing(false); }
   };
 
@@ -223,7 +235,7 @@ export default function TrustValidationDetailPage() {
                 }}
               >
                 <CheckCircle size={16} />
-                {isNegocio ? 'Validar Negocio' : 'Validar Profesional'}
+                Validar {providerTypeLabel(provider.type)}
               </button>
               <button
                 onClick={() => setShowReject(true)}

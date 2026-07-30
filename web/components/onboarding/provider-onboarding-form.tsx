@@ -18,7 +18,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import {
-  Wrench, Store, Loader2, Check, X, MapPin, Image as ImageIcon,
+  Wrench, Store, Briefcase, Loader2, Check, X, MapPin, Image as ImageIcon,
   ShieldCheck, Plus, Star, ChevronLeft, ChevronRight, LogIn, Gift,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -26,9 +26,9 @@ import { api, type RegisterProviderPayload, type FeaturedCategory } from '@/lib/
 import { isAuthenticated, saveSession } from '@/lib/auth';
 import { signInWithGoogleIdToken } from '@/lib/firebase';
 import { PERU_DEPARTMENTS, provincesOf, districtsOf } from '@/lib/peru-locations';
+import { PROFILE_TYPE_META, normalizeProfileType, type ProfileType } from '@/lib/types';
 import OnboardingPlansModal from '@/components/modals/onboarding-plans-modal';
 
-type ProviderType = 'OFICIO' | 'NEGOCIO';
 type Variant = 'full' | 'wizard';
 
 const SCHEDULE_DAYS: { key: string; label: string }[] = [
@@ -85,7 +85,7 @@ export default function ProviderOnboardingForm({
   const isWizard = variant === 'wizard';
   const [step, setStep] = useState(0);
 
-  const [type, setType] = useState<ProviderType | null>(null);
+  const [type, setType] = useState<ProfileType | null>(null);
 
   // Datos básicos
   const [businessName, setBusinessName] = useState('');
@@ -101,6 +101,14 @@ export default function ProviderOnboardingForm({
   const [razonSocial, setRazonSocial] = useState('');
   const [hasDelivery, setHasDelivery] = useState(false);
   const [plenaCoordinacion, setPlenaCoordinacion] = useState(false);
+
+  // PROFESIONAL
+  const [professionalSpecialty, setProfessionalSpecialty] = useState('');
+  const [professionalInstitution, setProfessionalInstitution] = useState('');
+  const [professionalYearsExperience, setProfessionalYearsExperience] = useState('');
+  const [professionalTitle, setProfessionalTitle] = useState('');
+  const [professionalRegistrationNumber, setProfessionalRegistrationNumber] = useState('');
+  const [professionalRegistrationIssuer, setProfessionalRegistrationIssuer] = useState('');
 
   // Ubicación
   const [department, setDepartment] = useState('');
@@ -140,6 +148,8 @@ export default function ProviderOnboardingForm({
   useEffect(() => setGuest(!isAuthenticated()), []);
 
   const isOficio = type === 'OFICIO';
+  const isProfessional = type === 'PROFESIONAL';
+  const isNegocio = type === 'NEGOCIO';
 
   /* ── Borrador en localStorage ─────────────────────────────── */
   const draftRestored = useRef(false);
@@ -150,7 +160,8 @@ export default function ProviderOnboardingForm({
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
       const d = JSON.parse(raw) as Record<string, unknown>;
-      if (d.type === 'OFICIO' || d.type === 'NEGOCIO') setType(d.type);
+      const restoredType = normalizeProfileType(d.type);
+      if (restoredType) setType(restoredType);
       if (typeof d.businessName === 'string') setBusinessName(d.businessName);
       if (typeof d.description === 'string') setDescription(d.description);
       if (typeof d.phone === 'string') setPhone(d.phone);
@@ -162,6 +173,12 @@ export default function ProviderOnboardingForm({
       if (typeof d.razonSocial === 'string') setRazonSocial(d.razonSocial);
       if (typeof d.hasDelivery === 'boolean') setHasDelivery(d.hasDelivery);
       if (typeof d.plenaCoordinacion === 'boolean') setPlenaCoordinacion(d.plenaCoordinacion);
+      if (typeof d.professionalSpecialty === 'string') setProfessionalSpecialty(d.professionalSpecialty);
+      if (typeof d.professionalInstitution === 'string') setProfessionalInstitution(d.professionalInstitution);
+      if (typeof d.professionalYearsExperience === 'string') setProfessionalYearsExperience(d.professionalYearsExperience);
+      if (typeof d.professionalTitle === 'string') setProfessionalTitle(d.professionalTitle);
+      if (typeof d.professionalRegistrationNumber === 'string') setProfessionalRegistrationNumber(d.professionalRegistrationNumber);
+      if (typeof d.professionalRegistrationIssuer === 'string') setProfessionalRegistrationIssuer(d.professionalRegistrationIssuer);
       if (typeof d.department === 'string') setDepartment(d.department);
       if (typeof d.province === 'string') setProvince(d.province);
       if (typeof d.district === 'string') setDistrict(d.district);
@@ -187,6 +204,8 @@ export default function ProviderOnboardingForm({
         JSON.stringify({
           type, businessName, description, phone, whatsapp, dni, hasHomeService,
           ruc, nombreComercial, razonSocial, hasDelivery, plenaCoordinacion,
+          professionalSpecialty, professionalInstitution, professionalYearsExperience,
+          professionalTitle, professionalRegistrationNumber, professionalRegistrationIssuer,
           department, province, district, address, mapsUrl, referralCode,
           social, selected, primaryId, schedule,
         }),
@@ -196,11 +215,13 @@ export default function ProviderOnboardingForm({
     }
   }, [type, businessName, description, phone, whatsapp, dni, hasHomeService,
       ruc, nombreComercial, razonSocial, hasDelivery, plenaCoordinacion,
+      professionalSpecialty, professionalInstitution, professionalYearsExperience,
+      professionalTitle, professionalRegistrationNumber, professionalRegistrationIssuer,
       department, province, district, address, mapsUrl, referralCode,
       social, selected, primaryId, schedule]);
 
   /* ── Categorías según tipo ────────────────────────────────── */
-  const loadCategories = useCallback(async (t: ProviderType) => {
+  const loadCategories = useCallback(async (t: ProfileType) => {
     try {
       const cats = await api.getCategories(t);
       setCategories(cats);
@@ -209,7 +230,7 @@ export default function ProviderOnboardingForm({
     }
   }, []);
 
-  const prevType = useRef<ProviderType | null>(null);
+  const prevType = useRef<ProfileType | null>(null);
   useEffect(() => {
     if (!type) return;
     // Solo resetea la selección si el usuario CAMBIÓ de tipo (no al restaurar borrador).
@@ -273,7 +294,23 @@ export default function ProviderOnboardingForm({
       if (description.trim().length > 1000) e.description = 'Máximo 1000 caracteres';
       if (phone.trim().length < 6) e.phone = 'Teléfono inválido';
       if (isOficio && dni.trim() && dni.trim().length > 20) e.dni = 'Máximo 20 caracteres';
-      if (!isOficio && ruc.trim() && !/^\d{11}$/.test(ruc.trim())) e.ruc = 'El RUC debe tener 11 dígitos';
+      if (isNegocio && ruc.trim() && !/^\d{11}$/.test(ruc.trim())) e.ruc = 'El RUC debe tener 11 dígitos';
+      if (isProfessional) {
+        const specialty = professionalSpecialty.trim();
+        if (specialty.length < 2 || specialty.length > 120) {
+          e.professionalSpecialty = 'Entre 2 y 120 caracteres';
+        }
+        if (professionalInstitution.trim().length > 160) e.professionalInstitution = 'Máximo 160 caracteres';
+        if (professionalTitle.trim().length > 160) e.professionalTitle = 'Máximo 160 caracteres';
+        if (professionalRegistrationNumber.trim().length > 100) e.professionalRegistrationNumber = 'Máximo 100 caracteres';
+        if (professionalRegistrationIssuer.trim().length > 160) e.professionalRegistrationIssuer = 'Máximo 160 caracteres';
+        if (professionalYearsExperience.trim()) {
+          const years = Number(professionalYearsExperience);
+          if (!Number.isInteger(years) || years < 0 || years > 80) {
+            e.professionalYearsExperience = 'Debe ser un entero entre 0 y 80';
+          }
+        }
+      }
     }
     if (wantAll || fields === 'categories') {
       if (selected.length === 0) e.categories = 'Selecciona al menos una categoría';
@@ -323,11 +360,17 @@ export default function ProviderOnboardingForm({
         whatsapp: whatsapp.trim() || undefined,
         dni: isOficio && dni.trim() ? dni.trim() : undefined,
         hasHomeService: isOficio ? hasHomeService : undefined,
-        ruc: !isOficio && ruc.trim() ? ruc.trim() : undefined,
-        nombreComercial: !isOficio && nombreComercial.trim() ? nombreComercial.trim() : undefined,
-        razonSocial: !isOficio && razonSocial.trim() ? razonSocial.trim() : undefined,
-        hasDelivery: !isOficio ? hasDelivery : undefined,
-        plenaCoordinacion: !isOficio ? plenaCoordinacion : undefined,
+        professionalSpecialty: isProfessional ? professionalSpecialty.trim() : undefined,
+        professionalInstitution: isProfessional && professionalInstitution.trim() ? professionalInstitution.trim() : undefined,
+        professionalYearsExperience: isProfessional && professionalYearsExperience.trim() ? Number(professionalYearsExperience) : undefined,
+        professionalTitle: isProfessional && professionalTitle.trim() ? professionalTitle.trim() : undefined,
+        professionalRegistrationNumber: isProfessional && professionalRegistrationNumber.trim() ? professionalRegistrationNumber.trim() : undefined,
+        professionalRegistrationIssuer: isProfessional && professionalRegistrationIssuer.trim() ? professionalRegistrationIssuer.trim() : undefined,
+        ruc: isNegocio && ruc.trim() ? ruc.trim() : undefined,
+        nombreComercial: isNegocio && nombreComercial.trim() ? nombreComercial.trim() : undefined,
+        razonSocial: isNegocio && razonSocial.trim() ? razonSocial.trim() : undefined,
+        hasDelivery: isNegocio ? hasDelivery : undefined,
+        plenaCoordinacion: isNegocio ? plenaCoordinacion : undefined,
         address: address.trim() || undefined,
         latitude: coords?.lat,
         longitude: coords?.lng,
@@ -336,7 +379,7 @@ export default function ProviderOnboardingForm({
         department: department || undefined,
         province: province || undefined,
         district: district || undefined,
-        scheduleJson: !isOficio ? buildScheduleJson() : undefined,
+        scheduleJson: isNegocio ? buildScheduleJson() : undefined,
         website: social.website?.trim() || undefined,
         instagram: social.instagram?.trim() || undefined,
         tiktok: social.tiktok?.trim() || undefined,
@@ -387,7 +430,7 @@ export default function ProviderOnboardingForm({
   const stepValid = (s: number): boolean => {
     switch (s) {
       case 0:
-        if (!type) { toast.error('Elige Profesional o Negocio'); return false; }
+        if (!type) { toast.error('Elige un tipo de perfil'); return false; }
         return true;
       case 1: return validate('basics');
       case 2: return validate('categories');
@@ -402,20 +445,21 @@ export default function ProviderOnboardingForm({
   /* ── Bloques de contenido (compartidos entre variantes) ───── */
 
   const typeBlock = (
-    <div className="grid grid-cols-2 gap-3">
-      <TypeCard active={type === 'OFICIO'} onClick={() => setType('OFICIO')} icon={<Wrench />} title="Profesional" desc="Ofreces un oficio o servicio" />
-      <TypeCard active={type === 'NEGOCIO'} onClick={() => setType('NEGOCIO')} icon={<Store />} title="Negocio" desc="Tienes un local o marca" />
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <TypeCard active={type === 'OFICIO'} onClick={() => setType('OFICIO')} icon={<Wrench />} title={PROFILE_TYPE_META.OFICIO.label} desc="Ofreces un oficio o servicio" />
+      <TypeCard active={type === 'PROFESIONAL'} onClick={() => setType('PROFESIONAL')} icon={<Briefcase />} title={PROFILE_TYPE_META.PROFESIONAL.label} desc="Abogado, ingeniero, contador y similares" />
+      <TypeCard active={type === 'NEGOCIO'} onClick={() => setType('NEGOCIO')} icon={<Store />} title={PROFILE_TYPE_META.NEGOCIO.label} desc="Tienes un local o marca" />
     </div>
   );
 
   const basicsBlock = (
     <>
       <Section title="Datos básicos">
-        <Field label={isOficio ? 'Nombre o marca personal' : 'Nombre del negocio'} required error={errors.businessName}>
-          <input className={inputCls} value={businessName} onChange={(e) => setBusinessName(e.target.value)} maxLength={100} placeholder={isOficio ? 'Ej. Juan Pérez · Electricista' : 'Ej. Pizzería Don Luigi'} />
+        <Field label={isNegocio ? 'Nombre del negocio' : 'Nombre o marca personal'} required error={errors.businessName}>
+          <input className={inputCls} value={businessName} onChange={(e) => setBusinessName(e.target.value)} maxLength={100} placeholder={isNegocio ? 'Ej. Pizzería Don Luigi' : isProfessional ? 'Ej. Mónica Ruiz · Abogada' : 'Ej. Juan Pérez · Electricista'} />
         </Field>
         <Field label="Descripción" required error={errors.description}>
-          <textarea className={`${inputCls} resize-none`} rows={4} value={description} onChange={(e) => setDescription(e.target.value)} maxLength={1000} placeholder={isOficio ? 'Experiencia, especialidades, horario de trabajo...' : 'Qué ofreces, horarios, especialidades...'} />
+          <textarea className={`${inputCls} resize-none`} rows={4} value={description} onChange={(e) => setDescription(e.target.value)} maxLength={1000} placeholder={isNegocio ? 'Qué ofreces, horarios, especialidades...' : isProfessional ? 'Especialidad, formación, años de experiencia...' : 'Experiencia, especialidades, horario de trabajo...'} />
           <p className="text-white/30 text-[11px] mt-1">{description.length}/1000</p>
         </Field>
         <div className="grid grid-cols-2 gap-3">
@@ -428,15 +472,42 @@ export default function ProviderOnboardingForm({
         </div>
       </Section>
 
-      <Section title={isOficio ? 'Datos del profesional' : 'Datos del negocio'}>
-        {isOficio ? (
+      <Section title={isOficio ? 'Datos del oficio' : isProfessional ? 'Datos profesionales' : 'Datos del negocio'}>
+        {isOficio && (
           <>
             <Field label="DNI" error={errors.dni}>
               <input className={inputCls} value={dni} onChange={(e) => setDni(e.target.value)} maxLength={20} placeholder="Documento de identidad" />
             </Field>
             <Toggle label="Ofrezco servicio a domicilio" checked={hasHomeService} onChange={setHasHomeService} />
           </>
-        ) : (
+        )}
+        {isProfessional && (
+          <>
+            <Field label="Especialidad" required error={errors.professionalSpecialty}>
+              <input className={inputCls} value={professionalSpecialty} onChange={(e) => setProfessionalSpecialty(e.target.value)} maxLength={120} placeholder="Ej. Derecho civil, Ingeniería estructural..." />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Institución / universidad" error={errors.professionalInstitution}>
+                <input className={inputCls} value={professionalInstitution} onChange={(e) => setProfessionalInstitution(e.target.value)} maxLength={160} placeholder="Ej. UNCP" />
+              </Field>
+              <Field label="Años de experiencia" error={errors.professionalYearsExperience}>
+                <input className={inputCls} type="number" min={0} max={80} value={professionalYearsExperience} onChange={(e) => setProfessionalYearsExperience(e.target.value)} placeholder="Ej. 5" />
+              </Field>
+            </div>
+            <Field label="Título o certificado" error={errors.professionalTitle}>
+              <input className={inputCls} value={professionalTitle} onChange={(e) => setProfessionalTitle(e.target.value)} maxLength={160} placeholder="Ej. Abogado colegiado" />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Número de colegiatura / registro" error={errors.professionalRegistrationNumber}>
+                <input className={inputCls} value={professionalRegistrationNumber} onChange={(e) => setProfessionalRegistrationNumber(e.target.value)} maxLength={100} placeholder="Ej. CAL 12345" />
+              </Field>
+              <Field label="Entidad emisora" error={errors.professionalRegistrationIssuer}>
+                <input className={inputCls} value={professionalRegistrationIssuer} onChange={(e) => setProfessionalRegistrationIssuer(e.target.value)} maxLength={160} placeholder="Ej. Colegio de Abogados de Lima" />
+              </Field>
+            </div>
+          </>
+        )}
+        {isNegocio && (
           <>
             <Field label="RUC" error={errors.ruc}>
               <input className={inputCls} value={ruc} onChange={(e) => setRuc(e.target.value)} maxLength={11} inputMode="numeric" placeholder="11 dígitos" />
@@ -539,7 +610,7 @@ export default function ProviderOnboardingForm({
         </Field>
       </Section>
 
-      {!isOficio && (
+      {isNegocio && (
         <Section title="Horario de atención">
           <div className="space-y-2">
             {SCHEDULE_DAYS.map((d) => {
@@ -657,7 +728,7 @@ export default function ProviderOnboardingForm({
             <>
               <Section title="Resumen">
                 <ul className="text-white/70 text-[13px] space-y-1.5">
-                  <li><span className="text-white/40">Tipo:</span> {isOficio ? 'Profesional' : 'Negocio'}</li>
+                  <li><span className="text-white/40">Tipo:</span> {type ? PROFILE_TYPE_META[type].label : '—'}</li>
                   <li><span className="text-white/40">Nombre:</span> {businessName || '—'}</li>
                   <li><span className="text-white/40">Categorías:</span> {selected.map((s) => s.name).join(', ') || '—'}</li>
                   <li><span className="text-white/40">Ubicación:</span> {[district, province, department].filter(Boolean).join(', ') || '—'}</li>

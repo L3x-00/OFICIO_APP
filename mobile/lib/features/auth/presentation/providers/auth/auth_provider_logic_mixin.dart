@@ -44,6 +44,12 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
     bool hasDelivery = false,
     bool plenaCoordinacion = false,
     bool hasHomeService = false,
+    String? professionalSpecialty,
+    String? professionalInstitution,
+    int? professionalYearsExperience,
+    String? professionalTitle,
+    String? professionalRegistrationNumber,
+    String? professionalRegistrationIssuer,
     // comunes
     String? description,
     String? address,
@@ -72,6 +78,17 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
     String? telegram,
     String? whatsappBiz,
   }) async {
+    final canonicalType = normalizeProviderType(type);
+    final canRegister =
+        canonicalType != null &&
+        ((this as dynamic).canBecomeRole(canonicalType) == true ||
+            _verificationStatusByType[canonicalType] == 'RECHAZADO');
+    if (!canRegister) {
+      _error = 'Tipo de perfil inválido o no disponible';
+      notifyListeners();
+      return false;
+    }
+    final safeType = canonicalType;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -79,7 +96,7 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
     final result = await _repo.registerProvider(
       businessName: businessName,
       phone: phone,
-      type: type,
+      type: safeType,
       whatsapp: whatsapp,
       dni: dni,
       ruc: ruc,
@@ -88,6 +105,12 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
       hasDelivery: hasDelivery,
       plenaCoordinacion: plenaCoordinacion,
       hasHomeService: hasHomeService,
+      professionalSpecialty: professionalSpecialty,
+      professionalInstitution: professionalInstitution,
+      professionalYearsExperience: professionalYearsExperience,
+      professionalTitle: professionalTitle,
+      professionalRegistrationNumber: professionalRegistrationNumber,
+      professionalRegistrationIssuer: professionalRegistrationIssuer,
       description: description,
       address: address,
       categoryIds: categoryIds,
@@ -112,8 +135,8 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
         // localmente debemos marcar el perfil como PENDIENTE para que
         // canBecomeRole(type) deje de devolver true inmediatamente
         // después del registro y la UI no ofrezca volver a registrarse.
-        _providerProfiles.add(type);
-        _verificationStatusByType[type] = 'PENDIENTE';
+        _providerProfiles.add(safeType);
+        _verificationStatusByType[safeType] = 'PENDIENTE';
       },
       failure: (e) => _error = e.message,
     );
@@ -168,6 +191,7 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
   /// "Motivo: ") y devuelve true si AL MENOS un perfil quedó en
   /// estado APROBADO.
   bool _parseProviderProfiles(List<dynamic> profiles) {
+    final previousActiveType = _activeProfileType;
     _providerProfiles.clear();
     _providerVerificationStatus = null;
     _verificationStatusByType.clear();
@@ -179,15 +203,11 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
 
     for (final raw in profiles) {
       final profile = raw as Map<String, dynamic>;
-      final rawType = profile['type'] as String? ?? 'OFICIO';
-      final internalType = switch (rawType) {
-        'PROFESSIONAL' => 'OFICIO',
-        'BUSINESS' => 'NEGOCIO',
-        _ => rawType,
-      };
+      final rawType = profile['type'] as String?;
+      final internalType = normalizeProviderType(rawType);
+      if (internalType == null) continue;
       _providerProfiles.add(internalType);
-      _activeProfileType ??= internalType;
-      _providerDataByType[internalType] = profile;
+      _providerDataByType[internalType] = {...profile, 'type': internalType};
 
       // Priorizar estado APROBADO; si ninguno aprobado, mostrar el último.
       final status = profile['verificationStatus'] as String?;
@@ -225,6 +245,17 @@ mixin AuthProviderLogicMixin on ChangeNotifier {
           }
         }
       }
+    }
+
+    if (previousActiveType != null &&
+        _providerProfiles.contains(previousActiveType)) {
+      _activeProfileType = previousActiveType;
+    } else {
+      _activeProfileType = _verificationStatusByType.entries
+          .where((entry) => entry.value == 'APROBADO')
+          .map((entry) => entry.key)
+          .firstOrNull;
+      _activeProfileType ??= _providerProfiles.firstOrNull;
     }
 
     return hasAnyApproved;

@@ -22,7 +22,8 @@ class AccountTypeBadge extends StatelessWidget {
       color = AppColors.amber;
     } else if (auth.hasApprovedProvider && auth.hasNegocioProfile) {
       color = const Color(0xFF8E2DE2);
-    } else if (auth.hasApprovedProvider && auth.hasOficioProfile) {
+    } else if (auth.hasApprovedProvider &&
+        (auth.hasOficioProfile || auth.hasProfessionalProfile)) {
       color = AppColors.available;
     } else {
       color = AppColors.primary;
@@ -51,6 +52,7 @@ class AccountTypeBadge extends StatelessWidget {
     if (!auth.hasApprovedProvider) return 'Cliente';
     final parts = <String>['Cliente'];
     if (auth.hasOficioProfile) parts.add('Profesional');
+    if (auth.hasProfessionalProfile) parts.add('Servicio profesional');
     if (auth.hasNegocioProfile) parts.add('Negocio');
     return parts.join(' + ');
   }
@@ -78,6 +80,7 @@ class PendingApprovalBanner extends StatelessWidget {
   });
 
   bool get _isNegocio => providerType == 'NEGOCIO';
+  bool get _isProfesional => providerType == 'PROFESIONAL';
   bool get _isRejected => status == 'RECHAZADO';
 
   Color get _accentColor {
@@ -87,7 +90,8 @@ class PendingApprovalBanner extends StatelessWidget {
 
   IconData get _icon {
     if (_isRejected) return Icons.cancel_rounded;
-    return _isNegocio ? Icons.storefront_rounded : Icons.handyman_rounded;
+    if (_isNegocio) return Icons.storefront_rounded;
+    return _isProfesional ? Icons.school_rounded : Icons.handyman_rounded;
   }
 
   String get _title {

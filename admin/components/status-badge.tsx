@@ -1,4 +1,4 @@
-type BadgeVariant = 'success' | 'warning' | 'danger' | 'info' | 'muted' | 'purple' | 'orange';
+export type BadgeVariant = 'success' | 'warning' | 'danger' | 'info' | 'muted' | 'purple' | 'orange';
 
 interface StatusBadgeProps {
   label: string;

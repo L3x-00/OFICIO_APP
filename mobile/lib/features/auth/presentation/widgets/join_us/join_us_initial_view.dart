@@ -173,16 +173,25 @@ class JoinUsInitialView extends StatelessWidget {
             builder: (_, auth, _) {
               final canOficio =
                   !auth.isAuthenticated || auth.canBecomeRole('OFICIO');
+              final canProfesional =
+                  !auth.isAuthenticated || auth.canBecomeRole('PROFESIONAL');
               final canNegocio =
                   !auth.isAuthenticated || auth.canBecomeRole('NEGOCIO');
 
               final oficioStatus = auth.verificationStatusFor('OFICIO');
+              final profesionalStatus = auth.verificationStatusFor(
+                'PROFESIONAL',
+              );
               final negocioStatus = auth.verificationStatusFor('NEGOCIO');
 
               final hasPendingOficio =
                   auth.isAuthenticated &&
                   !canOficio &&
                   oficioStatus == 'PENDIENTE';
+              final hasPendingProfesional =
+                  auth.isAuthenticated &&
+                  !canProfesional &&
+                  profesionalStatus == 'PENDIENTE';
               final hasPendingNegocio =
                   auth.isAuthenticated &&
                   !canNegocio &&
@@ -191,6 +200,10 @@ class JoinUsInitialView extends StatelessWidget {
                   auth.isAuthenticated &&
                   !canOficio &&
                   oficioStatus == 'APROBADO';
+              final hasApprovedProfesional =
+                  auth.isAuthenticated &&
+                  !canProfesional &&
+                  profesionalStatus == 'APROBADO';
               final hasApprovedNegocio =
                   auth.isAuthenticated &&
                   !canNegocio &&
@@ -199,6 +212,10 @@ class JoinUsInitialView extends StatelessWidget {
                   auth.isAuthenticated &&
                   !canOficio &&
                   oficioStatus == 'RECHAZADO';
+              final hasRejectedProfesional =
+                  auth.isAuthenticated &&
+                  !canProfesional &&
+                  profesionalStatus == 'RECHAZADO';
               final hasRejectedNegocio =
                   auth.isAuthenticated &&
                   !canNegocio &&
@@ -278,12 +295,16 @@ class JoinUsInitialView extends StatelessWidget {
 
               final hasAnyItem =
                   canOficio ||
+                  canProfesional ||
                   canNegocio ||
                   hasPendingOficio ||
+                  hasPendingProfesional ||
                   hasPendingNegocio ||
                   hasApprovedOficio ||
+                  hasApprovedProfesional ||
                   hasApprovedNegocio ||
                   hasRejectedOficio ||
+                  hasRejectedProfesional ||
                   hasRejectedNegocio;
 
               if (!hasAnyItem) return const SizedBox.shrink();
@@ -291,7 +312,7 @@ class JoinUsInitialView extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (canOficio || canNegocio) ...[
+                  if (canOficio || canProfesional || canNegocio) ...[
                     Text(
                       '¿CÓMO QUIERES APARECER?',
                       style: TextStyle(
@@ -352,6 +373,62 @@ class JoinUsInitialView extends StatelessWidget {
                               providerType: 'OFICIO',
                               isStandalone: true,
                               initialData: auth.providerDataFor('OFICIO'),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
+                  // ── PROFESIONAL ───────────────────────────
+                  if (canProfesional) ...[
+                    TypeCard(
+                      icon: Icons.school_rounded,
+                      title: 'Tengo una profesión con título',
+                      subtitle:
+                          'Tu formación + nuestra plataforma = más clientes.\nAbogado, ingeniero, contador, arquitecto…',
+                      tag: 'PROFESIONAL',
+                      gradient: const [Color(0xFF7ED9A0), AppColors.available],
+                      onTap: () => onSelectType('PROFESIONAL'),
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+                  if (hasPendingProfesional) ...[
+                    const PendingBanner(
+                      icon: Icons.school_rounded,
+                      label:
+                          'Tu perfil de Especialista está esperando aprobación del administrador.',
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+                  if (hasApprovedProfesional) ...[
+                    ApprovedProfileBanner(
+                      icon: Icons.school_rounded,
+                      label: 'Perfil de Especialista aprobado',
+                      gradient: const [Color(0xFF7ED9A0), AppColors.available],
+                      onTap: () {
+                        Navigator.pop(context);
+                        onOpenPanel('PROFESIONAL');
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+                  if (hasRejectedProfesional) ...[
+                    RejectedBanner(
+                      icon: Icons.school_rounded,
+                      label: 'Tu perfil de Especialista fue rechazado',
+                      reason: auth.rejectionReasonFor('PROFESIONAL'),
+                      onReRegister: () {
+                        Navigator.pop(context);
+                        // rootNavigator: el form de registro sale del
+                        // shell del cliente para no mostrar bottom nav.
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => ProviderOnboardingForm(
+                              providerType: 'PROFESIONAL',
+                              isStandalone: true,
+                              initialData: auth.providerDataFor('PROFESIONAL'),
                             ),
                           ),
                         );

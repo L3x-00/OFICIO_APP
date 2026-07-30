@@ -16,6 +16,37 @@ export {
   setAdminRefreshToken,
 } from './api-client';
 
+export const PROVIDER_TYPES = ['OFICIO', 'PROFESIONAL', 'NEGOCIO'] as const;
+export type ProviderType = (typeof PROVIDER_TYPES)[number];
+export type LegacyProviderType = 'PROFESSIONAL' | 'BUSINESS';
+export type ProviderTypeValue = ProviderType | LegacyProviderType;
+
+const PROVIDER_TYPE_ALIASES: Record<ProviderTypeValue, ProviderType> = {
+  OFICIO: 'OFICIO',
+  PROFESIONAL: 'PROFESIONAL',
+  NEGOCIO: 'NEGOCIO',
+  PROFESSIONAL: 'OFICIO',
+  BUSINESS: 'NEGOCIO',
+};
+
+const PROVIDER_TYPE_LABELS: Record<ProviderType, string> = {
+  OFICIO: 'Oficios',
+  PROFESIONAL: 'Servicios profesionales',
+  NEGOCIO: 'Negocios',
+};
+
+export function normalizeProviderType(value: unknown): ProviderType | null {
+  if (typeof value !== 'string') return null;
+  return PROVIDER_TYPE_ALIASES[value.trim().toUpperCase() as ProviderTypeValue] ?? null;
+}
+
+export function getProviderTypeLabel(value: unknown): string {
+  const normalized = normalizeProviderType(value);
+  if (normalized) return PROVIDER_TYPE_LABELS[normalized];
+  const raw = typeof value === 'string' && value.trim() ? value.trim() : 'vacío';
+  return `Tipo desconocido (${raw})`;
+}
+
 // ── ASISTENTE IA "OFI" ─────────────────────────────────────
 export interface AiSupportAction {
   kind: 'whatsapp' | 'email' | 'sales';
@@ -225,14 +256,47 @@ export const getUsersGeoStats = () =>
   fetchApi<UserGeoStatsRow[]>('/admin/users/geo-stats');
 
 // ── PROVEEDORES ────────────────────────────────────────────
-export const getProviders = (page = 1, search?: string) => {
+export const getProviders = (
+  page = 1,
+  search?: string,
+  type?: ProviderType,
+) => {
   const params = new URLSearchParams({ page: String(page), limit: '15' });
   if (search) params.append('search', search);
+  if (type) params.append('type', type);
   return fetchApi<ProvidersResponse>(`/admin/providers?${params}`);
 };
 
-export const getFormOptions = () =>
-  fetchApi<{ categories: unknown[]; localities: unknown[] }>('/admin/form-options');
+export interface AdminFormCategory {
+  id: number;
+  name: string;
+  slug?: string;
+  forType: ProviderType | null;
+  children: Array<{
+    id: number;
+    name: string;
+    slug?: string;
+    forType: ProviderType | null;
+  }>;
+}
+
+export interface AdminFormLocality {
+  id: number;
+  name: string;
+  department: string;
+  province?: string | null;
+  district?: string | null;
+}
+
+export interface AdminFormOptions {
+  categories: AdminFormCategory[];
+  localities: AdminFormLocality[];
+}
+
+export const getFormOptions = (type?: ProviderType) => {
+  const query = type ? `?type=${encodeURIComponent(type)}` : '';
+  return fetchApi<AdminFormOptions>(`/admin/form-options${query}`);
+};
 
 export const createProvider = (data: Record<string, unknown>) =>
   fetchApi('/admin/providers', { method: 'POST', body: JSON.stringify(data) });
@@ -321,6 +385,107 @@ export const revokeVerification = (id: number, reason?: string) =>
   });
 
 // ── USUARIOS ───────────────────────────────────────────────
+export type ProfessionalMigrationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface ProfessionalProfile {
+  specialty: string;
+  institution?: string | null;
+  yearsExperience?: number | null;
+  professionalTitle?: string | null;
+  registrationNumber?: string | null;
+  registrationIssuer?: string | null;
+}
+
+export interface ProfessionalMigrationCategorySnapshot {
+  id: number;
+  slug: string;
+  name: string;
+  isPrimary: boolean;
+}
+
+export interface ProfessionalMigrationListItem {
+  id: number;
+  status: ProfessionalMigrationStatus;
+  specialty: string;
+  createdAt: string;
+  reviewedAt?: string | null;
+  rejectionReason?: string | null;
+  provider: {
+    id: number;
+    businessName: string;
+    type: ProviderTypeValue;
+    user: { firstName: string; lastName: string; email: string };
+  };
+  _count: { documents: number };
+}
+
+export interface ProfessionalMigrationDetail extends ProfessionalProfile {
+  id: number;
+  status: ProfessionalMigrationStatus;
+  requestedCategories: ProfessionalMigrationCategorySnapshot[];
+  previousCategories: ProfessionalMigrationCategorySnapshot[];
+  rejectionReason?: string | null;
+  reviewedByAdminId?: number | null;
+  reviewedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  documents: Array<{
+    id: number;
+    docType: string;
+    fileUrl: string;
+    status: string;
+    reviewedAt?: string | null;
+    notes?: string | null;
+  }>;
+  provider: {
+    id: number;
+    userId: number;
+    businessName: string;
+    type: ProviderTypeValue;
+    phone: string;
+    description?: string | null;
+    images: ProviderImage[];
+    user: { firstName: string; lastName: string; email: string };
+  };
+}
+
+export interface ProfessionalMigrationsResponse {
+  data: ProfessionalMigrationListItem[];
+  total: number;
+  page: number;
+  lastPage: number;
+}
+
+export const getProfessionalMigrations = (params: {
+  status?: ProfessionalMigrationStatus;
+  page?: number;
+  limit?: number;
+} = {}) => {
+  const query = new URLSearchParams({
+    page: String(params.page ?? 1),
+    limit: String(params.limit ?? 20),
+  });
+  if (params.status) query.set('status', params.status);
+  return fetchApi<ProfessionalMigrationsResponse>(
+    `/admin/professional-migrations?${query}`,
+  );
+};
+
+export const getProfessionalMigration = (id: number) =>
+  fetchApi<ProfessionalMigrationDetail>(`/admin/professional-migrations/${id}`);
+
+export const approveProfessionalMigration = (id: number) =>
+  fetchApi<{ success: true; providerId: number }>(
+    `/admin/professional-migrations/${id}/approve`,
+    { method: 'PATCH' },
+  );
+
+export const rejectProfessionalMigration = (id: number, reason: string) =>
+  fetchApi<{ success: true; providerId: number }>(
+    `/admin/professional-migrations/${id}/reject`,
+    { method: 'PATCH', body: JSON.stringify({ reason }) },
+  );
+
 export const getUsers = (params: {
   page?: number;
   search?: string;
@@ -636,7 +801,8 @@ export interface Provider {
   isVisible: boolean;
   availability: string;
   verificationStatus: string;
-  type: string;           // 'OFICIO' | 'NEGOCIO'
+  type: ProviderTypeValue;
+  professionalProfile?: ProfessionalProfile | null;
   category: { name: string };
   locality: { name: string };
   user?: { id?: number; email: string; firstName: string; lastName: string; phone?: string };
@@ -652,7 +818,7 @@ export interface VerificationProvider {
   description?: string;
   verificationStatus: string;
   isVerified: boolean;
-  type: string;
+  type: ProviderTypeValue;
   createdAt: string;
   user: { email: string; firstName: string; lastName: string; createdAt: string };
   category: { name: string };
@@ -685,7 +851,7 @@ export interface UserItem {
   provider?: {
     id: number;
     businessName: string;
-    type?: 'OFICIO' | 'NEGOCIO';
+    type?: ProviderTypeValue;
     verificationStatus: string;
     isVerified: boolean;
     phone?: string;
@@ -756,7 +922,7 @@ export interface NotificationItem {
    */
   provider: {
     businessName: string;
-    type?: 'OFICIO' | 'NEGOCIO';
+    type?: ProviderTypeValue;
     user: { firstName: string; lastName: string };
   } | null;
 }
@@ -788,7 +954,7 @@ export interface Category {
   iconUrl?: string;
   isActive: boolean;
   parentId?: number | null;
-  forType?: string | null;   // 'OFICIO' | 'NEGOCIO' | null
+  forType?: ProviderType | null;
   parent?: { id: number; name: string } | null;
   children?: Category[];
   _count?: { providers: number };
@@ -982,7 +1148,7 @@ export interface AdminOfferItem {
   provider: {
     id: number;
     businessName: string;
-    type: 'OFICIO' | 'NEGOCIO';
+    type: ProviderTypeValue;
     averageRating: number;
     locality?: { name?: string; province?: string; district?: string } | null;
   };
@@ -1023,7 +1189,7 @@ export interface AdminChatRoom {
   provider: {
     id: number;
     businessName: string;
-    type: 'OFICIO' | 'NEGOCIO';
+    type: ProviderTypeValue;
     locality?: { name?: string; department?: string; province?: string; district?: string } | null;
   };
   messages: Array<{ id: number; content: string; createdAt: string; senderId: number }>;

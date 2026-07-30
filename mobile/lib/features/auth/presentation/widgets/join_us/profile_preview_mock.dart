@@ -6,21 +6,33 @@ import 'package:mobile/core/theme/app_theme_colors.dart';
 /// Vista previa (mock) del perfil que el usuario tendrá según el tipo
 /// seleccionado. Mejorado con productos/servicios, ubicación y métricas.
 class ProfilePreviewMock extends StatelessWidget {
-  final bool isOficio;
-  const ProfilePreviewMock({super.key, required this.isOficio});
+  /// 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO'.
+  final String type;
+  const ProfilePreviewMock({super.key, required this.type});
+
+  bool get isProfesional => type == 'PROFESIONAL';
+  bool get isNegocio => type == 'NEGOCIO';
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final accentColors = isOficio
-        ? [const Color(0xFF00C6FF), const Color(0xFF0072FF)]
-        : [const Color(0xFF8E2DE2), const Color(0xFF4A00E0)];
+    final accentColors = isNegocio
+        ? [const Color(0xFF8E2DE2), const Color(0xFF4A00E0)]
+        : isProfesional
+        ? [const Color(0xFF7ED9A0), AppColors.available]
+        : [const Color(0xFF00C6FF), const Color(0xFF0072FF)];
 
     // Datos de ejemplo según el tipo
-    final String sectionTitle = isOficio ? 'Servicios' : 'Productos';
-    final List<String> mockItems = isOficio
-        ? ['Instalación', 'Reparación', 'Mantenimiento']
-        : ['Plato 1', 'Plato 2', 'Plato 3'];
+    final String sectionTitle = isNegocio
+        ? 'Productos'
+        : isProfesional
+        ? 'Especialidades'
+        : 'Servicios';
+    final List<String> mockItems = isNegocio
+        ? ['Plato 1', 'Plato 2', 'Plato 3']
+        : isProfesional
+        ? ['Asesoría', 'Consultoría', 'Representación']
+        : ['Instalación', 'Reparación', 'Mantenimiento'];
 
     return Container(
       decoration: BoxDecoration(
@@ -57,9 +69,9 @@ class ProfilePreviewMock extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      isOficio
-                          ? Icons.add_photo_alternate_rounded
-                          : Icons.photo_library_rounded,
+                      isNegocio
+                          ? Icons.photo_library_rounded
+                          : Icons.add_photo_alternate_rounded,
                       color: Colors.white54,
                       size: 28,
                     ),
@@ -90,9 +102,11 @@ class ProfilePreviewMock extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        isOficio
-                            ? Icons.person_rounded
-                            : Icons.storefront_rounded,
+                        isNegocio
+                            ? Icons.storefront_rounded
+                            : isProfesional
+                            ? Icons.school_rounded
+                            : Icons.person_rounded,
                         color: Colors.white,
                         size: 20,
                       ),
@@ -103,9 +117,9 @@ class ProfilePreviewMock extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isOficio
-                                ? 'Tu nombre profesional'
-                                : 'Nombre de tu negocio',
+                            isNegocio
+                                ? 'Nombre de tu negocio'
+                                : 'Tu nombre profesional',
                             style: TextStyle(
                               color: c.textPrimary,
                               fontSize: 14,
@@ -113,9 +127,11 @@ class ProfilePreviewMock extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            isOficio
-                                ? 'Especialidad (ej: Electricista)'
-                                : 'Categoría (ej: Restaurante)',
+                            isNegocio
+                                ? 'Categoría (ej: Restaurante)'
+                                : isProfesional
+                                ? 'Especialidad (ej: Abogado corporativo)'
+                                : 'Especialidad (ej: Electricista)',
                             style: TextStyle(
                               color: c.textSecondary,
                               fontSize: 11,
@@ -308,9 +324,11 @@ class ProfilePreviewMock extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              isOficio
-                                  ? Icons.handyman_rounded
-                                  : Icons.fastfood_rounded,
+                              isNegocio
+                                  ? Icons.fastfood_rounded
+                                  : isProfesional
+                                  ? Icons.assignment_rounded
+                                  : Icons.handyman_rounded,
                               color: accentColors[0].withValues(alpha: 0.6),
                               size: 18,
                             ),

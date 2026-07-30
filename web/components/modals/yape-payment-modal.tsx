@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { yapePaymentSchema } from '@/lib/validators';
 import { useBodyScrollLock } from '@/lib/hooks';
+import type { ProfileType } from '@/lib/types';
 
 interface Props {
   isOpen: boolean;
@@ -15,8 +16,8 @@ interface Props {
   plan: 'ESTANDAR' | 'PREMIUM';
   planLabel: string;
   amount: number;
-  /** Perfil al que aplicar el pago (cuando el user tiene OFICIO y NEGOCIO). */
-  providerType?: 'OFICIO' | 'NEGOCIO';
+  /** Perfil al que aplicar el pago (cuando el user tiene varios perfiles). */
+  providerType?: ProfileType;
   /** Se llama al cerrar tras enviar el comprobante con éxito. */
   onSuccess?: () => void;
 }

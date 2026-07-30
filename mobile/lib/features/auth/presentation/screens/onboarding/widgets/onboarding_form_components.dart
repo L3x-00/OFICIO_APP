@@ -22,15 +22,23 @@ class FormSectionHeader extends StatelessWidget {
   }
 }
 
-/// Badge visual que diferencia entre Profesional y Negocio.
+/// Badge visual que diferencia entre Oficio, Profesional y Negocio.
 class TypeBadge extends StatelessWidget {
-  final bool isOficio;
-  const TypeBadge({super.key, required this.isOficio});
+  /// 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO'.
+  final String providerType;
+  const TypeBadge({super.key, required this.providerType});
+
+  bool get _isProfesional => providerType == 'PROFESIONAL';
+  bool get _isNegocio => providerType == 'NEGOCIO';
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final color = isOficio ? AppColors.primary : AppColors.amber;
+    final color = _isNegocio
+        ? AppColors.amber
+        : _isProfesional
+        ? AppColors.available
+        : AppColors.primary;
     final glyph = AppColors.tintOn(color, c.isDark);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -43,13 +51,21 @@ class TypeBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            isOficio ? Icons.handyman_rounded : Icons.storefront_rounded,
+            _isNegocio
+                ? Icons.storefront_rounded
+                : _isProfesional
+                ? Icons.school_rounded
+                : Icons.handyman_rounded,
             size: 14,
             color: glyph,
           ),
           const SizedBox(width: 6),
           Text(
-            isOficio ? 'Profesional Independiente' : 'Negocio',
+            _isNegocio
+                ? 'Negocio'
+                : _isProfesional
+                ? 'Servicios profesionales'
+                : 'Profesional Independiente',
             style: TextStyle(
               color: glyph,
               fontSize: 12,

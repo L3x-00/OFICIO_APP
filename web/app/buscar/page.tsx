@@ -12,6 +12,7 @@ import {
   type FeaturedCategory,
   type FeaturedGroup,
 } from '@/lib/api';
+import { PROFILE_TYPE_META } from '@/lib/types';
 
 // El mapa usa Leaflet (window) → solo en cliente.
 const SearchRadarMap = dynamic(() => import('@/components/search/search-radar-map'), {
@@ -342,7 +343,14 @@ function ProviderCard({ provider }: { provider: PublicProvider }) {
         )}
       </div>
       <div className="p-3">
-        <p className="text-gray-900 dark:text-white font-semibold text-sm truncate">{provider.businessName}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-gray-900 dark:text-white font-semibold text-sm truncate">{provider.businessName}</p>
+          {provider.type && (
+            <span className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-white/60">
+              {PROFILE_TYPE_META[provider.type].label}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-white/50">
           <span className="inline-flex items-center gap-1 text-amber">
             <Star size={12} className="fill-amber" /> {rating.toFixed(1)}

@@ -201,30 +201,20 @@ class ProvidersListView extends StatelessWidget {
     // providers`). No se altera nada del provider/API; solo se decide en qué
     // sección se renderiza cada item, de forma disjunta (sin duplicados).
     final all = prov.providers;
-    final ranked = [...all]
-      ..sort((a, b) {
-        final byReviews = b.totalReviews.compareTo(a.totalReviews);
-        return byReviews != 0
-            ? byReviews
-            : b.averageRating.compareTo(a.averageRating);
-      });
-    // "Más buscados": top por concurrencia (reseñas + rating). Se omite si la
-    // lista es muy corta para no dejar secciones casi vacías.
-    final topCount = all.length <= 4 ? 0 : (all.length < 8 ? 3 : 6);
-    final topIds = ranked.take(topCount).map((p) => p.id).toSet();
-    final mostSearched = ranked.take(topCount).toList();
-    final rest = all.where((p) => !topIds.contains(p.id)).toList();
-    final professionals = rest
-        .where((p) => p.type == ProviderType.oficio)
+    final trades = all.where((p) => p.type == ProviderType.oficio).toList();
+    final professionals = all
+        .where((p) => p.type == ProviderType.profesional)
         .toList();
-    final businesses = rest
+    final businesses = all
         .where((p) => p.type == ProviderType.negocio)
         .toList();
+    final unknown = all.where((p) => p.type == ProviderType.unknown).toList();
 
     final sections = <(String, List<ProviderModel>)>[
-      if (mostSearched.isNotEmpty) ('Más buscados', mostSearched),
-      if (professionals.isNotEmpty) ('Profesionales', professionals),
+      if (trades.isNotEmpty) ('Oficios', trades),
+      if (professionals.isNotEmpty) ('Servicios profesionales', professionals),
       if (businesses.isNotEmpty) ('Negocios', businesses),
+      if (unknown.isNotEmpty) ('Sin clasificar', unknown),
     ];
 
     // Barra superior: total + toggle de vista (el toggle se mantiene intacto;
@@ -284,11 +274,10 @@ class ProvidersListView extends StatelessWidget {
       // `rootNavigator: true` empuja ProviderPanel POR ENCIMA del AppShell
       // (StatefulShellRoute) — sin esto la nueva ruta vive dentro del
       // shell y se sigue viendo la bottom nav del cliente debajo.
+      final exactProviderType = p.type.apiValue;
       void goToDashboard() => Navigator.of(context, rootNavigator: true).push(
         MaterialPageRoute(
-          builder: (_) => ProviderPanel(
-            providerType: p.type == ProviderType.negocio ? 'NEGOCIO' : 'OFICIO',
-          ),
+          builder: (_) => ProviderPanel(providerType: exactProviderType),
         ),
       );
 
@@ -346,7 +335,9 @@ class ProvidersListView extends StatelessWidget {
           isOwnCard: isOwnCard,
           onTap: () => ProviderDetailSheet.show(context, p),
           onFavoriteToggle: isOwnCard ? null : handleFav,
-          onGoToDashboard: isOwnCard ? goToDashboard : null,
+          onGoToDashboard: isOwnCard && exactProviderType != null
+              ? goToDashboard
+              : null,
           onChat: isOwnCard ? null : openChat,
         ),
         ViewMode.mosaicos => ServiceCardMosaic(
@@ -360,7 +351,9 @@ class ProvidersListView extends StatelessWidget {
           provider: p,
           isOwnCard: isOwnCard,
           onTap: () => ProviderDetailSheet.show(context, p),
-          onGoToDashboard: isOwnCard ? goToDashboard : null,
+          onGoToDashboard: isOwnCard && exactProviderType != null
+              ? goToDashboard
+              : null,
           onFavoriteToggle: isOwnCard ? null : handleFav,
           onChat: isOwnCard ? null : openChat,
         ),

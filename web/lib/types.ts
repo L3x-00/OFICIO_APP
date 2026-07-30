@@ -1,3 +1,110 @@
+export const PROFILE_TYPES = ["OFICIO", "PROFESIONAL", "NEGOCIO"] as const;
+
+export type ProfileType = (typeof PROFILE_TYPES)[number];
+export type LegacyProfileType = "PROFESSIONAL" | "BUSINESS";
+
+export function normalizeProfileType(value: unknown): ProfileType | null {
+  if (typeof value !== "string") return null;
+
+  switch (value.trim().toUpperCase()) {
+    case "OFICIO":
+    case "PROFESSIONAL":
+      return "OFICIO";
+    case "PROFESIONAL":
+      return "PROFESIONAL";
+    case "NEGOCIO":
+    case "BUSINESS":
+      return "NEGOCIO";
+    default:
+      return null;
+  }
+}
+
+export const PROFILE_TYPE_META: Record<
+  ProfileType,
+  {
+    label: string;
+    pluralLabel: string;
+    panelLabel: string;
+    description: string;
+  }
+> = {
+  OFICIO: {
+    label: "Oficio",
+    pluralLabel: "Oficios",
+    panelLabel: "Oficios",
+    description: "Trabajo técnico, manual o especializado",
+  },
+  PROFESIONAL: {
+    label: "Servicio profesional",
+    pluralLabel: "Servicios profesionales",
+    panelLabel: "Servicios profesionales",
+    description: "Asesoría o atención basada en formación profesional",
+  },
+  NEGOCIO: {
+    label: "Negocio",
+    pluralLabel: "Negocios",
+    panelLabel: "Negocios",
+    description: "Local, empresa, tienda o marca",
+  },
+};
+
+export interface ProfessionalProfile {
+  specialty: string;
+  institution?: string | null;
+  yearsExperience?: number | null;
+  professionalTitle?: string | null;
+  registrationNumber?: string | null;
+  registrationIssuer?: string | null;
+}
+
+export type ProfessionalMigrationStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface ProfessionalMigration {
+  id: number;
+  status: ProfessionalMigrationStatus;
+  specialty: string;
+  institution?: string | null;
+  yearsExperience?: number | null;
+  professionalTitle?: string | null;
+  registrationNumber?: string | null;
+  registrationIssuer?: string | null;
+  rejectionReason?: string | null;
+  reviewedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProviderProfileSummary {
+  providerId: number;
+  businessName: string;
+  type: ProfileType;
+  verificationStatus: "PENDIENTE" | "APROBADO" | "RECHAZADO";
+  isVerified: boolean;
+  trustStatus?: string;
+  isTrusted?: boolean;
+  trustRejectionReason?: string | null;
+  phone?: string;
+  whatsapp?: string | null;
+  description?: string | null;
+  address?: string | null;
+  categories?: Array<{
+    id: number;
+    name: string;
+    slug: string;
+    parentId?: number | null;
+    parentName?: string | null;
+  }>;
+  professionalProfile?: ProfessionalProfile | null;
+  professionalMigration?: ProfessionalMigration | null;
+  professionalMigrationStatus?: ProfessionalMigrationStatus | null;
+}
+
+export interface MyProviderStatus {
+  hasProvider: boolean;
+  profiles: ProviderProfileSummary[];
+}
+
 export interface User {
   id: number;
   email: string;
@@ -18,7 +125,7 @@ export interface Provider {
   id: number;
   userId: number;
   slug?: string;
-  type: "OFICIO" | "NEGOCIO";
+  type: ProfileType;
   businessName: string;
   description?: string;
   dni?: string;
@@ -48,6 +155,9 @@ export interface Provider {
   images: ProviderImage[];
   category?: Category;
   locality?: Locality;
+  professionalProfile?: ProfessionalProfile | null;
+  professionalMigration?: ProfessionalMigration | null;
+  credentialVerified?: boolean;
   /**
    * JSON con servicios/productos del provider. El móvil guarda
    * `services: [{ id, name, description, price, imageUrl, phone }]`
@@ -184,7 +294,7 @@ export interface Opportunity extends ServiceRequest {
   canParticipate: boolean;
 }
 // ========== TIPOS PARA EL MANUAL DE USUARIO ==========
-import { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 export interface GuideStep {
   title: string;

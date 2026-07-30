@@ -193,9 +193,13 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
         ? p.slug!
         : '${p.id}';
     final url = '${DioClient.publicWebUrl}/$pathSegment';
-    final text = p.type == ProviderType.negocio
-        ? 'Mira el negocio ${p.businessName} en Servi'
-        : 'Mira el perfil de ${p.businessName} en Servi';
+    final text = switch (p.type) {
+      ProviderType.negocio => 'Mira el negocio ${p.businessName} en Servi',
+      ProviderType.profesional =>
+        'Mira el servicio profesional de ${p.businessName} en Servi',
+      ProviderType.oficio => 'Mira el oficio de ${p.businessName} en Servi',
+      ProviderType.unknown => 'Mira el perfil de ${p.businessName} en Servi',
+    };
     await Share.share('$text\n$url', subject: p.businessName);
   }
 
@@ -368,11 +372,13 @@ class _ProviderDetailSheetState extends State<ProviderDetailSheet> {
                         const SizedBox(height: 16),
 
                         if (p.description != null) ...[
-                          SectionTitle(
-                            p.type == ProviderType.oficio
-                                ? 'Sobre el profesional'
-                                : 'Sobre el negocio',
-                          ),
+                          SectionTitle(switch (p.type) {
+                            ProviderType.oficio => 'Sobre el oficio',
+                            ProviderType.profesional =>
+                              'Sobre el servicio profesional',
+                            ProviderType.negocio => 'Sobre el negocio',
+                            ProviderType.unknown => 'Sobre el perfil',
+                          }),
                           const SizedBox(height: 8),
                           Text(
                             p.description!,

@@ -83,7 +83,9 @@ class PanelSettingsTab extends StatelessWidget {
                             ? 'Eliminar perfil de negocio'
                             : 'Eliminar perfil profesional',
                         subtitle:
-                            auth.hasOficioProfile && auth.hasNegocioProfile
+                            (auth.hasOficioProfile ||
+                                    auth.hasProfessionalProfile) &&
+                                auth.hasNegocioProfile
                             ? 'Solo elimina este perfil, el otro se mantiene'
                             : 'Pasarás a ser cliente al eliminar este perfil',
                         onTap: () => showDeleteProfileDialog(
