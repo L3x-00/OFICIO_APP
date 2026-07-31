@@ -252,87 +252,92 @@ model ProviderCategory {
 }
 
 model Provider {
-  id                   Int                       @id @default(autoincrement())
-  userId               Int
-  type                 ProviderType              @default(OFICIO)
-  businessName         String
-  description          String?
-  phone                String
-  whatsapp             String?
-  address              String?
-  latitude             Float?
-  longitude            Float?
-  scheduleJson         Json?
+  id                     Int                            @id @default(autoincrement())
+  userId                 Int
+  type                   ProviderType                   @default(OFICIO)
+  businessName           String
+  description            String?
+  phone                  String
+  whatsapp               String?
+  address                String?
+  latitude               Float?
+  longitude              Float?
+  scheduleJson           Json?
   /// Horario semanal para AGENDA DE CITAS (distinto de scheduleJson, que es
   /// el horario de atención general). Formato:
   /// { "lun": "8:00-12:00,14:00-18:00", "mar": "...", ... }
-  appointmentSchedule  Json?
-  availability         AvailabilityStatus        @default(DISPONIBLE)
-  isVisible            Boolean                   @default(true)
-  verificationStatus   VerificationStatus        @default(PENDIENTE)
-  isVerified           Boolean                   @default(false)
-  hasCleanRecord       Boolean                   @default(false)
-  averageRating        Float                     @default(0)
-  totalReviews         Int                       @default(0)
-  localityId           Int
-  createdAt            DateTime                  @default(now())
-  updatedAt            DateTime                  @updatedAt
-  dni                  String?
-  hasDelivery          Boolean                   @default(false)
-  hasHomeService       Boolean                   @default(false)
-  isTrusted            Boolean                   @default(false)
-  nombreComercial      String?
-  planPriority         Int                       @default(4)
-  plenaCoordinacion    Boolean                   @default(false)
-  razonSocial          String?
-  ruc                  String?
-  totalRecommendations Int                       @default(0)
-  trustStatus          TrustStatus               @default(NONE)
-  facebook             String?
-  instagram            String?
-  linkedin             String?
-  telegram             String?
-  tiktok               String?
-  twitterX             String?
-  website              String?
-  whatsappBiz          String?
+  appointmentSchedule    Json?
+  availability           AvailabilityStatus             @default(DISPONIBLE)
+  isVisible              Boolean                        @default(true)
+  verificationStatus     VerificationStatus             @default(PENDIENTE)
+  isVerified             Boolean                        @default(false)
+  hasCleanRecord         Boolean                        @default(false)
+  averageRating          Float                          @default(0)
+  totalReviews           Int                            @default(0)
+  localityId             Int
+  createdAt              DateTime                       @default(now())
+  updatedAt              DateTime                       @updatedAt
+  dni                    String?
+  hasDelivery            Boolean                        @default(false)
+  hasHomeService         Boolean                        @default(false)
+  isTrusted              Boolean                        @default(false)
+  nombreComercial        String?
+  planPriority           Int                            @default(4)
+  plenaCoordinacion      Boolean                        @default(false)
+  razonSocial            String?
+  ruc                    String?
+  totalRecommendations   Int                            @default(0)
+  trustStatus            TrustStatus                    @default(NONE)
+  facebook               String?
+  instagram              String?
+  linkedin               String?
+  telegram               String?
+  tiktok                 String?
+  twitterX               String?
+  website                String?
+  whatsappBiz            String?
   /// Toggles de privacidad — INDEPENDIENTES del plan. El proveedor decide
   /// qué exponer en su perfil público (seguridad = derecho, no privilegio).
-  showPhone            Boolean                   @default(true)
-  showWhatsapp         Boolean                   @default(true)
-  showExactLocation    Boolean                   @default(true)
-  slug                 String?                   @unique
-  slugEditedAt         DateTime?
-  location_geog        Unsupported("geography")?
-  search_tsv           Unsupported("tsvector")?
-  notifications        AdminNotification[]
-  appointments         Appointment[]
-  menuItems            MenuItem[]
-  catalogProducts      CatalogProduct[]
-  quotationRequests    QuotationRequest[]
-  chatsAsProvider      ChatRoom[]                @relation("ProviderChats")
-  favorites            Favorite[]
-  offerPosts           OfferPost[]
-  offers               Offer[]
-  planRequests         PlanRequest[]
-  analytics            ProviderAnalytic[]
-  providerCategories   ProviderCategory[]
-  images               ProviderImage[]
-  reports              ProviderReport[]
-  locality             Locality                  @relation(fields: [localityId], references: [id])
-  user                 User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  recommendations      Recommendation[]
-  referralRewards      ReferralReward[]
-  referralReceived     Referral?                 @relation("ReferralInvitedProvider")
-  reviews              Review[]
-  subscription         Subscription?
-  trustValidations     TrustValidationRequest[]
-  verificationDocs     VerificationDoc[]
-  yapePayments         YapePayment[]
-  aiMemory             AiProviderMemory?
-  coverage             ProviderCoverage[]
+  showPhone              Boolean                        @default(true)
+  showWhatsapp           Boolean                        @default(true)
+  showExactLocation      Boolean                        @default(true)
+  slug                   String?                        @unique
+  slugEditedAt           DateTime?
+  location_geog          Unsupported("geography")?
+  search_tsv             Unsupported("tsvector")?
+  notifications          AdminNotification[]
+  appointments           Appointment[]
+  menuItems              MenuItem[]
+  catalogProducts        CatalogProduct[]
+  quotationRequests      QuotationRequest[]
+  chatsAsProvider        ChatRoom[]                     @relation("ProviderChats")
+  favorites              Favorite[]
+  offerPosts             OfferPost[]
+  offers                 Offer[]
+  planRequests           PlanRequest[]
+  analytics              ProviderAnalytic[]
+  providerCategories     ProviderCategory[]
+  images                 ProviderImage[]
+  reports                ProviderReport[]
+  locality               Locality                       @relation(fields: [localityId], references: [id])
+  user                   User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommendations        Recommendation[]
+  referralRewards        ReferralReward[]
+  referralReceived       Referral?                      @relation("ReferralInvitedProvider")
+  reviews                Review[]
+  subscription           Subscription?
+  trustValidations       TrustValidationRequest[]
+  verificationDocs       VerificationDoc[]
+  professionalProfile    ProfessionalProfile?
+  professionalMigrations ProfessionalMigrationRequest[]
+  yapePayments           YapePayment[]
+  aiMemory               AiProviderMemory?
+  coverage               ProviderCoverage[]
 
   @@unique([userId, type])
+  /// Un usuario puede tener un perfil individual y un NEGOCIO, pero nunca
+  /// OFICIO y PROFESIONAL a la vez. La restricción parcial evita carreras.
+  @@unique([userId], name: "oneIndividualProviderPerUser", map: "providers_one_individual_provider_per_user_key", where: raw("\"type\" IN ('OFICIO', 'PROFESIONAL')"))
   @@index([isVisible, verificationStatus])
   @@index([isVisible, verificationStatus, averageRating])
   @@index([isVisible, verificationStatus, localityId])
@@ -452,6 +457,8 @@ model Payment {
   createdAt      DateTime      @default(now())
   subscription   Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
+  /// Idempotencia solo para MercadoPago. Yape usa códigos cortos repetibles.
+  @@unique([reference], name: "mercadoPagoReferenceUnique", map: "payments_mercadopago_reference_key", where: raw("\"method\" = 'mercadopago' AND \"reference\" IS NOT NULL"))
   @@map("payments")
 }
 
@@ -518,16 +525,65 @@ model Favorite {
 }
 
 model VerificationDoc {
-  id         Int                 @id @default(autoincrement())
-  providerId Int
-  docType    VerificationDocType
-  fileUrl    String
-  status     VerificationStatus  @default(PENDIENTE)
-  reviewedAt DateTime?
-  notes      String?
-  provider   Provider            @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  id                             Int                           @id @default(autoincrement())
+  providerId                     Int
+  professionalMigrationRequestId Int?
+  docType                        VerificationDocType
+  fileUrl                        String
+  status                         VerificationStatus            @default(PENDIENTE)
+  reviewedAt                     DateTime?
+  notes                          String?
+  provider                       Provider                      @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  professionalMigrationRequest   ProfessionalMigrationRequest? @relation(fields: [professionalMigrationRequestId], references: [id], onDelete: SetNull)
 
+  @@index([professionalMigrationRequestId])
   @@map("verification_docs")
+}
+
+/// Datos opcionales que distinguen el perfil profesional sin cargar la tabla
+/// base Provider ni forzar credenciales a egresados o profesionales por hobby.
+model ProfessionalProfile {
+  id                 Int      @id @default(autoincrement())
+  providerId         Int      @unique
+  specialty          String
+  institution        String?
+  yearsExperience    Int?
+  professionalTitle  String?
+  registrationNumber String?
+  registrationIssuer String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  provider           Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@map("professional_profiles")
+}
+
+/// Solicitud separada del flujo de alta. Mantiene OFICIO activo hasta que un
+/// admin aprueba, y conserva snapshots inmutables de categorías para auditoría.
+model ProfessionalMigrationRequest {
+  id                  Int                         @id @default(autoincrement())
+  providerId          Int
+  status              ProfessionalMigrationStatus @default(PENDING)
+  specialty           String
+  institution         String?
+  yearsExperience     Int?
+  professionalTitle   String?
+  registrationNumber  String?
+  registrationIssuer  String?
+  requestedCategories Json
+  previousCategories  Json
+  rejectionReason     String?
+  reviewedByAdminId   Int?
+  reviewedAt          DateTime?
+  createdAt           DateTime                    @default(now())
+  updatedAt           DateTime                    @updatedAt
+  provider            Provider                    @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  documents           VerificationDoc[]
+
+  @@unique([providerId], name: "onePendingProfessionalMigrationPerProvider", map: "professional_migration_requests_one_pending_provider_key", where: raw("\"status\" = 'PENDING'"))
+  @@index([providerId])
+  @@index([status, createdAt])
+  @@map("professional_migration_requests")
 }
 
 model ProviderAnalytic {
@@ -1046,6 +1102,13 @@ enum SubscriptionStatus {
 enum ProviderType {
   OFICIO
   NEGOCIO
+  PROFESIONAL
+}
+
+enum ProfessionalMigrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum VerificationStatus {

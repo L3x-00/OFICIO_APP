@@ -25,8 +25,8 @@ export interface AiToolDef {
 export interface AiCaller {
   userId: number;
   role: AiUserRole;
-  /** Perfil de proveedor activo si aplica (OFICIO|NEGOCIO). */
-  providerType?: 'OFICIO' | 'NEGOCIO' | null;
+  /** Perfil de proveedor activo si aplica. */
+  providerType?: 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO' | null;
 }
 
 /** Un turno del historial de conversación que enviamos a Gemini. */

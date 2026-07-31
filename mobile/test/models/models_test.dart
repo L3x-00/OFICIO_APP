@@ -359,9 +359,10 @@ void main() {
         AvailabilityStatus.conDemora,
       );
       expect(ProviderType.fromString('NEGOCIO'), ProviderType.negocio);
+      expect(ProviderType.fromString('PROFESIONAL'), ProviderType.profesional);
       expect(
         ProviderType.fromString('cualquier-otra-cosa'),
-        ProviderType.oficio,
+        ProviderType.unknown,
       );
     });
 

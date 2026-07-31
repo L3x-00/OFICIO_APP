@@ -280,18 +280,20 @@ class ProviderContactInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final p = provider;
-    final isOficio = p.type == ProviderType.oficio;
+    final isIndividual = p.type.isIndividual;
 
     final rows = <Widget>[];
 
     // Para OFICIO: nombre real del profesional con avatar
-    if (isOficio && p.ownerName != null) {
+    if (isIndividual && p.ownerName != null) {
       rows.add(
         InfoChip(
           leading: _OwnerAvatar(provider: p, accent: accent),
           icon: null,
           label: p.ownerName!,
-          sublabel: 'Profesional independiente',
+          sublabel: p.type == ProviderType.profesional
+              ? 'Servicio profesional'
+              : 'Oficio independiente',
         ),
       );
     }

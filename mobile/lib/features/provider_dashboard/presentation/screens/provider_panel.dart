@@ -89,7 +89,14 @@ class _ProviderPanelState extends State<ProviderPanel> {
   Widget build(BuildContext context) {
     final c = context.colors;
     final auth = context.watch<AuthProvider>();
-    final isNeg = (widget.providerType ?? auth.activeProfileType) == 'NEGOCIO';
+    final activeType =
+        widget.providerType ?? auth.activeProfileType ?? 'OFICIO';
+    final isNeg = activeType == 'NEGOCIO';
+    // XOR: nunca hasOficioProfile y hasProfessionalProfile a la vez — el
+    // que sí tenga es "el" tipo individual del usuario para el switcher.
+    final individualType = auth.hasProfessionalProfile
+        ? 'PROFESIONAL'
+        : 'OFICIO';
 
     return AdminShowcaseWrapper(
       child: PopScope(
@@ -107,8 +114,9 @@ class _ProviderPanelState extends State<ProviderPanel> {
             providerType: widget.providerType ?? auth.activeProfileType,
           ),
           appBar: _PanelAppBar(
-            activeType: isNeg ? 'NEGOCIO' : 'OFICIO',
-            hasOficio: auth.hasOficioProfile,
+            activeType: activeType,
+            individualType: individualType,
+            hasIndividual: auth.hasOficioProfile || auth.hasProfessionalProfile,
             hasNegocio: auth.hasNegocioProfile,
             onSwitch: (type) {
               auth.switchProfile(type);
@@ -243,16 +251,49 @@ class _ProviderPanelState extends State<ProviderPanel> {
 // El icono de menú overflow expone "Cerrar sesión" de forma siempre
 // visible, sin importar en qué tab esté el usuario.
 
+/// Etiqueta/ícono/color del panel según tipo — 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO'.
+class _PanelTypeStyle {
+  final String label;
+  final IconData icon;
+  final Color color;
+  const _PanelTypeStyle(this.label, this.icon, this.color);
+}
+
+const Map<String, _PanelTypeStyle> _kPanelTypeStyles = {
+  'OFICIO': _PanelTypeStyle(
+    'Panel Profesional',
+    Icons.handyman_rounded,
+    AppColors.primary,
+  ),
+  'PROFESIONAL': _PanelTypeStyle(
+    'Panel de Servicio profesional',
+    Icons.school_rounded,
+    AppColors.available,
+  ),
+  'NEGOCIO': _PanelTypeStyle(
+    'Panel Negocio',
+    Icons.store_rounded,
+    AppColors.amber,
+  ),
+};
+
+_PanelTypeStyle _panelStyleFor(String type) =>
+    _kPanelTypeStyles[type] ?? _kPanelTypeStyles['OFICIO']!;
+
 class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String activeType; // 'OFICIO' | 'NEGOCIO'
-  final bool hasOficio;
+  final String activeType; // 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO'
+  /// El tipo individual (no-Negocio) que el usuario realmente tiene —
+  /// 'OFICIO' o 'PROFESIONAL' (nunca ambos, por el XOR de perfiles).
+  final String individualType;
+  final bool hasIndividual;
   final bool hasNegocio;
   final ValueChanged<String> onSwitch;
   final VoidCallback onLogout;
 
   const _PanelAppBar({
     required this.activeType,
-    required this.hasOficio,
+    required this.individualType,
+    required this.hasIndividual,
     required this.hasNegocio,
     required this.onSwitch,
     required this.onLogout,
@@ -261,13 +302,13 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
-  bool get _canSwitch => hasOficio && hasNegocio;
+  bool get _canSwitch => hasIndividual && hasNegocio;
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final isNeg = activeType == 'NEGOCIO';
-    final label = isNeg ? 'Panel Negocio' : 'Panel Profesional';
+    final style = _panelStyleFor(activeType);
+    final label = style.label;
 
     return AppBar(
       backgroundColor: c.bg,
@@ -290,9 +331,9 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
                     // existe, hasBothProfiles=true).
                     step: kAdminSwitchRoleStep,
                     isLast: true,
-                    child: _buildSwitchChip(context, isNeg, label),
+                    child: _buildSwitchChip(context, style, label),
                   )
-                : _buildSwitchChip(context, isNeg, label),
+                : _buildSwitchChip(context, style, label),
           ],
         ),
       ),
@@ -306,23 +347,23 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           onSelected: (value) {
             if (value == 'logout') onLogout();
-            if (value == 'switch_oficio') onSwitch('OFICIO');
+            if (value == 'switch_individual') onSwitch(individualType);
             if (value == 'switch_negocio') onSwitch('NEGOCIO');
           },
           itemBuilder: (_) => [
-            if (_canSwitch && activeType != 'OFICIO')
+            if (_canSwitch && activeType != individualType)
               PopupMenuItem(
-                value: 'switch_oficio',
+                value: 'switch_individual',
                 child: Row(
                   children: [
                     Icon(
-                      Icons.handyman_rounded,
+                      _panelStyleFor(individualType).icon,
                       size: 16,
-                      color: AppColors.primary,
+                      color: _panelStyleFor(individualType).color,
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'Ir a Panel Profesional',
+                      'Ir a ${_panelStyleFor(individualType).label}',
                       style: TextStyle(color: c.textPrimary, fontSize: 13.5),
                     ),
                   ],
@@ -366,44 +407,38 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  Widget _buildSwitchChip(BuildContext context, bool isNeg, String label) {
+  Widget _buildSwitchChip(
+    BuildContext context,
+    _PanelTypeStyle style,
+    String label,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: isNeg
-            ? AppColors.amber.withValues(alpha: 0.12)
-            : AppColors.primary.withValues(alpha: 0.12),
+        color: style.color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: (isNeg ? AppColors.amber : AppColors.primary).withValues(
-            alpha: 0.35,
-          ),
-        ),
+        border: Border.all(color: style.color.withValues(alpha: 0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            isNeg ? Icons.store_rounded : Icons.handyman_rounded,
-            size: 14,
-            color: isNeg ? AppColors.amber : AppColors.primary,
-          ),
+          Icon(style.icon, size: 14, color: style.color),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: isNeg ? AppColors.amber : AppColors.primary,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: style.color,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           if (_canSwitch) ...[
             const SizedBox(width: 6),
-            Icon(
-              Icons.swap_horiz_rounded,
-              size: 14,
-              color: isNeg ? AppColors.amber : AppColors.primary,
-            ),
+            Icon(Icons.swap_horiz_rounded, size: 14, color: style.color),
           ],
         ],
       ),
@@ -447,14 +482,14 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               const SizedBox(height: 14),
               _SwitcherOption(
-                icon: Icons.handyman_rounded,
-                color: AppColors.primary,
-                title: 'Panel Profesional',
-                subtitle: 'Tu perfil OFICIO',
-                selected: activeType == 'OFICIO',
+                icon: _panelStyleFor(individualType).icon,
+                color: _panelStyleFor(individualType).color,
+                title: _panelStyleFor(individualType).label,
+                subtitle: 'Tu perfil $individualType',
+                selected: activeType == individualType,
                 onTap: () {
                   Navigator.pop(context);
-                  if (activeType != 'OFICIO') onSwitch('OFICIO');
+                  if (activeType != individualType) onSwitch(individualType);
                 },
               ),
               const SizedBox(height: 8),

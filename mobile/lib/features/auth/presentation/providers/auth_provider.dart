@@ -5,10 +5,12 @@ import '../../data/auth_repository.dart';
 import '../../data/auth_local_storage.dart';
 import '../../data/saved_accounts_storage.dart';
 import '../../domain/models/user_model.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/network/socket_service.dart';
 import '../../../../core/services/fcm_service.dart';
+import '../../../../core/utils/provider_type.dart';
 import 'auth/auth_models.dart';
 import 'registration_provider.dart';
 
@@ -73,7 +75,7 @@ class AuthProvider extends ChangeNotifier
   }
 
   // ── Multi-perfil de proveedor ─────────────────────────────
-  // Almacena los tipos de perfil que tiene el usuario: 'OFICIO', 'NEGOCIO'.
+  // Almacena tipos canónicos: OFICIO, PROFESIONAL, NEGOCIO.
   @override
   final Set<String> _providerProfiles = {};
   @override
@@ -121,6 +123,8 @@ class AuthProvider extends ChangeNotifier
   String? get activeProfileType => _activeProfileType;
   String? get providerVerificationStatus => _providerVerificationStatus;
   bool get hasOficioProfile => _providerProfiles.contains('OFICIO');
+  bool get hasProfessionalProfile => _providerProfiles.contains('PROFESIONAL');
+  bool get hasIndividualProfile => hasOficioProfile || hasProfessionalProfile;
   bool get hasNegocioProfile => _providerProfiles.contains('NEGOCIO');
 
   /// true cuando el usuario tiene al menos un perfil de proveedor APROBADO.
@@ -128,26 +132,97 @@ class AuthProvider extends ChangeNotifier
       _verificationStatusByType.values.any((s) => s == 'APROBADO');
 
   /// Devuelve el status de verificación para un tipo específico ('OFICIO'|'NEGOCIO').
-  String? verificationStatusFor(String type) => _verificationStatusByType[type];
+  String? verificationStatusFor(String type) {
+    final canonical = normalizeProviderType(type);
+    return canonical == null ? null : _verificationStatusByType[canonical];
+  }
 
   /// Devuelve el motivo de rechazo para un tipo específico (null si no fue rechazado).
-  String? rejectionReasonFor(String type) => _rejectionReasonByType[type];
+  String? rejectionReasonFor(String type) {
+    final canonical = normalizeProviderType(type);
+    return canonical == null ? null : _rejectionReasonByType[canonical];
+  }
 
   /// Devuelve los datos completos del perfil de proveedor para pre-llenar el formulario.
-  Map<String, dynamic>? providerDataFor(String type) =>
-      _providerDataByType[type];
+  Map<String, dynamic>? providerDataFor(String type) {
+    final canonical = normalizeProviderType(type);
+    return canonical == null ? null : _providerDataByType[canonical];
+  }
+
+  Map<String, dynamic>? get professionalMigration =>
+      providerDataFor('OFICIO')?['professionalMigration']
+          as Map<String, dynamic>?;
+
+  String? get professionalMigrationStatus =>
+      providerDataFor('OFICIO')?['professionalMigrationStatus'] as String?;
+
+  bool get hasPendingProfessionalMigration =>
+      professionalMigrationStatus == 'PENDING';
 
   /// Plan REAL del proveedor según el backend (`/users/my-provider-status`),
   /// disponible apenas se restaura la sesión al reabrir la app. 'GRATIS' si
   /// no hay perfil/plan. Útil para bloquear funciones premium de inmediato
   /// sin esperar a que cargue el dashboard.
   String planFor(String type) =>
-      (_providerDataByType[type]?['plan'] as String?) ?? 'GRATIS';
+      (providerDataFor(type)?['plan'] as String?) ?? 'GRATIS';
 
   /// Refresca el estado del proveedor desde el servidor (útil post-validación).
   Future<void> refreshProviderStatus() async {
     await _syncProviderStatus();
     notifyListeners();
+  }
+
+  // ── Migración profesional (OFICIO → PROFESIONAL) ──────────
+
+  /// Envía la solicitud de migración y, si tuvo éxito, resincroniza el
+  /// estado de proveedor para que `professionalMigration` /
+  /// `professionalMigrationStatus` reflejen la nueva solicitud PENDING.
+  Future<bool> submitProfessionalMigration({
+    required String specialty,
+    String? institution,
+    int? yearsExperience,
+    String? professionalTitle,
+    String? registrationNumber,
+    String? registrationIssuer,
+    required List<int> categoryIds,
+    List<File>? credentials,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _repo.submitProfessionalMigration(
+        specialty: specialty,
+        institution: institution,
+        yearsExperience: yearsExperience,
+        professionalTitle: professionalTitle,
+        registrationNumber: registrationNumber,
+        registrationIssuer: registrationIssuer,
+        categoryIds: categoryIds,
+        credentials: credentials,
+      );
+      await _syncProviderStatus();
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e is AppException ? e.message : 'Error al enviar la solicitud';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Detalle completo de la migración vigente (incluye `eligible` y el
+  /// motivo de rechazo sin recortar). No toca el resto del estado de
+  /// proveedor — la pantalla de migración lo usa para su propio estado.
+  Future<Map<String, dynamic>?> fetchProfessionalMigrationDetail() async {
+    try {
+      return await _repo.getMyProfessionalMigration();
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Elimina la cuenta del usuario en cascada y hace logout local.
@@ -183,12 +258,21 @@ class AuthProvider extends ChangeNotifier
   /// Devuelve true si el usuario autenticado puede registrar un nuevo
   /// perfil del tipo dado ('OFICIO' o 'NEGOCIO') — es decir, aún no
   /// lo tiene.
-  bool canBecomeRole(String type) => !_providerProfiles.contains(type);
+  bool canBecomeRole(String type) {
+    final canonical = normalizeProviderType(type);
+    if (canonical == null) return false;
+    if (canonical == 'OFICIO' || canonical == 'PROFESIONAL') {
+      return !hasIndividualProfile;
+    }
+    return !_providerProfiles.contains(canonical);
+  }
 
   /// true si al menos uno de los tipos de proveedor está disponible
   /// para registrar.
   bool get canBecomeAnyProvider =>
-      canBecomeRole('OFICIO') || canBecomeRole('NEGOCIO');
+      canBecomeRole('OFICIO') ||
+      canBecomeRole('PROFESIONAL') ||
+      canBecomeRole('NEGOCIO');
 
   /// Estado calculado para la navegación.
   ///
@@ -686,10 +770,11 @@ class AuthProvider extends ChangeNotifier
     _needsOnboarding = false;
     final userRole = 'USUARIO';
 
-    if (role == 'OFICIO' || role == 'NEGOCIO') {
-      _providerProfiles.add(role);
-      _verificationStatusByType[role] = 'PENDIENTE';
-      _activeProfileType = role;
+    final canonicalRole = normalizeProviderType(role);
+    if (canonicalRole != null && canBecomeRole(canonicalRole)) {
+      _providerProfiles.add(canonicalRole);
+      _verificationStatusByType[canonicalRole] = 'PENDIENTE';
+      _activeProfileType = canonicalRole;
     }
 
     _user = _user?.copyWith(role: userRole);
@@ -710,17 +795,20 @@ class AuthProvider extends ChangeNotifier
 
   /// Agrega un perfil de proveedor adicional (mismo usuario, segundo perfil).
   void addProviderProfile({required String type}) {
-    _providerProfiles.add(type);
-    _verificationStatusByType[type] = 'PENDIENTE';
-    _activeProfileType = type;
+    final canonical = normalizeProviderType(type);
+    if (canonical == null || !canBecomeRole(canonical)) return;
+    _providerProfiles.add(canonical);
+    _verificationStatusByType[canonical] = 'PENDIENTE';
+    _activeProfileType = canonical;
     // El rol permanece el que ya tenía (no elevarlo hasta la aprobación).
     notifyListeners();
   }
 
-  /// Cambia el perfil activo entre OFICIO y NEGOCIO.
+  /// Cambia el perfil activo usando el tipo canónico exacto.
   void switchProfile(String type) {
-    if (_providerProfiles.contains(type)) {
-      _activeProfileType = type;
+    final canonical = normalizeProviderType(type);
+    if (canonical != null && _providerProfiles.contains(canonical)) {
+      _activeProfileType = canonical;
       notifyListeners();
     }
   }

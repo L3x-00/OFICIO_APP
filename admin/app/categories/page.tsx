@@ -5,7 +5,7 @@ import Image from 'next/image';
 import {
   Plus, Edit, Trash2, Tag, Loader2, Search, X, Check,
   ChevronDown, ChevronRight, FolderOpen, Folder, ArrowRightLeft,
-  Briefcase, Wrench,
+  Briefcase, Wrench, GraduationCap,
 } from 'lucide-react';
 import {
   getCategories, createCategory, updateCategory, deleteCategory, Category,
@@ -343,6 +343,8 @@ function CategorySection({
                 <span className={`ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${
                   cat.forType === 'OFICIO'
                     ? 'bg-purple-500/15 text-purple-400'
+                    : cat.forType === 'PROFESIONAL'
+                    ? 'bg-emerald-500/15 text-emerald-400'
                     : 'bg-blue-500/15 text-blue-400'
                 }`}>
                   {cat.forType}
@@ -828,6 +830,34 @@ export default function CategoriesPage() {
         onCreate={handleCreate}
         onResetForm={resetForm}
         onShowCreate={() => handleShowCreate('OFICIO')}
+        onNameChange={handleNameChange}
+        onFormChange={handleFormChange}
+      />
+
+      <CategorySection
+        title="Para Servicios Profesionales"
+        type="PROFESIONAL"
+        icon={GraduationCap}
+        accentColor="text-emerald-400"
+        allCategories={categories}
+        allParentOptions={allParentOptions}
+        isLoading={isLoading}
+        actionLoading={actionLoading}
+        editingId={editingId}
+        movingId={movingId}
+        expanded={expanded}
+        search={search}
+        form={form}
+        formError={formError}
+        showCreateForm={creatingForType === 'PROFESIONAL'}
+        onToggleExpand={toggleExpand}
+        onEdit={handleEdit}
+        onMove={handleMove}
+        onDelete={handleDelete}
+        onUpdate={handleUpdate}
+        onCreate={handleCreate}
+        onResetForm={resetForm}
+        onShowCreate={() => handleShowCreate('PROFESIONAL')}
         onNameChange={handleNameChange}
         onFormChange={handleFormChange}
       />

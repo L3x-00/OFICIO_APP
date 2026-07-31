@@ -87,7 +87,9 @@ class _PanelHomeTabState extends State<PanelHomeTab> {
         : null;
 
     final plan = dash.profile?.subscription?.plan ?? 'GRATIS';
-    final hasBothProfiles = auth.hasOficioProfile && auth.hasNegocioProfile;
+    final hasBothProfiles =
+        (auth.hasOficioProfile || auth.hasProfessionalProfile) &&
+        auth.hasNegocioProfile;
     final homeSteps = buildAdminHomeSteps(
       plan: plan,
       hasBothProfiles: hasBothProfiles,

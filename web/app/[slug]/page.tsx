@@ -11,15 +11,22 @@ import {
   Clock,
   Smartphone,
   Phone,
+  GraduationCap,
 } from 'lucide-react';
 import { SOCIAL_DEFS, SCHEDULE_DAYS, buildSocialUrl } from '@/lib/social-utils';
+import { PROFILE_TYPE_META, type ProfileType } from '@/lib/types';
 
 // ── Tipos locales (contrato real de /profiles/{slug}) ─────
 interface PublicProfile {
   slug: string;
   businessName: string;
   description: string | null;
-  type: 'OFICIO' | 'NEGOCIO';
+  type: ProfileType;
+  // El backend de /profiles/:slug solo devuelve la especialidad — nunca
+  // institución, título, colegiatura ni entidad emisora (PII). No ampliar
+  // este tipo sin ampliar también el select del backend a propósito.
+  professionalProfile?: { specialty: string } | null;
+  credentialVerified?: boolean;
   averageRating: number;
   totalReviews: number;
   totalRecommendations: number;
@@ -89,7 +96,7 @@ export async function generateMetadata({
   const profile = await fetchProfile(slug);
   if (!profile) return { title: 'Perfil no encontrado — Servi' };
 
-  const label = profile.type === 'NEGOCIO' ? 'Negocio' : 'Profesional';
+  const label = PROFILE_TYPE_META[profile.type].label;
   const title = `${profile.businessName} · ${label} en Servi`;
   const description =
     profile.description?.slice(0, 160) ||
@@ -128,7 +135,15 @@ export default async function PublicProfilePage({
   const profile = await fetchProfile(slug);
   if (!profile) notFound();
 
-  const typeLabel = profile.type === 'NEGOCIO' ? 'Negocio' : 'Profesional';
+  const typeLabel = PROFILE_TYPE_META[profile.type].label;
+  const typeBadgeClass: Record<ProfileType, string> = {
+    OFICIO: 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400',
+    // Emerald, no indigo: mismo acento que sidebar.tsx/panel/layout.tsx y
+    // admin (create-provider-modal, providers-list, categories) para
+    // Profesional — antes era el único sitio en indigo.
+    PROFESIONAL: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+    NEGOCIO: 'bg-primary/10 text-primary dark:text-primary-light',
+  };
   const localityText = [
     profile.locality?.district,
     profile.locality?.province,
@@ -246,14 +261,16 @@ export default async function PublicProfilePage({
             {/* ── Badges ── */}
             <div className="flex flex-wrap items-center gap-2">
               <span
-                className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${
-                  profile.type === 'NEGOCIO'
-                    ? 'bg-primary/10 text-primary dark:text-primary-light'
-                    : 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400'
-                }`}
+                className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${typeBadgeClass[profile.type]}`}
               >
                 {typeLabel}
               </span>
+
+              {profile.type === 'PROFESIONAL' && profile.credentialVerified && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400">
+                  <ShieldCheck size={12} /> Credenciales verificadas
+                </span>
+              )}
 
               {profile.isVerified && (
                 <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
@@ -291,6 +308,12 @@ export default async function PublicProfilePage({
                   <span className="inline-flex items-center gap-1.5">
                     <MapPin size={14} className="text-primary" />
                     {localityText}
+                  </span>
+                )}
+                {profile.type === 'PROFESIONAL' && profile.professionalProfile && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <GraduationCap size={14} className="text-primary" />
+                    {profile.professionalProfile.specialty}
                   </span>
                 )}
               </div>

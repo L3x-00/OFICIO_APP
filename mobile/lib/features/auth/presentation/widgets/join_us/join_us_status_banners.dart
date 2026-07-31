@@ -22,7 +22,11 @@ class PendingBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.hourglass_top_rounded, color: AppColors.available, size: 20),
+          Icon(
+            Icons.hourglass_top_rounded,
+            color: AppColors.available,
+            size: 20,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -47,25 +51,39 @@ class ApprovedProfileBanner extends StatelessWidget {
   final List<Color> gradient;
   final VoidCallback onTap;
 
+  /// Acento de marca del tipo (Oficio=primary, Profesional=available,
+  /// Negocio=business) — antes quedaba fijo en `available` (verde) sin
+  /// importar el [gradient] recibido, así que un Oficio/Negocio aprobado
+  /// mostraba tinte/borde/texto verdes en vez del color de su propio tipo.
+  final Color accentColor;
+
+  /// Glifo sobre el fill sólido del [gradient]. Blanco por defecto
+  /// (correcto para gradientes oscuros); pasar `AppColors.onSolid(...)`
+  /// explícito para gradientes claros (ej. el verde de Profesional).
+  final Color iconColor;
+
   const ApprovedProfileBanner({
     super.key,
     required this.icon,
     required this.label,
     required this.gradient,
     required this.onTap,
+    this.accentColor = AppColors.available,
+    this.iconColor = Colors.white,
   });
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final tintedAccent = AppColors.tintOn(accentColor, c.isDark);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: AppColors.available.withValues(alpha: 0.08),
+          color: accentColor.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.available.withValues(alpha: 0.35)),
+          border: Border.all(color: accentColor.withValues(alpha: 0.35)),
         ),
         child: Row(
           children: [
@@ -75,7 +93,7 @@ class ApprovedProfileBanner extends StatelessWidget {
                 gradient: LinearGradient(colors: gradient),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: Colors.white, size: 18),
+              child: Icon(icon, color: iconColor, size: 18),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -94,7 +112,7 @@ class ApprovedProfileBanner extends StatelessWidget {
                   Text(
                     'Ir a mi panel →',
                     style: TextStyle(
-                      color: AppColors.available,
+                      color: tintedAccent,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -102,7 +120,7 @@ class ApprovedProfileBanner extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.check_circle_rounded, color: AppColors.available, size: 20),
+            Icon(Icons.check_circle_rounded, color: tintedAccent, size: 20),
           ],
         ),
       ),
@@ -160,7 +178,11 @@ class RejectedBanner extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Motivo: $reason',
-              style: TextStyle(color: c.textSecondary, fontSize: 12, height: 1.4),
+              style: TextStyle(
+                color: c.textSecondary,
+                fontSize: 12,
+                height: 1.4,
+              ),
             ),
           ],
           const SizedBox(height: 12),
@@ -174,8 +196,13 @@ class RejectedBanner extends StatelessWidget {
                 backgroundColor: accent,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),

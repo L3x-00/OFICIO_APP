@@ -223,11 +223,22 @@ export class AdminTrustService {
         },
       });
 
-      // 2. Asegurar que el usuario quede como USUARIO (nunca PROVEEDOR si fue rechazado)
-      await tx.user.update({
-        where: { id: provider.userId },
-        data: { role: 'USUARIO' },
+      // 2. Solo degradar el rol si este era su único perfil aprobado.
+      // Un mismo usuario puede conservar otro provider APROBADO (p. ej.
+      // NEGOCIO además de OFICIO); rechazar uno no debe quitarle ese acceso.
+      const otherApprovedProviders = await tx.provider.count({
+        where: {
+          userId: provider.userId,
+          verificationStatus: 'APROBADO',
+          id: { not: id },
+        },
       });
+      if (otherApprovedProviders === 0) {
+        await tx.user.update({
+          where: { id: provider.userId },
+          data: { role: 'USUARIO' },
+        });
+      }
 
       // 3. Notificación en BD con el motivo exacto
       await tx.adminNotification.create({

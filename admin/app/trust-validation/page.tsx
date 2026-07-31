@@ -11,6 +11,18 @@ const STATUS_TABS = [
   { value: 'REJECTED', label: 'Rechazados',  icon: XCircle,      color: '#EF4444' },
 ];
 
+// Label + color por tipo de proveedor — 3 vías (OFICIO/PROFESIONAL/NEGOCIO).
+// PROFESIONAL es un tipo real desde la migración de servicios profesionales;
+// ya no se puede etiquetar OFICIO como "Profesional" (colisión de nombre).
+const PROVIDER_TYPE_META: Record<string, { label: string; color: string }> = {
+  OFICIO:      { label: 'Oficio',      color: '#0072FF' },
+  PROFESIONAL: { label: 'Profesional', color: '#14B8A6' },
+  NEGOCIO:     { label: 'Negocio',     color: '#8E2DE2' },
+};
+function providerTypeMeta(type: string) {
+  return PROVIDER_TYPE_META[type] ?? { label: type, color: '#6B7280' };
+}
+
 export default function TrustValidationPage() {
   const router = useRouter();
   const [tab, setTab]         = useState('PENDING');
@@ -22,8 +34,8 @@ export default function TrustValidationPage() {
     setLoading(true); setError('');
     try {
       setItems(await getTrustValidationList(tab));
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al cargar validaciones');
     } finally {
       setLoading(false);
     }
@@ -111,7 +123,9 @@ export default function TrustValidationPage() {
               </tr>
             </thead>
             <tbody>
-              {items.map(item => (
+              {items.map(item => {
+                const typeMeta = providerTypeMeta(item.providerType);
+                return (
                 <tr
                   key={item.id}
                   onClick={() => router.push(`/trust-validation/${item.id}`)}
@@ -129,10 +143,10 @@ export default function TrustValidationPage() {
                   <td style={{ padding: '14px 16px' }}>
                     <span style={{
                       padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600,
-                      background: item.providerType === 'NEGOCIO' ? '#8E2DE218' : '#0072FF18',
-                      color: item.providerType === 'NEGOCIO' ? '#8E2DE2' : '#0072FF',
+                      background: `${typeMeta.color}18`,
+                      color: typeMeta.color,
                     }}>
-                      {item.providerType === 'NEGOCIO' ? 'Negocio' : 'Profesional'}
+                      {typeMeta.label}
                     </span>
                   </td>
                   <td style={{ padding: '14px 16px', color: 'var(--text-primary)', fontSize: '13px' }}>
@@ -148,7 +162,8 @@ export default function TrustValidationPage() {
                     <span style={{ color: 'var(--brand)', fontSize: '12px', fontWeight: 500 }}>Ver →</span>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         )}

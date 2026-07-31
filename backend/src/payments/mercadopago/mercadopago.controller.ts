@@ -175,21 +175,29 @@ export class MercadoPagoController {
     this.logger.log(`✅ Pago aprobado: ${ref}`);
 
     const VALID_PLANS = new Set(['ESTANDAR', 'PREMIUM']);
-    const VALID_TYPES = new Set(['OFICIO', 'NEGOCIO']);
+    const VALID_TYPES = new Set(['OFICIO', 'PROFESIONAL', 'NEGOCIO']);
 
     let userId: number;
-    let providerType: 'OFICIO' | 'NEGOCIO' | undefined;
+    let providerId: number | undefined;
+    let providerType: 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO' | undefined;
     let plan: string;
 
-    const newMatch = ref.match(
-      /^user_(\d+)_type_(OFICIO|NEGOCIO)_plan_(ESTANDAR|PREMIUM)$/,
+    const v2Match = ref.match(
+      /^provider_(\d+)_user_(\d+)_plan_(ESTANDAR|PREMIUM)$/,
+    );
+    const typedMatch = ref.match(
+      /^user_(\d+)_type_(OFICIO|PROFESIONAL|NEGOCIO)_plan_(ESTANDAR|PREMIUM)$/,
     );
     const legacyMatch = ref.match(/^user_(\d+)_plan_(ESTANDAR|PREMIUM)$/);
 
-    if (newMatch) {
-      userId = parseInt(newMatch[1], 10);
-      providerType = newMatch[2] as 'OFICIO' | 'NEGOCIO';
-      plan = newMatch[3];
+    if (v2Match) {
+      providerId = parseInt(v2Match[1], 10);
+      userId = parseInt(v2Match[2], 10);
+      plan = v2Match[3];
+    } else if (typedMatch) {
+      userId = parseInt(typedMatch[1], 10);
+      providerType = typedMatch[2] as 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO';
+      plan = typedMatch[3];
     } else if (legacyMatch) {
       userId = parseInt(legacyMatch[1], 10);
       plan = legacyMatch[2];
@@ -215,6 +223,7 @@ export class MercadoPagoController {
     await this.paymentsService.activateSubscriptionFromPayment({
       userId,
       plan,
+      providerId,
       providerType,
       amount: payment.amount,
       paymentMethod: 'mercadopago',

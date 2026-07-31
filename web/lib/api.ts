@@ -1,7 +1,21 @@
 "use client";
 
 import { getAccessToken, getRefreshToken, clearSession, saveSession } from "./auth";
-import { Analytics, LoginResponse, Offer, Opportunity, Provider, ProviderImage, PublicUserProfile, Review, User } from "./types";
+import {
+  Analytics,
+  LoginResponse,
+  MyProviderStatus,
+  Offer,
+  Opportunity,
+  ProfessionalMigration,
+  ProfileType,
+  Provider,
+  ProviderImage,
+  PublicUserProfile,
+  Review,
+  User,
+  normalizeProfileType,
+} from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://oficio-backend.onrender.com";
 
@@ -135,7 +149,7 @@ export interface ReferralHistoryItem {
   invitedProvider?: {
     id: number;
     businessName: string;
-    type: "OFICIO" | "NEGOCIO";
+    type: ProfileType;
     verificationStatus: "PENDIENTE" | "APROBADO" | "RECHAZADO";
   } | null;
 }
@@ -161,7 +175,7 @@ export interface ReferralReward {
     phone?: string;
     whatsapp?: string;
     averageRating?: number;
-    type?: "OFICIO" | "NEGOCIO";
+    type?: ProfileType;
     category?: { name?: string };
     images?: { url: string; isCover?: boolean; order?: number }[];
   };
@@ -220,7 +234,7 @@ export interface FavoriteFromApi {
   businessName: string;
   averageRating?: number;
   totalReviews?: number;
-  type?: "OFICIO" | "NEGOCIO";
+  type?: ProfileType;
   phone?: string;
   whatsapp?: string;
   images?: Array<{ id: number; url: string; isCover?: boolean }>;
@@ -238,7 +252,7 @@ export interface PublicProvider {
   whatsapp?: string;
   averageRating?: number;
   totalReviews?: number;
-  type?: "OFICIO" | "NEGOCIO";
+  type?: ProfileType;
   availability?: "DISPONIBLE" | "OCUPADO" | "CON_DEMORA";
   images?: { url: string; isCover?: boolean; order?: number }[];
   category?: { name: string; slug?: string; iconUrl?: string };
@@ -248,6 +262,8 @@ export interface PublicProvider {
     province?: string;
     district?: string;
   };
+  professionalProfile?: { specialty: string } | null;
+  credentialVerified?: boolean;
 }
 
 // Categoría del catálogo (GET /providers/categories) — padre con hijos.
@@ -303,12 +319,19 @@ interface SocialLoginResponse {
 export interface RegisterProviderPayload {
   businessName: string;
   phone: string;
-  type: "OFICIO" | "NEGOCIO";
+  type: ProfileType;
   description: string;
   whatsapp?: string;
   // OFICIO
   dni?: string;
   hasHomeService?: boolean;
+  // PROFESIONAL
+  professionalSpecialty?: string;
+  professionalInstitution?: string;
+  professionalYearsExperience?: number;
+  professionalTitle?: string;
+  professionalRegistrationNumber?: string;
+  professionalRegistrationIssuer?: string;
   // NEGOCIO
   ruc?: string;
   nombreComercial?: string;
@@ -335,6 +358,53 @@ export interface RegisterProviderPayload {
   twitterX?: string;
   telegram?: string;
   whatsappBiz?: string;
+}
+
+export interface SubmitProfessionalMigrationPayload {
+  specialty: string;
+  institution?: string;
+  yearsExperience?: number;
+  professionalTitle?: string;
+  registrationNumber?: string;
+  registrationIssuer?: string;
+  categoryIds: number[];
+  credentials?: File[];
+}
+
+export interface MyProfessionalMigration {
+  eligible: boolean;
+  providerType: "OFICIO" | "PROFESIONAL" | null;
+  request: ProfessionalMigration | null;
+}
+
+/** Respuesta real de `POST /provider-profile/me/professional-migration`. */
+export interface SubmitProfessionalMigrationResult {
+  success: boolean;
+  requestId: number;
+  createdAt: string;
+}
+
+function normalizeMyProviderStatus(raw: unknown): MyProviderStatus {
+  if (!raw || typeof raw !== "object") {
+    return { hasProvider: false, profiles: [] };
+  }
+
+  const source = raw as {
+    hasProvider?: unknown;
+    profiles?: Array<Record<string, unknown>>;
+  };
+  const profiles = (Array.isArray(source.profiles) ? source.profiles : []).flatMap(
+    (profile) => {
+      const type = normalizeProfileType(profile.type);
+      if (!type) return [];
+      return [{ ...profile, type }] as MyProviderStatus["profiles"];
+    },
+  );
+
+  return {
+    hasProvider: source.hasProvider === true || profiles.length > 0,
+    profiles,
+  };
 }
 
 // Shape REAL que devuelve el backend en /provider-profile/me/analytics.
@@ -466,14 +536,14 @@ export const api = {
     };
   },
 
-  async getMyProfile(type?: "OFICIO" | "NEGOCIO"): Promise<Provider> {
+  async getMyProfile(type?: ProfileType): Promise<Provider> {
     const qs = type ? `?type=${type}` : "";
     return apiFetch<Provider>(`/provider-profile/me${qs}`);
   },
 
   async updateMyProfile(
     payload: Record<string, unknown>,
-    type?: "OFICIO" | "NEGOCIO",
+    type?: ProfileType,
   ): Promise<Provider> {
     const qs = type ? `?type=${type}` : "";
     return apiFetch<Provider>(`/provider-profile/me${qs}`, {
@@ -515,7 +585,7 @@ export const api = {
 
   async getAnalyticsWithDays(
     days: number,
-    type?: "OFICIO" | "NEGOCIO",
+    type?: ProfileType,
   ): Promise<Analytics> {
     const params = new URLSearchParams({ days: String(days) });
     if (type) params.set("type", type);
@@ -558,7 +628,7 @@ export const api = {
     amount: number;
     verificationCode: string;
     voucherFile: File;
-    providerType?: "OFICIO" | "NEGOCIO";
+    providerType?: ProfileType;
     note?: string;
   }): Promise<void> {
     const formData = new FormData();
@@ -588,7 +658,7 @@ export const api = {
    */
   async createMpPreference(payload: {
     plan: "ESTANDAR" | "PREMIUM";
-    providerType: "OFICIO" | "NEGOCIO";
+    providerType: ProfileType;
   }): Promise<{ preferenceId: string; initPoint: string }> {
     return apiFetch("/payments/mercadopago/create-preference", {
       method: "POST",
@@ -596,7 +666,7 @@ export const api = {
     });
   },
 
-  async getAnalytics(type?: "OFICIO" | "NEGOCIO"): Promise<Analytics> {
+  async getAnalytics(type?: ProfileType): Promise<Analytics> {
     const qs = type ? `?type=${type}` : "";
     const raw = await apiFetch<RawAnalytics>(
       `/provider-profile/me/analytics${qs}`,
@@ -604,18 +674,50 @@ export const api = {
     return normalizeAnalytics(raw);
   },
 
-  async getMyProviderStatus(): Promise<{
-    hasProvider: boolean;
-    profiles: Array<{
-      providerId: number;
-      businessName: string;
-      type: "OFICIO" | "NEGOCIO";
-      verificationStatus: "PENDIENTE" | "APROBADO" | "RECHAZADO";
-      isVerified: boolean;
-      categoryName?: string;
-    }>;
-  }> {
-    return apiFetch("/users/my-provider-status");
+  async getMyProviderStatus(): Promise<MyProviderStatus> {
+    const raw = await apiFetch<unknown>("/users/my-provider-status");
+    return normalizeMyProviderStatus(raw);
+  },
+
+  /**
+   * Solicitud de migración OFICIO → PROFESIONAL — multipart (hasta 4
+   * archivos en `credentials`). Mismo patrón que `submitYapePayment`/
+   * `uploadImage`: `apiUpload` ya adjunta el Bearer token y reintenta tras
+   * refrescar sesión en un 401.
+   */
+  async submitProfessionalMigration(
+    payload: SubmitProfessionalMigrationPayload,
+  ): Promise<SubmitProfessionalMigrationResult> {
+    const formData = new FormData();
+    formData.append("specialty", payload.specialty);
+    if (payload.institution?.trim()) {
+      formData.append("institution", payload.institution.trim());
+    }
+    if (payload.yearsExperience != null) {
+      formData.append("yearsExperience", String(payload.yearsExperience));
+    }
+    if (payload.professionalTitle?.trim()) {
+      formData.append("professionalTitle", payload.professionalTitle.trim());
+    }
+    if (payload.registrationNumber?.trim()) {
+      formData.append("registrationNumber", payload.registrationNumber.trim());
+    }
+    if (payload.registrationIssuer?.trim()) {
+      formData.append("registrationIssuer", payload.registrationIssuer.trim());
+    }
+    payload.categoryIds.forEach((id) => formData.append("categoryIds", String(id)));
+    (payload.credentials ?? []).forEach((file) => formData.append("credentials", file));
+
+    return apiUpload<SubmitProfessionalMigrationResult>(
+      "/provider-profile/me/professional-migration",
+      formData,
+    );
+  },
+
+  async getMyProfessionalMigration(): Promise<MyProfessionalMigration> {
+    return apiFetch<MyProfessionalMigration>(
+      "/provider-profile/me/professional-migration",
+    );
   },
 
   /**
@@ -712,7 +814,7 @@ export const api = {
   },
 
   /** Catálogo de categorías (padres + hijos). Público. */
-  async getCategories(forType?: "OFICIO" | "NEGOCIO"): Promise<FeaturedCategory[]> {
+  async getCategories(forType?: ProfileType): Promise<FeaturedCategory[]> {
     const qs = forType ? `?type=${forType}` : "";
     const res = await fetch(`${API_BASE_URL}/providers/categories${qs}`, {
       method: "GET",
@@ -792,7 +894,7 @@ export const api = {
    * NEGOCIO; sin tipo, devuelve TODO (incl. broadcasts y notif del
    * cliente puro).
    */
-  async getNotifications(type?: "OFICIO" | "NEGOCIO"): Promise<{
+  async getNotifications(type?: ProfileType): Promise<{
     data: Array<{
       id: number;
       type: string;
@@ -860,7 +962,7 @@ export const api = {
   // bandejas independientes (mismo contrato que el mobile).
   async getChatRooms(opts: {
     scope?: "client" | "provider";
-    type?: "OFICIO" | "NEGOCIO";
+    type?: ProfileType;
   } = {}): Promise<ChatRoomSummary[]> {
     const qs = new URLSearchParams();
     if (opts.scope) qs.set("scope", opts.scope);

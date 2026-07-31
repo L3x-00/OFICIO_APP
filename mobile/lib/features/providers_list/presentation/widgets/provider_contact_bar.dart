@@ -247,9 +247,9 @@ class ProviderContactBar extends StatelessWidget {
                 Navigator.of(context, rootNavigator: true).push(
                   MaterialPageRoute(
                     builder: (_) => ProviderPanel(
-                      providerType: provider.type == ProviderType.negocio
-                          ? 'NEGOCIO'
-                          : 'OFICIO',
+                      providerType:
+                          provider.type.apiValue ??
+                          context.read<AuthProvider>().activeProfileType,
                     ),
                   ),
                 );

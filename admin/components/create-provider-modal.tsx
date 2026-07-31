@@ -2,10 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import {
-  X, Copy, CheckCircle2, User, Store,
+  X, Copy, CheckCircle2, Wrench, Briefcase, Store,
   ImagePlus, Trash2, ChevronRight, ChevronDown,
   Clock, Truck, Star,
 } from 'lucide-react';
+import {
+  getFormOptions,
+  getProviderTypeLabel,
+  type AdminFormCategory,
+  type AdminFormLocality,
+  type ProviderType,
+} from '@/lib/api';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 const MAX_PHOTOS = 3; // GRATIS plan limit
@@ -26,14 +33,29 @@ const DEFAULT_SCHEDULE: Record<string, string> = {
   jue: '8:00-18:00', vie: '8:00-18:00', sab: '9:00-13:00', dom: 'Cerrado',
 };
 
-interface CategoryChild { id: number; name: string; }
-interface Category      { id: number; name: string; forType: string | null; children: CategoryChild[]; }
-interface Locality      { id: number; name: string; department: string; province?: string | null; district?: string | null; }
+// Clases Tailwind completas por tipo (JIT no genera `border-${accent}-500`
+// construido en runtime — necesita el literal completo en el bundle).
+const TYPE_CARD_STYLES: Record<ProviderType, {
+  icon: typeof Wrench; desc: string; activeBorder: string; activeFill: string;
+}> = {
+  OFICIO: {
+    icon: Wrench, desc: 'Trabajo manual o técnico',
+    activeBorder: 'border-blue-500 bg-blue-500/10', activeFill: 'bg-blue-500 text-white',
+  },
+  PROFESIONAL: {
+    icon: Briefcase, desc: 'Con formación o especialidad',
+    activeBorder: 'border-emerald-500 bg-emerald-500/10', activeFill: 'bg-emerald-500 text-white',
+  },
+  NEGOCIO: {
+    icon: Store, desc: 'Local o establecimiento',
+    activeBorder: 'border-purple-500 bg-purple-500/10', activeFill: 'bg-purple-500 text-white',
+  },
+};
 
 interface Props { onClose: () => void; onSuccess: () => void; }
 
 export function CreateProviderModal({ onClose, onSuccess }: Props) {
-  const [type, setType] = useState<'OFICIO' | 'NEGOCIO'>('OFICIO');
+  const [type, setType] = useState<ProviderType>('OFICIO');
 
   const [email, setEmail]               = useState('');
   const [firstName, setFirstName]       = useState('');
@@ -46,6 +68,13 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
 
   // OFICIO fields
   const [dni, setDni] = useState('');
+  // PROFESIONAL fields
+  const [professionalSpecialty, setProfessionalSpecialty] = useState('');
+  const [professionalInstitution, setProfessionalInstitution] = useState('');
+  const [professionalYearsExperience, setProfessionalYearsExperience] = useState('');
+  const [professionalTitle, setProfessionalTitle] = useState('');
+  const [professionalRegistrationNumber, setProfessionalRegistrationNumber] = useState('');
+  const [professionalRegistrationIssuer, setProfessionalRegistrationIssuer] = useState('');
   // NEGOCIO fields
   const [ruc, setRuc]                         = useState('');
   const [nombreComercial, setNombreComercial] = useState('');
@@ -53,7 +82,7 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
   const [hasDelivery, setHasDelivery]         = useState(false);
 
   // Especialidades (multi-select, máx 3) + Sector expandido en el acordeón
-  const [allCategories, setAllCategories]             = useState<Category[]>([]);
+  const [allCategories, setAllCategories]             = useState<AdminFormCategory[]>([]);
   const [selectedParentId, setSelectedParentId]       = useState<number | null>(null);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
   const [primaryCategoryId, setPrimaryCategoryId]     = useState<number | null>(null);
@@ -63,7 +92,7 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
   const [schedule, setSchedule]         = useState<Record<string, string>>(DEFAULT_SCHEDULE);
 
   // Locality
-  const [localities, setLocalities] = useState<Locality[]>([]);
+  const [localities, setLocalities] = useState<AdminFormLocality[]>([]);
   const [localityId, setLocalityId] = useState('');
 
   // Photos
@@ -77,20 +106,29 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
   const [copied, setCopied]           = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    fetch(`${BASE_URL}/admin/form-options`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => r.ok ? r.json() : Promise.reject())
+    let active = true;
+    setError('');
+    getFormOptions(type)
       .then((d) => {
-        setAllCategories(d?.categories || []);
-        setLocalities(d?.localities || []);
-        if (d?.localities?.length) setLocalityId(d.localities[0].id.toString());
+        if (!active) return;
+        setAllCategories(d.categories);
+        setLocalities(d.localities);
+        setLocalityId((current) => {
+          if (d.localities.some((locality) => String(locality.id) === current)) {
+            return current;
+          }
+          return d.localities[0]?.id.toString() ?? '';
+        });
       })
-      .catch(() => setError('Error al cargar opciones del formulario.'));
-  }, []);
+      .catch(() => {
+        if (active) setError('Error al cargar opciones del formulario.');
+      });
+    return () => {
+      active = false;
+    };
+  }, [type]);
 
-  const handleTypeChange = (t: 'OFICIO' | 'NEGOCIO') => {
+  const handleTypeChange = (t: ProviderType) => {
     setType(t); setSelectedParentId(null);
     setSelectedCategoryIds([]); setPrimaryCategoryId(null);
   };
@@ -101,7 +139,7 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
   // El catálogo guarda `name = district` solo, así que un dropdown plano de
   // distritos es ambiguo (hay nombres repetidos entre provincias). Mostrar
   // "Distrito — Provincia, Departamento" evita elegir el row equivocado.
-  const localityLabel = (l: Locality) => {
+  const localityLabel = (l: AdminFormLocality) => {
     const head = l.district || l.name;
     const tail = [l.province, l.department].filter(Boolean).join(', ');
     return tail ? `${head} — ${tail}` : head;
@@ -136,7 +174,14 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
   };
 
   const handleSubmit = async () => {
-    if (!email || !firstName || !businessName || !phone) { setError('Completa los campos obligatorios (*)'); return; }
+    if (!email || !firstName || !lastName || !businessName || !phone || !localityId) {
+      setError('Completa los campos obligatorios (*)');
+      return;
+    }
+    if (type === 'PROFESIONAL' && professionalSpecialty.trim().length < 2) {
+      setError('La especialidad profesional es obligatoria');
+      return;
+    }
     if (selectedCategoryIds.length === 0) { setError('Selecciona al menos una especialidad'); return; }
     setIsLoading(true); setError('');
     try {
@@ -164,6 +209,24 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
       if (selectedLoc?.province)   formData.append('province',   selectedLoc.province);
       if (selectedLoc?.district)   formData.append('district',   selectedLoc.district);
       if (type === 'OFICIO' && dni)               formData.append('dni',             dni);
+      if (type === 'PROFESIONAL') {
+        formData.append('professionalSpecialty', professionalSpecialty.trim());
+        if (professionalInstitution.trim()) {
+          formData.append('professionalInstitution', professionalInstitution.trim());
+        }
+        if (professionalYearsExperience) {
+          formData.append('professionalYearsExperience', professionalYearsExperience);
+        }
+        if (professionalTitle.trim()) {
+          formData.append('professionalTitle', professionalTitle.trim());
+        }
+        if (professionalRegistrationNumber.trim()) {
+          formData.append('professionalRegistrationNumber', professionalRegistrationNumber.trim());
+        }
+        if (professionalRegistrationIssuer.trim()) {
+          formData.append('professionalRegistrationIssuer', professionalRegistrationIssuer.trim());
+        }
+      }
       if (type === 'NEGOCIO' && ruc)              formData.append('ruc',             ruc);
       if (type === 'NEGOCIO' && nombreComercial)  formData.append('nombreComercial', nombreComercial);
       if (type === 'NEGOCIO' && razonSocial)      formData.append('razonSocial',     razonSocial);
@@ -216,20 +279,25 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
 
       {/* Tipo */}
       <Section label="Tipo de Servicio">
-        <div className="grid grid-cols-2 gap-4">
-          {(['OFICIO', 'NEGOCIO'] as const).map((t) => (
-            <button key={t} onClick={() => handleTypeChange(t)}
-              className={`p-4 rounded-2xl border-2 transition-all flex items-center gap-4 ${type === t ? (t === 'OFICIO' ? 'border-blue-500 bg-blue-500/10' : 'border-purple-500 bg-purple-500/10') : 'border-white/5 bg-white/5 hover:border-white/20'}`}
-            >
-              <div className={`p-3 rounded-xl ${type === t ? (t === 'OFICIO' ? 'bg-blue-500 text-white' : 'bg-purple-500 text-white') : 'bg-white/5 text-gray-400'}`}>
-                {t === 'OFICIO' ? <User size={22} /> : <Store size={22} />}
-              </div>
-              <div className="text-left">
-                <p className="font-bold text-white text-sm">{t === 'OFICIO' ? 'Profesional' : 'Negocio'}</p>
-                <p className="text-[10px] text-gray-500">{t === 'OFICIO' ? 'Independiente' : 'Local o establecimiento'}</p>
-              </div>
-            </button>
-          ))}
+        <div className="grid grid-cols-3 gap-4">
+          {(['OFICIO', 'PROFESIONAL', 'NEGOCIO'] as const).map((t) => {
+            const style = TYPE_CARD_STYLES[t];
+            const Icon = style.icon;
+            const active = type === t;
+            return (
+              <button key={t} onClick={() => handleTypeChange(t)}
+                className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 text-center ${active ? style.activeBorder : 'border-white/5 bg-white/5 hover:border-white/20'}`}
+              >
+                <div className={`p-3 rounded-xl ${active ? style.activeFill : 'bg-white/5 text-gray-400'}`}>
+                  <Icon size={22} />
+                </div>
+                <div>
+                  <p className="font-bold text-white text-sm">{getProviderTypeLabel(t)}</p>
+                  <p className="text-[10px] text-gray-500">{style.desc}</p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </Section>
 
@@ -237,7 +305,11 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
       <Section label="Datos de Acceso">
         <div className="grid grid-cols-2 gap-4">
           <Field label="Email *" value={email} onChange={setEmail} placeholder="correo@ejemplo.com" type="email" fullWidth />
-          <Field label={type === 'NEGOCIO' ? 'Nombre Comercial *' : 'Nombre del Servicio *'} value={businessName} onChange={setBusinessName} placeholder={type === 'NEGOCIO' ? 'La Pollería del Chef' : 'Juan Electricista'} />
+          <Field
+            label={type === 'NEGOCIO' ? 'Nombre Comercial *' : 'Nombre del Servicio *'}
+            value={businessName} onChange={setBusinessName}
+            placeholder={type === 'NEGOCIO' ? 'La Pollería del Chef' : type === 'PROFESIONAL' ? 'Mónica Ruiz · Abogada' : 'Juan Electricista'}
+          />
           <Field label="Nombre Titular *" value={firstName} onChange={setFirstName} placeholder="Juan" />
           <Field label="Apellido *"        value={lastName}  onChange={setLastName}  placeholder="Pérez" />
           <Field label="Teléfono *"        value={phone}     onChange={setPhone}     placeholder="+51 900 000 000" />
@@ -246,12 +318,28 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
       </Section>
 
       {/* Datos legales */}
-      {type === 'OFICIO' ? (
-        <Section label="Datos Profesional">
+      {type === 'OFICIO' && (
+        <Section label="Datos del Oficio">
           <Field label="DNI (opcional)" value={dni} onChange={setDni} placeholder="12345678" />
         </Section>
-      ) : (
-        <Section label="Datos Negocio">
+      )}
+      {type === 'PROFESIONAL' && (
+        <Section label="Datos Profesionales">
+          <Field label="Especialidad *" value={professionalSpecialty} onChange={setProfessionalSpecialty} placeholder="Ej. Derecho civil, Ingeniería estructural..." fullWidth />
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Institución / universidad" value={professionalInstitution} onChange={setProfessionalInstitution} placeholder="Ej. UNCP" />
+            <Field label="Años de experiencia" value={professionalYearsExperience} onChange={setProfessionalYearsExperience} placeholder="Ej. 5" type="number" />
+          </div>
+          <Field label="Título o certificado" value={professionalTitle} onChange={setProfessionalTitle} placeholder="Ej. Abogado colegiado" fullWidth />
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="N° de colegiatura / registro" value={professionalRegistrationNumber} onChange={setProfessionalRegistrationNumber} placeholder="Ej. CAL 12345" />
+            <Field label="Entidad emisora" value={professionalRegistrationIssuer} onChange={setProfessionalRegistrationIssuer} placeholder="Ej. Colegio de Abogados de Lima" />
+          </div>
+          <p className="text-[11px] text-gray-500">Solo la especialidad es obligatoria — el resto ayuda a generar confianza.</p>
+        </Section>
+      )}
+      {type === 'NEGOCIO' && (
+        <Section label="Datos del Negocio">
           <div className="grid grid-cols-2 gap-4">
             <Field label="RUC"             value={ruc}             onChange={setRuc}             placeholder="20123456789" />
             <Field label="Nombre Comercial" value={nombreComercial} onChange={setNombreComercial} placeholder="Pollería Chef" />
@@ -291,7 +379,7 @@ export function CreateProviderModal({ onClose, onSuccess }: Props) {
       {/* Descripción y ubicación */}
       <Section label="Descripción y Ubicación">
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
-          placeholder={type === 'NEGOCIO' ? 'Especialidades, horarios, lo que hace único al negocio...' : 'Experiencia, especialidades, años en el oficio...'}
+          placeholder={type === 'NEGOCIO' ? 'Especialidades, horarios, lo que hace único al negocio...' : type === 'PROFESIONAL' ? 'Especialidad, formación, años de experiencia...' : 'Experiencia, especialidades, años en el oficio...'}
           className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none mb-3"
         />
         <Field label="Dirección" value={address} onChange={setAddress} placeholder="Av. Principal 123" fullWidth />

@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Store,
   Wrench,
+  GraduationCap,
   LayoutDashboard,
   MessageSquare,
   User as UserIcon,
@@ -21,7 +22,7 @@ import {
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { getSocket } from '@/lib/socket';
-import { useProfileTypeOptional } from '@/lib/profile-type-context';
+import { useProfileTypeOptional, type ProfileType } from '@/lib/profile-type-context';
 import { api } from '@/lib/api';
 
 // "Panel Cliente" se sacó de esta lista — ahora vive dentro del
@@ -294,17 +295,23 @@ function useUnreadNotifications(): number {
   return unread;
 }
 
-const META: Record<'OFICIO' | 'NEGOCIO', {
+const META: Record<ProfileType, {
   label: string;
   icon: React.ElementType;
   color: string;
   bg: string;
 }> = {
   OFICIO: {
-    label: 'Profesional',
+    label: 'Oficio',
     icon: Wrench,
     color: 'text-primary-light',
     bg: 'bg-primary/15',
+  },
+  PROFESIONAL: {
+    label: 'Servicio profesional',
+    icon: GraduationCap,
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-500/15',
   },
   NEGOCIO: {
     label: 'Negocio',

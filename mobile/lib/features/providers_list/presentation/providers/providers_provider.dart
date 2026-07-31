@@ -66,7 +66,7 @@ class ProvidersProvider extends ChangeNotifier {
   String? _selectedCategory; // slug de subcategoría (hoja)
   String? _expandedParentSlug; // macrocategoría seleccionada en la barra
   String? _selectedAvailability;
-  String? _selectedType; // null | 'PROFESSIONAL' | 'BUSINESS'
+  String? _selectedType; // null | OFICIO | PROFESIONAL | NEGOCIO
   String? _sortBy; // null | 'reviews' | 'availability' | 'rating'
   String _location = '';
   bool _verifiedOnly = true; // true = solo verificados (default)
@@ -325,7 +325,7 @@ class ProvidersProvider extends ChangeNotifier {
 
   // ── Cargar categorías ─────────────────────────────────────
   Future<void> loadCategories() async {
-    final result = await _repo.getCategories();
+    final result = await _repo.getCategories(forType: _selectedType);
     if (result.isSuccess) {
       _categories = result.data;
       notifyListeners();
@@ -485,8 +485,13 @@ class ProvidersProvider extends ChangeNotifier {
   }
 
   Future<void> setType(String? type) async {
-    _selectedType = type;
-    await loadProviders();
+    final canonical = type == null ? null : normalizeProviderType(type);
+    if (type != null && canonical == null) return;
+    if (_selectedType == canonical) return;
+    _selectedType = canonical;
+    _selectedCategory = null;
+    _expandedParentSlug = null;
+    await Future.wait([loadCategories(), loadProviders()]);
   }
 
   Future<void> setSortBy(String? value) async {

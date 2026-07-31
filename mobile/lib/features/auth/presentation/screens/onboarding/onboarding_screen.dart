@@ -107,6 +107,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
                 const SizedBox(height: 14),
                 _RoleOption(
+                  icon: Icons.school_rounded,
+                  title: 'Soy especialista',
+                  subtitle:
+                      'Ofrezco servicios con título o colegiatura: abogado, ingeniero, contador…',
+                  roleValue: 'PROFESIONAL',
+                  accentColor: AppColors.available,
+                  isSelected: _selectedRole == 'PROFESIONAL',
+                  onTap: () => _goToProviderForm('PROFESIONAL'),
+                ),
+                const SizedBox(height: 14),
+                _RoleOption(
                   icon: Icons.storefront_rounded,
                   title: 'Tengo un negocio',
                   subtitle:
@@ -216,6 +227,11 @@ class _RoleOption extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
+  /// Color de acento para el estado seleccionado. Por defecto `primary`
+  /// (Oficio/Negocio); Profesional usa `AppColors.available` (verde) para
+  /// mantener consistencia con el chip de `filter_bar.dart`.
+  final Color accentColor;
+
   const _RoleOption({
     required this.icon,
     required this.title,
@@ -223,6 +239,7 @@ class _RoleOption extends StatelessWidget {
     required this.roleValue,
     required this.isSelected,
     required this.onTap,
+    this.accentColor = AppColors.primary,
   });
 
   @override
@@ -234,14 +251,10 @@ class _RoleOption extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.1)
-              : c.bgCard,
+          color: isSelected ? accentColor.withValues(alpha: 0.1) : c.bgCard,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isSelected
-                ? AppColors.primary.withValues(alpha: 0.6)
-                : c.border,
+            color: isSelected ? accentColor.withValues(alpha: 0.6) : c.border,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -251,13 +264,13 @@ class _RoleOption extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.2)
+                    ? accentColor.withValues(alpha: 0.2)
                     : c.bgInput,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: isSelected ? AppColors.primary : c.textMuted,
+                color: isSelected ? accentColor : c.textMuted,
                 size: 24,
               ),
             ),
@@ -283,11 +296,7 @@ class _RoleOption extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              const Icon(
-                Icons.check_circle_rounded,
-                color: AppColors.primary,
-                size: 22,
-              ),
+              Icon(Icons.check_circle_rounded, color: accentColor, size: 22),
           ],
         ),
       ),

@@ -11,6 +11,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { MinioService } from '../common/minio.service.js';
 import { CreateOfferPostDto } from './dto/create-offer-post.dto.js';
 import { visibleInLocalities } from '../coverage/coverage.service.js';
+import { normalizeProviderType } from '../common/provider-type.js';
 
 // Límites por plan: máx activas y ventana de expiración en horas
 const PLAN_LIMITS: Record<
@@ -36,12 +37,23 @@ export class OfferPostsService {
     userId: number,
     type?: string,
   ): Promise<number> {
-    const where: any = { userId };
-    if (type === 'OFICIO' || type === 'NEGOCIO') where.type = type;
-    const provider = await this.prisma.provider.findFirst({
-      where,
+    const normalizedType = type ? normalizeProviderType(type) : null;
+    if (type && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
+    const providers = await this.prisma.provider.findMany({
+      where: {
+        userId,
+        ...(normalizedType ? { type: normalizedType as any } : {}),
+      },
       select: { id: true },
+      take: normalizedType ? 1 : 2,
+      orderBy: { id: 'asc' },
     });
+    if (!normalizedType && providers.length > 1) {
+      throw new BadRequestException('Indica el tipo de perfil para continuar');
+    }
+    const provider = providers[0];
     if (!provider)
       throw new NotFoundException('Perfil de proveedor no encontrado');
     return provider.id;
@@ -274,8 +286,13 @@ export class OfferPostsService {
     }
 
     // Filtrado por tipo de proveedor (Profesional/Negocio).
-    const normalizedType = (providerType ?? '').trim().toUpperCase();
-    if (normalizedType === 'OFICIO' || normalizedType === 'NEGOCIO') {
+    const normalizedType = providerType
+      ? normalizeProviderType(providerType)
+      : null;
+    if (providerType && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
+    if (normalizedType) {
       where.provider = { ...(where.provider ?? {}), type: normalizedType };
     }
 

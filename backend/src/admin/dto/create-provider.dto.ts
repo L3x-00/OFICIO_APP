@@ -2,15 +2,19 @@ import {
   IsEmail,
   IsString,
   IsOptional,
-  IsEnum,
   IsNumber,
   IsPositive,
   IsArray,
   ArrayMaxSize,
+  IsIn,
+  Max,
   MinLength,
   MaxLength,
+  Min,
+  ValidateIf,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
+import { normalizeProviderType } from '../../common/provider-type.js';
 
 export class CreateProviderDto {
   @IsEmail({}, { message: 'El correo electrónico no es válido' })
@@ -40,8 +44,44 @@ export class CreateProviderDto {
   @IsString()
   whatsapp?: string;
 
-  @IsEnum(['OFICIO', 'NEGOCIO'])
-  type: 'OFICIO' | 'NEGOCIO';
+  @Transform(({ value }) => normalizeProviderType(value) ?? value)
+  @IsIn(['OFICIO', 'PROFESIONAL', 'NEGOCIO'])
+  type: 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO';
+
+  // Datos profesionales: solo Especialidad es obligatoria. Los demás campos
+  // son opcionales para no excluir egresados o perfiles por experiencia.
+  @ValidateIf((o) => o.type === 'PROFESIONAL')
+  @IsString()
+  @MinLength(2)
+  @MaxLength(120)
+  professionalSpecialty?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  professionalInstitution?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(80)
+  professionalYearsExperience?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  professionalTitle?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  professionalRegistrationNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  professionalRegistrationIssuer?: string;
 
   // ── Datos legales OFICIO
   @IsOptional()

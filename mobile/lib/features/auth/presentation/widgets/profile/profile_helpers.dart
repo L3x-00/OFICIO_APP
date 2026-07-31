@@ -17,6 +17,7 @@ class ProfileNavigationHelper {
 
     final parts = <String>['Cliente'];
     if (auth.hasOficioProfile) parts.add('Profesional');
+    if (auth.hasProfessionalProfile) parts.add('Servicio profesional');
     if (auth.hasNegocioProfile) parts.add('Negocio');
     return parts.join(' + ');
   }
@@ -26,9 +27,7 @@ class ProfileNavigationHelper {
   /// dejar visible la bottom nav del cliente debajo.
   static void openProviderPanel(BuildContext context, String type) {
     Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(
-        builder: (_) => ProviderPanel(providerType: type),
-      ),
+      MaterialPageRoute(builder: (_) => ProviderPanel(providerType: type)),
     );
   }
 

@@ -182,6 +182,12 @@ class AuthRepository {
     bool hasDelivery = false,
     bool plenaCoordinacion = false,
     bool hasHomeService = false,
+    String? professionalSpecialty,
+    String? professionalInstitution,
+    int? professionalYearsExperience,
+    String? professionalTitle,
+    String? professionalRegistrationNumber,
+    String? professionalRegistrationIssuer,
     // comunes
     String? description,
     String? address,
@@ -228,7 +234,28 @@ class AuthRepository {
           // plenaCoordinacion ya NO está condicionado a hasDelivery —
           // son features independientes que el user marca por separado.
           if (type == 'NEGOCIO') 'plenaCoordinacion': plenaCoordinacion,
-          if (type == 'OFICIO') 'hasHomeService': hasHomeService,
+          if (type == 'OFICIO' || type == 'PROFESIONAL')
+            'hasHomeService': hasHomeService,
+          if (type == 'PROFESIONAL')
+            'professionalSpecialty': professionalSpecialty,
+          if (type == 'PROFESIONAL' &&
+              professionalInstitution != null &&
+              professionalInstitution.isNotEmpty)
+            'professionalInstitution': professionalInstitution,
+          if (type == 'PROFESIONAL' && professionalYearsExperience != null)
+            'professionalYearsExperience': professionalYearsExperience,
+          if (type == 'PROFESIONAL' &&
+              professionalTitle != null &&
+              professionalTitle.isNotEmpty)
+            'professionalTitle': professionalTitle,
+          if (type == 'PROFESIONAL' &&
+              professionalRegistrationNumber != null &&
+              professionalRegistrationNumber.isNotEmpty)
+            'professionalRegistrationNumber': professionalRegistrationNumber,
+          if (type == 'PROFESIONAL' &&
+              professionalRegistrationIssuer != null &&
+              professionalRegistrationIssuer.isNotEmpty)
+            'professionalRegistrationIssuer': professionalRegistrationIssuer,
           if (description != null && description.isNotEmpty)
             'description': description,
           if (address != null && address.isNotEmpty) 'address': address,
@@ -347,6 +374,86 @@ class AuthRepository {
                 e.message ?? 'Error al obtener estado del proveedor',
               ),
       );
+    }
+  }
+
+  // ── MIGRACIÓN PROFESIONAL (OFICIO → PROFESIONAL) ─────────
+  /// Envía la solicitud de migración de OFICIO a PROFESIONAL. Multipart:
+  /// hasta 4 archivos opcionales en el campo `credentials` + campos de
+  /// texto. `categoryIds` viaja como campo repetido (el backend lo arma
+  /// en un arreglo vía multer). Lanza [AppException] en caso de error —
+  /// sin envolver en ApiResult, igual que [deleteAccount].
+  Future<void> submitProfessionalMigration({
+    required String specialty,
+    String? institution,
+    int? yearsExperience,
+    String? professionalTitle,
+    String? registrationNumber,
+    String? registrationIssuer,
+    required List<int> categoryIds,
+    List<File>? credentials,
+  }) async {
+    try {
+      final formData = FormData();
+      formData.fields.add(MapEntry('specialty', specialty));
+      if (institution != null && institution.isNotEmpty) {
+        formData.fields.add(MapEntry('institution', institution));
+      }
+      if (yearsExperience != null) {
+        formData.fields.add(
+          MapEntry('yearsExperience', yearsExperience.toString()),
+        );
+      }
+      if (professionalTitle != null && professionalTitle.isNotEmpty) {
+        formData.fields.add(MapEntry('professionalTitle', professionalTitle));
+      }
+      if (registrationNumber != null && registrationNumber.isNotEmpty) {
+        formData.fields.add(MapEntry('registrationNumber', registrationNumber));
+      }
+      if (registrationIssuer != null && registrationIssuer.isNotEmpty) {
+        formData.fields.add(MapEntry('registrationIssuer', registrationIssuer));
+      }
+      for (final id in categoryIds) {
+        formData.fields.add(MapEntry('categoryIds', id.toString()));
+      }
+      if (credentials != null) {
+        for (final file in credentials) {
+          formData.files.add(
+            MapEntry(
+              'credentials',
+              await MultipartFile.fromFile(
+                file.path,
+                filename: p.basename(file.path),
+              ),
+            ),
+          );
+        }
+      }
+
+      await _dio.post(
+        '/provider-profile/me/professional-migration',
+        data: formData,
+      );
+    } on DioException catch (e) {
+      throw e.error is AppException
+          ? e.error as AppException
+          : ServerException(e.message ?? 'Error al enviar la solicitud');
+    }
+  }
+
+  /// Estado de la migración del usuario autenticado: `eligible`,
+  /// `providerType` y la solicitud vigente (si existe) con motivo de
+  /// rechazo completo.
+  Future<Map<String, dynamic>> getMyProfessionalMigration() async {
+    try {
+      final response = await _dio.get(
+        '/provider-profile/me/professional-migration',
+      );
+      return Map<String, dynamic>.from(response.data as Map);
+    } on DioException catch (e) {
+      throw e.error is AppException
+          ? e.error as AppException
+          : ServerException(e.message ?? 'Error al obtener el estado');
     }
   }
 

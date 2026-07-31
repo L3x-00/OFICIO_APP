@@ -12,6 +12,7 @@ import {
   effectiveFeaturesFromCategories,
   visibleProviderFeatures,
 } from '../common/provider-features.service.js';
+import { normalizeProviderType } from '../common/provider-type.js';
 import { visibleInLocalities } from '../coverage/coverage.service.js';
 
 const PRIVATE_PUBLIC_PROVIDER_FIELDS = [
@@ -29,6 +30,23 @@ const PRIVATE_PUBLIC_PROVIDER_FIELDS = [
   'updatedAt',
 ] as const;
 
+type PublicProfessionalProvider = {
+  id: number;
+  type: string;
+  providerCategories: Array<{
+    category?: {
+      features?: unknown;
+      parent?: { features?: unknown } | null;
+    } | null;
+  } | null>;
+  [key: string]: unknown;
+};
+
+type PublicProfessionalProviderDelegate = {
+  findFirst(args: unknown): Promise<PublicProfessionalProvider | null>;
+  findMany(args: unknown): Promise<PublicProfessionalProvider[]>;
+};
+
 @Injectable()
 export class ProvidersService {
   constructor(
@@ -44,7 +62,7 @@ export class ProvidersService {
     search?: string;
     localityId?: number;
     // Nuevos filtros
-    type?: string; // PROFESSIONAL | BUSINESS (providerType)
+    type?: string; // OFICIO | PROFESIONAL | NEGOCIO + aliases legacy
     sortBy?: string; // 'reviews' | 'availability' | 'rating' (default)
     verified?: boolean; // true = solo verificados (por defecto true)
     location?: string; // búsqueda por texto en dirección
@@ -87,6 +105,10 @@ export class ProvidersService {
       isVisible: true,
       verificationStatus: 'APROBADO',
     };
+    const normalizedType = type == null ? null : normalizeProviderType(type);
+    if (type != null && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
 
     if (parentCategorySlug) {
       // Muestra proveedores cuya categoría (cualquiera de las suyas) es hija de la macrocategoría dada
@@ -153,21 +175,22 @@ export class ProvidersService {
       // todo el Perú (un profesional sí puede desplazarse / atender a
       // distancia, o el cliente lo busca por nombre).
       const onlyDepartment = !!nDept && !nProv && !nDist;
-      const wantsOficio = type === 'OFICIO' || type === 'PROFESSIONAL';
-      const wantsNegocio = type === 'NEGOCIO' || type === 'BUSINESS';
+      const wantsIndividual =
+        normalizedType === 'OFICIO' || normalizedType === 'PROFESIONAL';
+      const wantsNegocio = normalizedType === 'NEGOCIO';
 
       if (onlyDepartment) {
         const deptIds = matchAt(nDept, '', '');
         const inDept = deptIds.length > 0 ? deptIds : [-1];
-        if (wantsOficio) {
-          // Solo profesionales — sin filtro de ubicación (todo el Perú).
+        if (wantsIndividual) {
+          // Oficios/Servicios profesionales: sin filtro de ubicación.
         } else if (wantsNegocio) {
           andWhere(visibleInLocalities(inDept));
         } else {
-          // Todos: OFICIO de cualquier zona + NEGOCIO del departamento.
+          // Todos: perfiles individuales de cualquier zona + NEGOCIO local.
           andWhere({
             OR: [
-              { type: 'OFICIO' },
+              { type: { in: ['OFICIO', 'PROFESIONAL'] as any } },
               { AND: [{ type: 'NEGOCIO' }, visibleInLocalities(inDept)] },
             ],
           });
@@ -193,13 +216,7 @@ export class ProvidersService {
       }
     }
 
-    // Filtro por tipo de proveedor. Acepta tanto los nombres canónicos
-    // (OFICIO|NEGOCIO) como los alias legacy que aún puede enviar Flutter.
-    if (type === 'OFICIO' || type === 'PROFESSIONAL') {
-      where.type = 'OFICIO';
-    } else if (type === 'NEGOCIO' || type === 'BUSINESS') {
-      where.type = 'NEGOCIO';
-    }
+    if (normalizedType) where.type = normalizedType as any;
 
     // Búsqueda por texto libre. OR sobre múltiples campos para que la
     // búsqueda en tiempo real sea robusta — el usuario puede tipear el
@@ -257,7 +274,12 @@ export class ProvidersService {
     const skip = (page - 1) * limit;
 
     const [providers, total] = await Promise.all([
-      this.prisma.provider.findMany({
+      // Cast: el cliente Prisma local puede estar un commit detrás del
+      // schema durante esta tanda (professionalProfile/verificationDocs)
+      // — mismo workaround que findOne() hasta que CI regenere el cliente.
+      (
+        this.prisma.provider as unknown as PublicProfessionalProviderDelegate
+      ).findMany({
         where,
         skip,
         take: limit,
@@ -295,6 +317,12 @@ export class ProvidersService {
             },
           },
           subscription: { select: { plan: true, status: true } },
+          professionalProfile: { select: { specialty: true } },
+          verificationDocs: {
+            where: { docType: 'certificado', status: 'APROBADO' },
+            select: { id: true },
+            take: 1,
+          },
         },
         orderBy,
       }),
@@ -379,6 +407,26 @@ export class ProvidersService {
     const sanitized = { ...this.maskContactIfFree(provider) };
     for (const field of PRIVATE_PUBLIC_PROVIDER_FIELDS) {
       delete sanitized[field];
+    }
+
+    // La ficha pública de un profesional solo muestra su especialidad y una
+    // señal factual: existe al menos un certificado APROBADO. Nunca expone
+    // documentos, URLs privadas, número de registro ni institución.
+    const isProfessional = provider.type === 'PROFESIONAL';
+    const specialty = isProfessional
+      ? (sanitized.professionalProfile?.specialty ?? null)
+      : null;
+    const credentialVerified =
+      isProfessional &&
+      Array.isArray(sanitized.verificationDocs) &&
+      sanitized.verificationDocs.length > 0;
+    delete sanitized.verificationDocs;
+    if (isProfessional) {
+      sanitized.professionalProfile = specialty ? { specialty } : null;
+      sanitized.credentialVerified = credentialVerified;
+    } else {
+      delete sanitized.professionalProfile;
+      delete sanitized.credentialVerified;
     }
 
     if (sanitized.showPhone === false) sanitized.phone = '';
@@ -478,7 +526,9 @@ export class ProvidersService {
     // 4. Para cada padre top, los primeros 8 proveedores por prioridad de plan.
     const groups = await Promise.all(
       ranked.map(async (r) => {
-        const providers = await this.prisma.provider.findMany({
+        const providers = await (
+          this.prisma.provider as unknown as PublicProfessionalProviderDelegate
+        ).findMany({
           where: {
             ...VISIBLE_APPROVED,
             // isPrimary: true → solo su categoría insignia. Sin esto un
@@ -511,6 +561,12 @@ export class ProvidersService {
               },
             },
             subscription: { select: { plan: true, status: true } },
+            professionalProfile: { select: { specialty: true } },
+            verificationDocs: {
+              where: { docType: 'certificado', status: 'APROBADO' },
+              select: { id: true },
+              take: 1,
+            },
           },
           orderBy: [{ planPriority: 'asc' }, { averageRating: 'desc' }],
           take: 8,
@@ -560,6 +616,11 @@ export class ProvidersService {
     ) {
       throw new BadRequestException('Coordenadas inválidas');
     }
+    const normalizedType =
+      filters.type == null ? null : normalizeProviderType(filters.type);
+    if (filters.type != null && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
     const km = Math.min(50, Math.max(1, Number(radiusKm) || 1));
     const radiusM = km * 1000;
 
@@ -604,11 +665,7 @@ export class ProvidersService {
         some: { category: { slug: filters.categorySlug } },
       };
     }
-    if (filters.type === 'OFICIO' || filters.type === 'PROFESSIONAL') {
-      hydrateWhere.type = 'OFICIO';
-    } else if (filters.type === 'NEGOCIO' || filters.type === 'BUSINESS') {
-      hydrateWhere.type = 'NEGOCIO';
-    }
+    if (normalizedType) hydrateWhere.type = normalizedType as any;
     if (filters.search && filters.search.trim().length > 0) {
       const q = filters.search.trim();
       hydrateWhere.OR = [
@@ -631,7 +688,9 @@ export class ProvidersService {
     }
 
     // 2. Hidratamos el shape de tarjeta completo para esos ids.
-    const providers = await this.prisma.provider.findMany({
+    const providers = await (
+      this.prisma.provider as unknown as PublicProfessionalProviderDelegate
+    ).findMany({
       where: hydrateWhere,
       include: {
         providerCategories: {
@@ -654,6 +713,12 @@ export class ProvidersService {
           },
         },
         subscription: { select: { plan: true, status: true } },
+        professionalProfile: { select: { specialty: true } },
+        verificationDocs: {
+          where: { docType: 'certificado', status: 'APROBADO' },
+          select: { id: true },
+          take: 1,
+        },
       },
     });
 
@@ -671,7 +736,12 @@ export class ProvidersService {
 
   // ── OBTENER un proveedor por ID ──────────────────────────
   async findOne(id: number) {
-    const provider = await this.prisma.provider.findFirst({
+    // El cliente Prisma local puede estar un commit detrás del schema durante
+    // esta tanda. El cast queda acotado a esta lectura hasta que CI regenere
+    // el cliente; el select explícito conserva el contrato público mínimo.
+    const provider = await (
+      this.prisma.provider as unknown as PublicProfessionalProviderDelegate
+    ).findFirst({
       where: {
         id,
         isVisible: true,
@@ -710,6 +780,16 @@ export class ProvidersService {
         subscription: {
           select: { plan: true, status: true, endDate: true },
         },
+        professionalProfile: {
+          select: { specialty: true },
+        },
+        // Solo se consulta existencia de un certificado aprobado. `id` se
+        // elimina en toPublicProvider antes de serializar la respuesta.
+        verificationDocs: {
+          where: { docType: 'certificado', status: 'APROBADO' },
+          select: { id: true },
+          take: 1,
+        },
       },
     });
     const masked = this.toPublicProvider(provider);
@@ -728,15 +808,36 @@ export class ProvidersService {
 
   // ── LISTAR CATEGORÍAS ────────────────────────────────────
   async getCategories(forType?: string) {
+    const normalizedType =
+      forType == null ? null : normalizeProviderType(forType);
+    if (forType != null && !normalizedType) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
+    // Las categorías antiguas sin forType siguen siendo catálogo compartido
+    // para Oficio/Negocio. PROFESIONAL requiere una raíz explícita para no
+    // mostrar opciones que después el validador rechazaría; sus hijas null
+    // pueden heredar el tipo de esa raíz profesional.
+    const rootTypeFilter =
+      normalizedType === 'PROFESIONAL'
+        ? { forType: normalizedType }
+        : normalizedType
+          ? { OR: [{ forType: normalizedType }, { forType: null }] }
+          : {};
+    const childTypeFilter = normalizedType
+      ? { OR: [{ forType: normalizedType }, { forType: null }] }
+      : {};
     return this.prisma.category.findMany({
       where: {
         isActive: true,
         parentId: null,
-        ...(forType ? { forType } : {}),
+        ...rootTypeFilter,
       },
       include: {
         children: {
-          where: { isActive: true },
+          where: {
+            isActive: true,
+            ...childTypeFilter,
+          },
           select: { id: true, name: true, slug: true, iconUrl: true },
         },
       },

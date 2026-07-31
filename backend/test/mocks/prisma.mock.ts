@@ -55,6 +55,9 @@ export type PrismaMock = {
   payment: ReturnType<typeof modelMock>;
   yapePayment: ReturnType<typeof modelMock>;
   trustValidationRequest: ReturnType<typeof modelMock>;
+  verificationDoc: ReturnType<typeof modelMock>;
+  professionalProfile: ReturnType<typeof modelMock>;
+  professionalMigrationRequest: ReturnType<typeof modelMock>;
   providerCoverage: ReturnType<typeof modelMock>;
   $transaction: jest.Mock;
   $queryRaw: jest.Mock;
@@ -139,6 +142,9 @@ export function createPrismaMock(): PrismaMock {
     payment: modelMock(),
     yapePayment: modelMock(),
     trustValidationRequest: modelMock(),
+    verificationDoc: modelMock(),
+    professionalProfile: modelMock(),
+    professionalMigrationRequest: modelMock(),
     providerCoverage: modelMock(),
     $transaction: jest.fn(async (arg: any) => {
       // Soporta los dos shapes:

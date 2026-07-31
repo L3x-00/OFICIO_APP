@@ -1,7 +1,8 @@
 import {
   IsString,
   IsOptional,
-  IsEnum,
+  IsIn,
+  IsInt,
   IsNumber,
   IsPositive,
   IsBoolean,
@@ -37,10 +38,10 @@ export class RegisterProviderDto {
   @MaxLength(20)
   phone!: string;
 
-  @IsEnum(['OFICIO', 'NEGOCIO'], {
-    message: 'El tipo debe ser OFICIO o NEGOCIO',
+  @IsIn(['OFICIO', 'PROFESIONAL', 'NEGOCIO'], {
+    message: 'El tipo debe ser OFICIO, PROFESIONAL o NEGOCIO',
   })
-  type!: 'OFICIO' | 'NEGOCIO';
+  type!: 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO';
 
   // ── Campos OFICIO ─────────────────────────────────────────
   @NullIfEmpty()
@@ -87,6 +88,47 @@ export class RegisterProviderDto {
   @Transform(({ value }) => value === true || value === 'true')
   @IsBoolean()
   hasHomeService?: boolean;
+
+  // ── Datos de SERVICIO PROFESIONAL ──
+  // Solo la especialidad es obligatoria. Los demás campos son opcionales para
+  // no excluir egresados, profesionales independientes o por hobby.
+  @NullIfEmpty()
+  @ValidateIf((o) => o.type === 'PROFESIONAL')
+  @IsString()
+  @MinLength(2)
+  @MaxLength(120)
+  professionalSpecialty?: string | null;
+
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  professionalInstitution?: string | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(80)
+  professionalYearsExperience?: number;
+
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  professionalTitle?: string | null;
+
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  professionalRegistrationNumber?: string | null;
+
+  @NullIfEmpty()
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  professionalRegistrationIssuer?: string | null;
 
   // ── Comunes ───────────────────────────────────────────────
   @NullIfEmpty()

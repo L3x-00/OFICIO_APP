@@ -127,6 +127,16 @@ mixin AuthSocketMixin on ChangeNotifier {
       return;
     }
 
+    if (type == 'PROFESSIONAL_MIGRATION_APPROVED' ||
+        type == 'PROFESSIONAL_MIGRATION_REJECTED') {
+      // Re-sincroniza para que _activeProfileType deje de apuntar a
+      // 'OFICIO' (ya no existe tras la migración) y pase a 'PROFESIONAL'
+      // — sin esto, Yape/MercadoPago/cancelar plan fallan con 400/403
+      // hasta que el usuario reinicia la app.
+      _syncProviderStatus().then((_) => notifyListeners());
+      return;
+    }
+
     if (type == 'PROVIDER_DELETED') {
       // Admin eliminó este perfil del user en tiempo real:
       // 1. Re-sync — saca el providerType de _providerProfiles, el

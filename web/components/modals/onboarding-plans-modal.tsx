@@ -9,10 +9,11 @@ import { getSocket } from '@/lib/socket';
 import { PLANS, type PlanInfo, type PlanId } from '@/lib/plans';
 import { useBodyScrollLock } from '@/lib/hooks';
 import YapePaymentModal from '@/components/modals/yape-payment-modal';
+import type { ProfileType } from '@/lib/types';
 
 interface Props {
   isOpen: boolean;
-  providerType: 'OFICIO' | 'NEGOCIO';
+  providerType: ProfileType;
   onClose: () => void;
   /** Plan listo (GRATIS elegido, comprobante Yape enviado o aprobación live). */
   onComplete: () => void;

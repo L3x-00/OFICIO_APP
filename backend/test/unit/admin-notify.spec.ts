@@ -115,13 +115,17 @@ describe('AdminService.notifyProvider (unit)', () => {
     const where = (AdminService as any).ADMIN_NOTIF_WHERE;
     const typeClause = where.OR.find((c: any) => c.type?.in)?.type
       ?.in as string[];
-    expect(typeClause).toEqual(
-      expect.arrayContaining([
+    // Exacto (no arrayContaining): con "contains" alguien podía BORRAR una
+    // entrada (ej. MP_PAYMENT_UNRESOLVED) sin que este test lo detectara —
+    // la notificación se persistiría pero nunca aparecería en el inbox admin.
+    expect([...typeClause].sort()).toEqual(
+      [
         'BROADCAST_LOG',
-        'REFERRAL_CODE_USED',
+        'MP_PAYMENT_UNRESOLVED',
         'NEW_USER_VERIFIED',
+        'REFERRAL_CODE_USED',
         'USER_PENDING',
-      ]),
+      ].sort(),
     );
   });
 

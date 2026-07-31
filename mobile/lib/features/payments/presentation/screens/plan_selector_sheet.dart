@@ -397,6 +397,9 @@ class _PlanCard extends StatelessWidget {
                           final ok = await YapePaymentScreen.show(
                             context,
                             plan: planKey,
+                            providerType: context
+                                .read<AuthProvider>()
+                                .activeProfileType,
                           );
                           if (ok == true && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(

@@ -11,6 +11,7 @@ import {
 import { api, type ChatRoomSummary } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { useProfileTypeOptional } from '@/lib/profile-type-context';
+import { PROFILE_TYPE_META } from '@/lib/types';
 import { getUser } from '@/lib/auth';
 
 interface Props {
@@ -87,7 +88,7 @@ export default function ChatRoomsList({
             <p className="text-white/60 text-sm mt-1">
               Conversaciones con tus clientes
               {activeType && (
-                <span className="text-white/40"> · {activeType === 'NEGOCIO' ? 'Negocio' : 'Profesional'}</span>
+                <span className="text-white/40"> · {PROFILE_TYPE_META[activeType].label}</span>
               )}
             </p>
           )}

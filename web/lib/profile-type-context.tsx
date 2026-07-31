@@ -2,27 +2,18 @@
 
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import {
+  normalizeProfileType,
+  type ProfileType,
+  type ProviderProfileSummary,
+  type MyProviderStatus,
+} from './types';
 
-export type ProfileType = 'OFICIO' | 'NEGOCIO';
-
-export interface ProviderProfileSummary {
-  providerId: number;
-  businessName: string;
-  type: ProfileType;
-  verificationStatus: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
-  isVerified: boolean;
-  trustStatus?: string;
-  isTrusted?: boolean;
-  trustRejectionReason?: string | null;
-  phone?: string;
-  description?: string;
-  categoryName?: string;
-}
-
-export interface MyProviderStatus {
-  hasProvider: boolean;
-  profiles: ProviderProfileSummary[];
-}
+// Reexport: este contexto es el unico consumidor "legacy" — el resto de la
+// app importa estos tipos de lib/types.ts directamente. Mantenerlos re-
+// exportados aqui evita tocar los 9 archivos que hacen
+// `from '@/lib/profile-type-context'`.
+export type { ProfileType, ProviderProfileSummary, MyProviderStatus };
 
 interface Ctx {
   status: MyProviderStatus | null;
@@ -96,8 +87,16 @@ export function ProfileTypeProvider({ children }: { children: React.ReactNode })
         setStatus({ hasProvider: false, profiles: [] });
         return;
       }
-      const data: MyProviderStatus = await res.json();
-      setStatus(data);
+      const raw: MyProviderStatus = await res.json();
+      // Defensivo: normaliza alias legacy (PROFESSIONAL->OFICIO, BUSINESS->
+      // NEGOCIO) por si algun perfil viejo llega sin canonicalizar.
+      const profiles = raw.profiles
+        .map((p) => {
+          const type = normalizeProfileType(p.type);
+          return type ? { ...p, type } : null;
+        })
+        .filter((p): p is ProviderProfileSummary => p !== null);
+      setStatus({ hasProvider: raw.hasProvider, profiles });
     } catch {
       setStatus({ hasProvider: false, profiles: [] });
     }

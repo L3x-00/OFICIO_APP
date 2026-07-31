@@ -41,11 +41,16 @@ Future<void> showLogoutDialog(BuildContext context, AuthProvider auth) async {
             await auth.logout();
             if (!context.mounted) return;
             // Limpia todo el stack para que _AppRoot reconstruya desde la pantalla raíz
-            Navigator.of(context, rootNavigator: true).popUntil((r) => r.isFirst);
+            Navigator.of(
+              context,
+              rootNavigator: true,
+            ).popUntil((r) => r.isFirst);
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.busy,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
           child: Text('Cerrar sesión', style: TextStyle(color: Colors.white)),
         ),
@@ -64,9 +69,11 @@ Future<void> showDeleteProfileDialog(
   String? profileType,
 ) async {
   final c = context.colors;
-  final isNegocio  = profileType == 'NEGOCIO';
-  final typeLabel  = isNegocio ? 'negocio' : 'profesional';
-  final hasBoth    = auth.hasOficioProfile && auth.hasNegocioProfile;
+  final isNegocio = profileType == 'NEGOCIO';
+  final typeLabel = isNegocio ? 'negocio' : 'profesional';
+  final hasBoth =
+      (auth.hasOficioProfile || auth.hasProfessionalProfile) &&
+      auth.hasNegocioProfile;
   final controller = TextEditingController();
 
   await showDialog(
@@ -76,7 +83,10 @@ Future<void> showDeleteProfileDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Text(
         'Eliminar perfil de $typeLabel',
-        style: const TextStyle(color: AppColors.busy, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          color: AppColors.busy,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -133,14 +143,21 @@ Future<void> showDeleteProfileDialog(
             if (ok) {
               await auth.refreshProviderStatus();
               if (!context.mounted) return;
-              Navigator.of(context, rootNavigator: true).popUntil((r) => r.isFirst);
+              Navigator.of(
+                context,
+                rootNavigator: true,
+              ).popUntil((r) => r.isFirst);
             } else {
-              context.showErrorSnack(dash.error ?? 'Error al eliminar el perfil');
+              context.showErrorSnack(
+                dash.error ?? 'Error al eliminar el perfil',
+              );
             }
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.busy,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
           child: const Text('Eliminar', style: TextStyle(color: Colors.white)),
         ),
@@ -152,7 +169,7 @@ Future<void> showDeleteProfileDialog(
 /// Abre el diálogo de reporte de problema. Internamente lee
 /// [AuthProvider] del contexto y delega el envío a [DashboardRepository].
 void showReportDialog(BuildContext context) {
-  final c    = context.colors;
+  final c = context.colors;
   final ctrl = TextEditingController();
   final auth = context.read<AuthProvider>();
 
@@ -165,7 +182,7 @@ void showReportDialog(BuildContext context) {
         final userId = auth.user?.id;
         if (userId == null) return;
         await DashboardRepository().reportPlatformIssue(
-          userId:      userId,
+          userId: userId,
           description: description,
         );
       },
@@ -228,14 +245,26 @@ class _ReportProblemDialogState extends State<ReportProblemDialog> {
           onPressed: _sending ? null : _submit,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.amber,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
           child: _sending
               ? const SizedBox(
-                  width: 16, height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.black,
+                  ),
                 )
-              : const Text('Enviar', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              : const Text(
+                  'Enviar',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
         ),
       ],
     );
@@ -252,7 +281,9 @@ class _ReportProblemDialogState extends State<ReportProblemDialog> {
       await widget.onSend(text);
       if (!mounted) return;
       Navigator.pop(context);
-      context.showSuccessSnack('Reporte enviado. ¡Gracias por ayudarnos a mejorar!');
+      context.showSuccessSnack(
+        'Reporte enviado. ¡Gracias por ayudarnos a mejorar!',
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _sending = false);

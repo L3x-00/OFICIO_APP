@@ -80,7 +80,8 @@ class _JoinUsTypeDetailState extends State<JoinUsTypeDetail> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final isOficio = widget.type == 'OFICIO';
+    final isProfesional = widget.type == 'PROFESIONAL';
+    final isNegocio = widget.type == 'NEGOCIO';
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -112,14 +113,18 @@ class _JoinUsTypeDetailState extends State<JoinUsTypeDetail> {
             // Eslogan diferenciado por tipo
             ShaderMask(
               shaderCallback: (bounds) => LinearGradient(
-                colors: isOficio
-                    ? const [Color(0xFF00C6FF), Color(0xFF0072FF)]
-                    : const [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+                colors: isNegocio
+                    ? const [Color(0xFF8E2DE2), Color(0xFF4A00E0)]
+                    : isProfesional
+                    ? const [Color(0xFF7ED9A0), AppColors.available]
+                    : const [Color(0xFF00C6FF), Color(0xFF0072FF)],
               ).createShader(bounds),
               child: Text(
-                isOficio
-                    ? 'Tu talento merece\nser encontrado.'
-                    : 'Crece con la confianza\nde tu comunidad.',
+                isNegocio
+                    ? 'Crece con la confianza\nde tu comunidad.'
+                    : isProfesional
+                    ? 'Tu experiencia\nmerece ser valorada.'
+                    : 'Tu talento merece\nser encontrado.',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 22,
@@ -130,9 +135,11 @@ class _JoinUsTypeDetailState extends State<JoinUsTypeDetail> {
             ),
             const SizedBox(height: 8),
             Text(
-              isOficio
-                  ? 'Crea tu perfil profesional y conecta con clientes que ya buscan tus servicios en tu zona.'
-                  : 'Dale a tu negocio la vitrina digital que merece. Clientes que confían en ti, regresan.',
+              isNegocio
+                  ? 'Dale a tu negocio la vitrina digital que merece. Clientes que confían en ti, regresan.'
+                  : isProfesional
+                  ? 'Muestra tu formación y experiencia, y conecta con clientes que buscan un especialista de confianza.'
+                  : 'Crea tu perfil profesional y conecta con clientes que ya buscan tus servicios en tu zona.',
               style: TextStyle(
                 color: c.textSecondary,
                 fontSize: 13,
@@ -152,7 +159,7 @@ class _JoinUsTypeDetailState extends State<JoinUsTypeDetail> {
               ),
             ),
             const SizedBox(height: 12),
-            ProfilePreviewMock(isOficio: isOficio),
+            ProfilePreviewMock(type: widget.type),
             const SizedBox(height: 28),
 
             // Planes
@@ -210,12 +217,16 @@ class _JoinUsTypeDetailState extends State<JoinUsTypeDetail> {
                         ),
                         child: Text(
                           alreadyLoggedIn
-                              ? (isOficio
-                                    ? 'Completar perfil de Profesional'
-                                    : 'Completar perfil de Negocio')
-                              : (isOficio
-                                    ? 'Registrarme como Profesional'
-                                    : 'Registrarme como Negocio'),
+                              ? (isNegocio
+                                    ? 'Completar perfil de Negocio'
+                                    : isProfesional
+                                    ? 'Completar perfil de Especialista'
+                                    : 'Completar perfil de Profesional')
+                              : (isNegocio
+                                    ? 'Registrarme como Negocio'
+                                    : isProfesional
+                                    ? 'Registrarme como Especialista'
+                                    : 'Registrarme como Profesional'),
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,

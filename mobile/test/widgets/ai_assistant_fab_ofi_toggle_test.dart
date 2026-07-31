@@ -32,6 +32,8 @@ class _FakeAuth extends ChangeNotifier implements AuthProvider {
   @override
   bool get hasOficioProfile => false;
   @override
+  bool get hasProfessionalProfile => false;
+  @override
   bool get hasNegocioProfile => false;
 
   @override

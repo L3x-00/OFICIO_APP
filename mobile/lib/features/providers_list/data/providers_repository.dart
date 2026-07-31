@@ -19,7 +19,7 @@ class ProvidersRepository {
     bool?
     verified, // null = solo verificados (backend default), false = mostrar todos
     String? search,
-    String? type, // 'PROFESSIONAL' | 'BUSINESS'
+    String? type, // OFICIO | PROFESIONAL | NEGOCIO
     String? sortBy, // 'reviews' | 'availability'
     String? location, // búsqueda por texto en dirección
     // Filtros de ubicación estructurados (jerarquía peruana)

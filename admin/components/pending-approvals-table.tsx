@@ -11,10 +11,11 @@ import {
 import { toast } from 'sonner';
 
 const TYPE_STYLES: Record<string, { label: string; bg: string; border: string; color: string }> = {
-  PROFESSIONAL: { label: 'Profesional', bg: 'rgba(59,130,246,0.08)',   border: 'rgba(59,130,246,0.2)',   color: '#60A5FA' },
-  BUSINESS:     { label: 'Negocio',     bg: 'rgba(139,92,246,0.08)',   border: 'rgba(139,92,246,0.2)',   color: '#A78BFA' },
-  OFICIO:       { label: 'Profesional', bg: 'rgba(59,130,246,0.08)',   border: 'rgba(59,130,246,0.2)',   color: '#60A5FA' },
-  NEGOCIO:      { label: 'Negocio',     bg: 'rgba(139,92,246,0.08)',   border: 'rgba(139,92,246,0.2)',   color: '#A78BFA' },
+  PROFESSIONAL: { label: 'Oficio',       bg: 'rgba(59,130,246,0.08)',   border: 'rgba(59,130,246,0.2)',   color: '#60A5FA' },
+  BUSINESS:     { label: 'Negocio',      bg: 'rgba(139,92,246,0.08)',   border: 'rgba(139,92,246,0.2)',   color: '#A78BFA' },
+  OFICIO:       { label: 'Oficio',       bg: 'rgba(59,130,246,0.08)',   border: 'rgba(59,130,246,0.2)',   color: '#60A5FA' },
+  PROFESIONAL:  { label: 'Profesional',  bg: 'rgba(16,185,129,0.08)',   border: 'rgba(16,185,129,0.2)',   color: '#34D399' },
+  NEGOCIO:      { label: 'Negocio',      bg: 'rgba(139,92,246,0.08)',   border: 'rgba(139,92,246,0.2)',   color: '#A78BFA' },
 };
 
 interface Props { onAction?: () => void; }
@@ -34,7 +35,7 @@ export function PendingApprovalsTable({ onAction }: Props) {
   async function load() {
     setLoading(true);
     try { setItems(await getPendingVerifications()); }
-    catch (e: any) { toast.error(e?.message || 'Error al cargar solicitudes'); }
+    catch (e) { toast.error(e instanceof Error ? e.message : 'Error al cargar solicitudes'); }
     finally { setLoading(false); }
   }
 
@@ -49,7 +50,7 @@ export function PendingApprovalsTable({ onAction }: Props) {
       await approveVerification(id);
       removeItem(id);
       toast.success('Proveedor aprobado');
-    } catch (e: any) { toast.error(e?.message || 'Error al aprobar'); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Error al aprobar'); }
     finally { setActionId(null); }
   }
 
@@ -63,7 +64,7 @@ export function PendingApprovalsTable({ onAction }: Props) {
       toast.success('Solicitud rechazada');
       setModal(null);
       setReason('');
-    } catch (e: any) { toast.error(e?.message || 'Error al rechazar'); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Error al rechazar'); }
     finally { setModalLoading(false); }
   }
 
@@ -141,7 +142,9 @@ export function PendingApprovalsTable({ onAction }: Props) {
 
       <div>
         {items.map(p => {
-          const typeInfo = TYPE_STYLES[p.type] ?? TYPE_STYLES['OFICIO'];
+          const typeInfo = TYPE_STYLES[p.type] ?? {
+            label: p.type, bg: 'rgba(148,163,184,0.08)', border: 'rgba(148,163,184,0.2)', color: '#94A3B8',
+          };
           const isActing = actionId === p.id;
 
           return (

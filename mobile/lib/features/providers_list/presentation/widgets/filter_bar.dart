@@ -10,7 +10,7 @@ import 'parent_category_icons.dart';
 /// Filas:
 ///   - Fila 0 (opcional): chip "Mostrando en: `<zona>`" cuando hay filtro
 ///     de ubicación activo, con botón "Ver todos".
-///   - Fila 1 (siempre): chips de tipo (Todos / Profesionales / Negocios).
+///   - Fila 1: Todos / Oficios / Servicios profesionales / Negocios.
 ///   - Fila 2 (toggleable): macrocategorías → al tocar, se expande a
 ///     subcategorías con un botón "← Volver".
 class FilterBar extends StatelessWidget {
@@ -27,16 +27,27 @@ class FilterBar extends StatelessWidget {
       ), // texto oscuro: blanco-sobre-dorado es ilegible
     ),
     _TypeChipData(
-      label: 'Profesionales',
+      label: 'Oficios',
       icon: Icons.handyman_rounded,
-      value: 'PROFESSIONAL',
+      value: 'OFICIO',
       activeColor: AppColors.primary,
       foreground: Colors.white,
     ),
     _TypeChipData(
+      label: 'Servicios profesionales',
+      icon: Icons.school_rounded,
+      value: 'PROFESIONAL',
+      activeColor: AppColors.available,
+      // AppColors.onSolid(available) da amberDeep (luminancia > 0.22) —
+      // blanco-sobre-verde-claro no llega a AA (2.63:1). No se puede llamar
+      // onSolid() aquí porque la lista es const; se referencia el mismo
+      // valor que ya devolvería.
+      foreground: AppColors.amberDeep,
+    ),
+    _TypeChipData(
       label: 'Negocios',
       icon: Icons.storefront_rounded,
-      value: 'BUSINESS',
+      value: 'NEGOCIO',
       // Malva apagado on-palette (reemplaza el azul periwinkle frío #7B8CDE,
       // fuera de la dirección cálida); profundo para texto blanco AA.
       activeColor: AppColors.business,

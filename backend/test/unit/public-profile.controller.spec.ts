@@ -92,4 +92,41 @@ describe('PublicProfileController privacy', () => {
       district: null,
     });
   });
+
+  it('perfil profesional público expone solo especialidad y certificado aprobado', async () => {
+    prisma.provider.findFirst.mockResolvedValue(
+      provider({ type: 'PROFESIONAL' }),
+    );
+    prisma.professionalProfile.findUnique.mockResolvedValue({
+      specialty: 'Ingeniería civil',
+      registrationNumber: 'CIP 12345',
+      institution: 'Privada',
+    });
+    prisma.verificationDoc.findFirst.mockResolvedValue({
+      id: 8,
+      fileUrl: 'private/professional/certificado.pdf',
+    });
+
+    const result: any = await controller.getBySlug('perfil-seguro');
+
+    expect(result.professionalProfile).toEqual({
+      specialty: 'Ingeniería civil',
+    });
+    expect(result.credentialVerified).toBe(true);
+    expect(JSON.stringify(result)).not.toContain('registrationNumber');
+    expect(JSON.stringify(result)).not.toContain('CIP 12345');
+    expect(JSON.stringify(result)).not.toContain('certificado.pdf');
+    expect(prisma.professionalProfile.findUnique).toHaveBeenCalledWith({
+      where: { providerId: 1 },
+      select: { specialty: true },
+    });
+    expect(prisma.verificationDoc.findFirst).toHaveBeenCalledWith({
+      where: {
+        providerId: 1,
+        docType: 'certificado',
+        status: 'APROBADO',
+      },
+      select: { id: true },
+    });
+  });
 });

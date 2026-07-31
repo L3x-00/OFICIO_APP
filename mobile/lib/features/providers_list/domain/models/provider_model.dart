@@ -1,4 +1,7 @@
 import '../../../provider_dashboard/domain/models/service_item_model.dart';
+import '../../../../core/utils/provider_type.dart';
+
+export '../../../../core/utils/provider_type.dart';
 
 /// Modelo que representa un proveedor de servicios en la app
 /// Mapea exactamente con la tabla `providers` del backend
@@ -70,6 +73,12 @@ class ProviderModel {
 
   /// true cuando el admin validó los documentos de identidad del proveedor
   final bool isTrusted;
+
+  /// Solo PROFESIONAL: especialidad declarada en su perfil público.
+  final String? specialty;
+
+  /// Solo PROFESIONAL: el admin aprobó al menos una credencial.
+  final bool credentialVerified;
   // ── Redes sociales (todas opcionales) ───────────────────
   final String? website;
   final String? instagram;
@@ -130,6 +139,8 @@ class ProviderModel {
     this.localityDistrict,
     this.services = const [],
     this.isTrusted = false,
+    this.specialty,
+    this.credentialVerified = false,
     this.website,
     this.instagram,
     this.tiktok,
@@ -172,7 +183,7 @@ class ProviderModel {
       ),
       isVerified: json['isVerified'] as bool? ?? false,
       hasCleanRecord: json['hasCleanRecord'] as bool? ?? false,
-      type: ProviderType.fromString(json['type'] as String? ?? 'OFICIO'),
+      type: ProviderType.fromString(json['type'] as String?),
       coverImageUrl: _coverFromImages(json['images'] as List?),
       thumbnailUrls: _thumbnailsFromImages(json['images'] as List?),
       latitude: (json['latitude'] as num?)?.toDouble(),
@@ -197,6 +208,11 @@ class ProviderModel {
       localityDistrict: json['locality']?['district'] as String?,
       services: _parseServices(json['scheduleJson']),
       isTrusted: json['isTrusted'] as bool? ?? false,
+      specialty:
+          json['specialty'] as String? ??
+          (json['professionalProfile'] as Map<String, dynamic>?)?['specialty']
+              as String?,
+      credentialVerified: json['credentialVerified'] as bool? ?? false,
       website: json['website'] as String?,
       instagram: json['instagram'] as String?,
       tiktok: json['tiktok'] as String?,
@@ -231,7 +247,7 @@ class ProviderModel {
       ];
       return parts.isEmpty ? null : parts.join(', ');
     }
-    if (type == ProviderType.oficio) {
+    if (type.isIndividual) {
       final d = localityDistrict?.trim();
       return (d == null || d.isEmpty) ? null : d;
     }
@@ -396,6 +412,8 @@ class ProviderModel {
       localityDistrict: localityDistrict,
       services: services ?? this.services,
       isTrusted: isTrusted,
+      specialty: specialty,
+      credentialVerified: credentialVerified,
       website: website,
       instagram: instagram,
       tiktok: tiktok,
@@ -439,16 +457,5 @@ enum AvailabilityStatus {
       case AvailabilityStatus.conDemora:
         return 'Con demora';
     }
-  }
-}
-
-enum ProviderType {
-  oficio,
-  negocio;
-
-  static ProviderType fromString(String value) {
-    return value.toUpperCase() == 'NEGOCIO'
-        ? ProviderType.negocio
-        : ProviderType.oficio;
   }
 }

@@ -143,6 +143,25 @@ describe('AuthRegistrationService (unit)', () => {
       );
     });
 
+    it('OFICIO + PROFESIONAL existente bloquea otro perfil individual', async () => {
+      prisma.user.findUnique.mockResolvedValue(userFixture({ id: 7 }));
+      // Primera consulta: perfil individual opuesto.
+      prisma.provider.findUnique.mockResolvedValueOnce({ id: 5, type: 'OFICIO' });
+
+      await expect(
+        service.registerProvider(
+          7,
+          {
+            ...baseData,
+            type: 'PROFESIONAL',
+            professionalSpecialty: 'Ingeniería civil',
+          },
+          [],
+        ),
+      ).rejects.toThrow(ConflictException);
+      expect(prisma.provider.create).not.toHaveBeenCalled();
+    });
+
     it('rechaza imagen externa embebida en servicios del registro', async () => {
       prisma.user.findUnique.mockResolvedValue(userFixture({ id: 7 }));
       prisma.provider.findUnique.mockResolvedValue(null);
@@ -178,7 +197,14 @@ describe('AuthRegistrationService (unit)', () => {
       prisma.provider.findUnique.mockResolvedValue(null); // sin perfil + slug libre
       prisma.provider.findFirst.mockResolvedValue(null); // DNI libre
       prisma.locality.findUnique.mockResolvedValue({ id: 1 });
-      prisma.category.findMany.mockResolvedValue([{ id: 1 }]);
+      prisma.category.findMany.mockResolvedValue([
+        {
+          id: 1,
+          parentId: 10,
+          forType: 'OFICIO',
+          parent: { forType: 'OFICIO' },
+        },
+      ]);
       prisma.provider.create.mockResolvedValue({ id: 10 });
       // $transaction(callback) → ejecuta el callback con el propio mock como tx.
       prisma.$transaction.mockImplementation(async (cb: any) => cb(prisma));
@@ -198,6 +224,77 @@ describe('AuthRegistrationService (unit)', () => {
         providerId: 10,
         role: 'USUARIO',
       });
+    });
+
+    it('PROFESIONAL crea perfil profesional con categoría exclusiva', async () => {
+      prisma.user.findUnique.mockResolvedValue(userFixture({ id: 7 }));
+      prisma.provider.findUnique.mockResolvedValue(null);
+      prisma.locality.findUnique.mockResolvedValue({ id: 1 });
+      prisma.category.findMany.mockResolvedValue([
+        {
+          id: 2,
+          parentId: 20,
+          forType: 'PROFESIONAL',
+          parent: { forType: 'PROFESIONAL' },
+        },
+      ]);
+      prisma.provider.create.mockResolvedValue({ id: 11 });
+
+      await service.registerProvider(
+        7,
+        {
+          ...baseData,
+          type: 'PROFESIONAL',
+          dni: undefined,
+          categoryIds: [2],
+          primaryCategoryId: 2,
+          professionalSpecialty: 'Ingeniería civil',
+          professionalInstitution: 'Universidad local',
+          professionalYearsExperience: 4,
+        },
+        [],
+      );
+
+      expect(prisma.provider.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            type: 'PROFESIONAL',
+            professionalProfile: {
+              create: expect.objectContaining({
+                specialty: 'Ingeniería civil',
+                institution: 'Universidad local',
+                yearsExperience: 4,
+              }),
+            },
+          }),
+        }),
+      );
+    });
+
+    it('PROFESIONAL rechaza categoría de Oficio', async () => {
+      prisma.user.findUnique.mockResolvedValue(userFixture({ id: 7 }));
+      prisma.provider.findUnique.mockResolvedValue(null);
+      prisma.locality.findUnique.mockResolvedValue({ id: 1 });
+      prisma.category.findMany.mockResolvedValue([
+        {
+          id: 1,
+          parentId: 10,
+          forType: 'OFICIO',
+          parent: { forType: 'OFICIO' },
+        },
+      ]);
+
+      await expect(
+        service.registerProvider(
+          7,
+          {
+            ...baseData,
+            type: 'PROFESIONAL',
+            professionalSpecialty: 'Ingeniería civil',
+          },
+          [],
+        ),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

@@ -3,11 +3,13 @@ import {
   Logger,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { PushNotificationsService } from '../firebase/push-notifications.service.js';
+import { normalizeProviderType } from '../common/provider-type.js';
 
 // Retención de mensajes de chat: 7 días (antes 15 — reducido a la mitad).
 const MESSAGE_RETENTION_DAYS = 7;
@@ -67,9 +69,14 @@ export class ChatService {
     if (opts.scope === 'client') {
       where = { clientId: userId };
     } else if (opts.scope === 'provider') {
-      const type = (opts.providerType ?? '').toUpperCase();
+      const type = opts.providerType
+        ? normalizeProviderType(opts.providerType)
+        : null;
+      if (opts.providerType && !type) {
+        throw new BadRequestException('Tipo de proveedor inválido');
+      }
       const providerFilter: any = { userId };
-      if (type === 'OFICIO' || type === 'NEGOCIO') providerFilter.type = type;
+      if (type) providerFilter.type = type;
       where = { provider: providerFilter };
     } else {
       // Compat: sin scope explícito, comportamiento previo (cliente +
@@ -413,8 +420,11 @@ export class ChatService {
     const limit = Math.min(100, Math.max(1, filters.limit ?? 30));
 
     const providerWhere: any = {};
-    const type = (providerType ?? '').toUpperCase();
-    if (type === 'OFICIO' || type === 'NEGOCIO') providerWhere.type = type;
+    const type = providerType ? normalizeProviderType(providerType) : null;
+    if (providerType && !type) {
+      throw new BadRequestException('Tipo de proveedor inválido');
+    }
+    if (type) providerWhere.type = type;
 
     if (department || province || district) {
       providerWhere.locality = {
