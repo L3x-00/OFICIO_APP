@@ -10,6 +10,7 @@ import {
   getProfessionalMigration, approveProfessionalMigration, rejectProfessionalMigration,
   ProfessionalMigrationDetail,
 } from '@/lib/api';
+import { StatusBadge } from '@/components/status-badge';
 
 export default function ProfessionalMigrationDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -114,9 +115,33 @@ export default function ProfessionalMigrationDetailPage() {
               />
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-              <p style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '14px' }}>
-                {provider.user.firstName} {provider.user.lastName}
-              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <p style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '14px' }}>
+                  {provider.user.firstName} {provider.user.lastName}
+                </p>
+                <span title="Estado de verificación de su perfil de Oficio actual">
+                  <StatusBadge
+                    label={
+                      provider.verificationStatus === 'APROBADO' ? 'Aprobado'
+                      : provider.verificationStatus === 'RECHAZADO' ? 'Rechazado'
+                      : 'Pendiente'
+                    }
+                    variant={
+                      provider.verificationStatus === 'APROBADO' ? 'success'
+                      : provider.verificationStatus === 'RECHAZADO' ? 'danger'
+                      : 'warning'
+                    }
+                  />
+                </span>
+                {!provider.isVisible && (
+                  <span style={{
+                    padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600,
+                    background: '#EF444418', color: '#EF4444',
+                  }}>
+                    Oculto
+                  </span>
+                )}
+              </div>
               <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>{provider.businessName}</p>
               <p style={{ color: 'var(--text-tertiary)', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Mail size={12} /> {provider.user.email}

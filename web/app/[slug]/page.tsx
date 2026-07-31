@@ -14,7 +14,7 @@ import {
   GraduationCap,
 } from 'lucide-react';
 import { SOCIAL_DEFS, SCHEDULE_DAYS, buildSocialUrl } from '@/lib/social-utils';
-import { PROFILE_TYPE_META, type ProfileType, type ProfessionalProfile } from '@/lib/types';
+import { PROFILE_TYPE_META, type ProfileType } from '@/lib/types';
 
 // ── Tipos locales (contrato real de /profiles/{slug}) ─────
 interface PublicProfile {
@@ -22,7 +22,10 @@ interface PublicProfile {
   businessName: string;
   description: string | null;
   type: ProfileType;
-  professionalProfile?: ProfessionalProfile | null;
+  // El backend de /profiles/:slug solo devuelve la especialidad — nunca
+  // institución, título, colegiatura ni entidad emisora (PII). No ampliar
+  // este tipo sin ampliar también el select del backend a propósito.
+  professionalProfile?: { specialty: string } | null;
   credentialVerified?: boolean;
   averageRating: number;
   totalReviews: number;
@@ -135,7 +138,10 @@ export default async function PublicProfilePage({
   const typeLabel = PROFILE_TYPE_META[profile.type].label;
   const typeBadgeClass: Record<ProfileType, string> = {
     OFICIO: 'bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400',
-    PROFESIONAL: 'bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400',
+    // Emerald, no indigo: mismo acento que sidebar.tsx/panel/layout.tsx y
+    // admin (create-provider-modal, providers-list, categories) para
+    // Profesional — antes era el único sitio en indigo.
+    PROFESIONAL: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
     NEGOCIO: 'bg-primary/10 text-primary dark:text-primary-light',
   };
   const localityText = [
@@ -307,15 +313,7 @@ export default async function PublicProfilePage({
                 {profile.type === 'PROFESIONAL' && profile.professionalProfile && (
                   <span className="inline-flex items-center gap-1.5">
                     <GraduationCap size={14} className="text-primary" />
-                    {[
-                      profile.professionalProfile.specialty,
-                      profile.professionalProfile.institution,
-                      profile.professionalProfile.yearsExperience != null
-                        ? `${profile.professionalProfile.yearsExperience} años de experiencia`
-                        : null,
-                    ]
-                      .filter(Boolean)
-                      .join(' · ')}
+                    {profile.professionalProfile.specialty}
                   </span>
                 )}
               </div>

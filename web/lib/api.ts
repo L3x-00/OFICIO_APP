@@ -536,14 +536,14 @@ export const api = {
     };
   },
 
-  async getMyProfile(type?: "OFICIO" | "NEGOCIO"): Promise<Provider> {
+  async getMyProfile(type?: ProfileType): Promise<Provider> {
     const qs = type ? `?type=${type}` : "";
     return apiFetch<Provider>(`/provider-profile/me${qs}`);
   },
 
   async updateMyProfile(
     payload: Record<string, unknown>,
-    type?: "OFICIO" | "NEGOCIO",
+    type?: ProfileType,
   ): Promise<Provider> {
     const qs = type ? `?type=${type}` : "";
     return apiFetch<Provider>(`/provider-profile/me${qs}`, {
@@ -585,7 +585,7 @@ export const api = {
 
   async getAnalyticsWithDays(
     days: number,
-    type?: "OFICIO" | "NEGOCIO",
+    type?: ProfileType,
   ): Promise<Analytics> {
     const params = new URLSearchParams({ days: String(days) });
     if (type) params.set("type", type);
@@ -894,7 +894,7 @@ export const api = {
    * NEGOCIO; sin tipo, devuelve TODO (incl. broadcasts y notif del
    * cliente puro).
    */
-  async getNotifications(type?: "OFICIO" | "NEGOCIO"): Promise<{
+  async getNotifications(type?: ProfileType): Promise<{
     data: Array<{
       id: number;
       type: string;
@@ -962,7 +962,7 @@ export const api = {
   // bandejas independientes (mismo contrato que el mobile).
   async getChatRooms(opts: {
     scope?: "client" | "provider";
-    type?: "OFICIO" | "NEGOCIO";
+    type?: ProfileType;
   } = {}): Promise<ChatRoomSummary[]> {
     const qs = new URLSearchParams();
     if (opts.scope) qs.set("scope", opts.scope);

@@ -178,6 +178,7 @@ export function ProvidersList({ initialPage, initialSearch }: Props) {
           <select
             value={typeFilter}
             onChange={(e) => { setTypeFilter(e.target.value as ProviderType | ''); setPage(1); }}
+            aria-label="Filtrar por tipo de proveedor"
             className="bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-blue-500/50 outline-none transition-all"
           >
             <option value="">Todos</option>

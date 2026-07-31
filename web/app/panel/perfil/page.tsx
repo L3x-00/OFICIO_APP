@@ -680,6 +680,7 @@ function PanelPerfilContent() {
           plan={yapeModal.plan}
           planLabel={yapeModal.label}
           amount={yapeModal.amount}
+          providerType={activeType ?? undefined}
         />
       )}
     </motion.div>

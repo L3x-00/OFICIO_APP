@@ -119,6 +119,7 @@ export default function ProfessionalMigrationsPage() {
           </div>
         ) : (
           <>
+            <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-default)' }}>
@@ -173,6 +174,7 @@ export default function ProfessionalMigrationsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
 
             {/* Paginación */}
             {lastPage > 1 && (

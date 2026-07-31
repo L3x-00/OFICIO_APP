@@ -16,24 +16,30 @@ import { getSocket } from '@/lib/socket';
 import { toast } from 'sonner';
 import {
   Home, UserCog, Zap, Briefcase, BarChart3,
-  Wrench, Store, ChevronDown, Check, MessageSquare, User as UserIcon,
+  Wrench, Store, GraduationCap, ChevronDown, Check, MessageSquare, User as UserIcon,
 } from 'lucide-react';
 import { useRef, type ElementType } from 'react';
-import { ProfileTypeProvider, useProfileType, useProfileTypeOptional } from '@/lib/profile-type-context';
+import { ProfileTypeProvider, useProfileType, useProfileTypeOptional, type ProfileType } from '@/lib/profile-type-context';
 import { api } from '@/lib/api';
 
 // ─── Meta de cada tipo de perfil (replica del Sidebar) ─────────
-const PROFILE_META: Record<'OFICIO' | 'NEGOCIO', {
+const PROFILE_META: Record<ProfileType, {
   label: string;
   icon: ElementType;
   color: string;
   bg: string;
 }> = {
   OFICIO: {
-    label: 'Profesional',
+    label: 'Oficio',
     icon: Wrench,
     color: 'text-primary-light',
     bg: 'bg-primary/15',
+  },
+  PROFESIONAL: {
+    label: 'Servicio profesional',
+    icon: GraduationCap,
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-500/15',
   },
   NEGOCIO: {
     label: 'Negocio',

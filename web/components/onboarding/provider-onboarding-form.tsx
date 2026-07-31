@@ -462,7 +462,7 @@ export default function ProviderOnboardingForm({
           <textarea className={`${inputCls} resize-none`} rows={4} value={description} onChange={(e) => setDescription(e.target.value)} maxLength={1000} placeholder={isNegocio ? 'Qué ofreces, horarios, especialidades...' : isProfessional ? 'Especialidad, formación, años de experiencia...' : 'Experiencia, especialidades, horario de trabajo...'} />
           <p className="text-white/30 text-[11px] mt-1">{description.length}/1000</p>
         </Field>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Teléfono" required error={errors.phone}>
             <input className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={20} placeholder="+51 9..." />
           </Field>
@@ -486,7 +486,7 @@ export default function ProviderOnboardingForm({
             <Field label="Especialidad" required error={errors.professionalSpecialty}>
               <input className={inputCls} value={professionalSpecialty} onChange={(e) => setProfessionalSpecialty(e.target.value)} maxLength={120} placeholder="Ej. Derecho civil, Ingeniería estructural..." />
             </Field>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Institución / universidad" error={errors.professionalInstitution}>
                 <input className={inputCls} value={professionalInstitution} onChange={(e) => setProfessionalInstitution(e.target.value)} maxLength={160} placeholder="Ej. UNCP" />
               </Field>
@@ -497,7 +497,7 @@ export default function ProviderOnboardingForm({
             <Field label="Título o certificado" error={errors.professionalTitle}>
               <input className={inputCls} value={professionalTitle} onChange={(e) => setProfessionalTitle(e.target.value)} maxLength={160} placeholder="Ej. Abogado colegiado" />
             </Field>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Número de colegiatura / registro" error={errors.professionalRegistrationNumber}>
                 <input className={inputCls} value={professionalRegistrationNumber} onChange={(e) => setProfessionalRegistrationNumber(e.target.value)} maxLength={100} placeholder="Ej. CAL 12345" />
               </Field>
@@ -512,7 +512,7 @@ export default function ProviderOnboardingForm({
             <Field label="RUC" error={errors.ruc}>
               <input className={inputCls} value={ruc} onChange={(e) => setRuc(e.target.value)} maxLength={11} inputMode="numeric" placeholder="11 dígitos" />
             </Field>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Nombre comercial">
                 <input className={inputCls} value={nombreComercial} onChange={(e) => setNombreComercial(e.target.value)} maxLength={100} />
               </Field>

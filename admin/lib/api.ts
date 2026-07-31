@@ -444,6 +444,9 @@ export interface ProfessionalMigrationDetail extends ProfessionalProfile {
     type: ProviderTypeValue;
     phone: string;
     description?: string | null;
+    verificationStatus: string;
+    trustStatus?: string | null;
+    isVisible: boolean;
     images: ProviderImage[];
     user: { firstName: string; lastName: string; email: string };
   };

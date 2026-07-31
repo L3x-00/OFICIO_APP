@@ -84,7 +84,8 @@ body {
   color: #FFFFFF;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  /* `hidden` fuerza overflow-y:auto; en html y body crea dos scrolls. */
+  overflow-x: clip;
 }
 
 /* ── Scrollbar Dark Premium ──────────────────────────────── */
