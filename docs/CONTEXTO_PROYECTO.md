@@ -5,7 +5,7 @@ dar contexto completo sin explorar archivo por archivo. Claude lo auto-carga ví
 `@docs/CONTEXTO_PROYECTO.md` en `CLAUDE.md`; Codex debe leerlo explícitamente por
 instrucción de `AGENTS.md`. Mantener actualizado al cerrar cada tanda.
 
-**Última actualización:** 2026-07-31 · Estado: `main` sigue en PR #53 (`c4c275e`), CI y despliegues Vercel verdes. En paralelo, rama `feat/profesionales-v1` (NO mergeada) tiene Servicios Profesionales V1 completo — Fases 0-4 + auditoría de cierre con 4 apps verdes — con commits locales listos, sin push (ver §7 y §10). Subastas, ofertas, referidos/monedas, agenda y cotización continúan OCULTAS de forma reversible; Carta y Catálogo siguen visibles solo para proveedores NEGOCIO.
+**Última actualización:** 2026-07-31 · Estado: **Servicios Profesionales V1 mergeado a `main`** — PR #55, squash `09c1711`, CI Backend/Mobile/Admin verde, Render y Vercel confirmados con el runtime nuevo (ver §7 y §10). Subastas, ofertas, referidos/monedas, agenda y cotización continúan OCULTAS de forma reversible; Carta y Catálogo siguen visibles solo para proveedores NEGOCIO.
 
 ---
 
@@ -34,7 +34,7 @@ quedaron ocultas (ver §3), reactivables a futuro.
 
 ## 3. Módulos
 
-**backend/src/** — `auth` (JWT, OTP, social) · `users` · `providers` (listado/detalle/analytics/nearby) · `provider-profile` (panel propio + coverage) · `professional-migrations` (rama `feat/profesionales-v1`, NO en main — migración Oficio→Profesional preservando `Provider.id`) · `reviews` (GPS/QR) · `favorites` · `chat` · `menu` (carta) · `catalog` · `appointments` (agenda) · `quotations` (cotización) · `coverage` (alcance por distrito) · `offer-posts` ⛔OCULTO · `subastas` ⛔OCULTO · `referrals` (canje monedas→plan) · `payments` (Yape + MercadoPago; PlanRequest DEPRECADO) · `trust-validation` · `user-reports` · `admin` (+services: dashboard/trust/reports/payments) · `ai-assistant` ("Ofi", aislado) · `events` (WS) · `firebase` (push) · `email` · `localities` · `common` (MinioService, provider-features.service, storefront.helpers, **feature-flag.guard**) · `generated` (cliente Prisma, regenera en CI — no editar). Schema: `backend/prisma/schema.prisma`.
+**backend/src/** — `auth` (JWT, OTP, social) · `users` · `providers` (listado/detalle/analytics/nearby) · `provider-profile` (panel propio + coverage) · `professional-migrations` (migración Oficio→Profesional preservando `Provider.id`, PR #55) · `reviews` (GPS/QR) · `favorites` · `chat` · `menu` (carta) · `catalog` · `appointments` (agenda) · `quotations` (cotización) · `coverage` (alcance por distrito) · `offer-posts` ⛔OCULTO · `subastas` ⛔OCULTO · `referrals` (canje monedas→plan) · `payments` (Yape + MercadoPago; PlanRequest DEPRECADO) · `trust-validation` · `user-reports` · `admin` (+services: dashboard/trust/reports/payments) · `ai-assistant` ("Ofi", aislado) · `events` (WS) · `firebase` (push) · `email` · `localities` · `common` (MinioService, provider-features.service, storefront.helpers, **feature-flag.guard**) · `generated` (cliente Prisma, regenera en CI — no editar). Schema: `backend/prisma/schema.prisma`.
 
 **mobile/lib/features/** — `auth` · `providers_list` (listado+detalle+reseñas+filtros+radio) · `provider_dashboard` (panel proveedor, tabs) · `favorites` · `chat` · `menu` · `catalog` · `agenda` · `quotation` · `subastas` ⛔OCULTO · `offer_posts` ⛔OCULTO · `referrals` · `notifications` · `payments` · `trust_validation` · `localities` · `ai_assistant` · `showcase`. **mobile/lib/core/** — `constants` (app_colors, **feature_flags**), `theme` (app_theme_colors, theme_provider), `network` (dio_client), `router`, `services`, `errors`, `utils`, `widgets`. Cada feature: `data/` (repo) · `domain/` (models) · `presentation/` (screens/widgets/providers).
 
@@ -82,7 +82,7 @@ Cambios importantes: **rama nueva → commit → push a la rama → PR → CI ve
 - **Landing web conectada a API real** (PR #31): hero con foto Huancayo legible en ambos temas (el hero conserva `force-dark-zone`); `solutions-section` con categorías padre reales + marquee infinito + geolocalización ("Ver servicios" → `/buscar?categoria&lat/lng` o fallback `provincia=Huancayo`); `/buscar` acepta deep-links; `providers-section` embebe el registro proveedor como **wizard de 6 pasos** (componente compartido `web/components/onboarding/provider-onboarding-form.tsx`, variantes full/wizard) con código de referido, borrador localStorage e invitados que se registran con Google al FINAL. El release PR #49 incorpora tema semántico adaptativo en ese bloque, elimina su `force-dark-zone` y actualiza la marca a Servi.
 - **UX móvil integrada en PR #49:** bottom sheets de registro/filtros usan root navigator; Perfil unifica altas y estados OFICIO/NEGOCIO en "Mis perfiles"; clientes puros pueden ocultar el FAB de Ofi con `SharedPreferences`. Los flags de Subastas/Ofertas/Referidos permanecen apagados.
 - **Coordenadas en registro** (PR #31): `RegisterProviderDto` acepta `latitude/longitude` opcionales y se persisten al crear el Provider (web las saca del enlace de Maps) — antes ningún cliente las enviaba y los proveedores nuevos no salían en búsqueda por radio. Trigger + backfill: `backend/prisma/sql/provider_location_geog_trigger.sql` (aplicado en Supabase).
-- **Servicios Profesionales V1** (rama `feat/profesionales-v1`, NO mergeada a main): tercer tipo de proveedor `PROFESIONAL` (abogados, ingenieros, contadores — credenciales verificadas) junto a `OFICIO`/`NEGOCIO`. Invariante XOR: cliente + (OFICIO **o** PROFESIONAL, nunca ambos) + NEGOCIO opcional, forzado por índice único parcial en BD + validación de servicio. Un OFICIO migra a PROFESIONAL vía `professional-migrations` (admin revisa documentos), preservando el mismo `Provider.id` — nunca crea un Provider duplicado; la migración NO otorga planes de cortesía, no toca referidos ni cambia el rol del usuario. `submit()` exige `verificationStatus === 'APROBADO'` del Oficio antes de aceptar la solicitud (decisión explícita del propietario). El sello "Credenciales verificadas" solo aparece tras aprobación admin; especialidad es el único campo obligatorio del alta profesional. Categorías exclusivas por tipo (`pro-*` para Profesional). `ProviderType` (móvil, `core/utils/provider_type.dart`) agrega un valor `unknown` explícito — un string no reconocido ya NO se alias-ea silenciosamente a `oficio`; `'PROFESSIONAL'`/`'BUSINESS'` (inglés) siguen aceptándose como alias legacy de lectura únicamente (nunca se vuelven a emitir), canonicalizados en `ProvidersProvider.setType()` antes de llegar al backend. Auditoría de cierre completa (16 hallazgos de seguridad/pagos/categorías + UX móvil/web/admin + gaps de test, todos corregidos y probados) en `docs/AUDITORIA_SERVICIOS_PROFESIONALES_V1.md`. SQL pendiente de aplicar manualmente: `backend/prisma/sql/profesionales_06_features_categorias_pro.sql` (rellena `features` vacío en categorías `pro-*`).
+- **Servicios Profesionales V1** (PR #55, squash `09c1711`, mergeado 2026-07-31): tercer tipo de proveedor `PROFESIONAL` (abogados, ingenieros, contadores — credenciales verificadas) junto a `OFICIO`/`NEGOCIO`. Invariante XOR: cliente + (OFICIO **o** PROFESIONAL, nunca ambos) + NEGOCIO opcional, forzado por índice único parcial en BD + validación de servicio. Un OFICIO migra a PROFESIONAL vía `professional-migrations` (admin revisa documentos), preservando el mismo `Provider.id` — nunca crea un Provider duplicado; la migración NO otorga planes de cortesía, no toca referidos ni cambia el rol del usuario. `submit()` exige `verificationStatus === 'APROBADO'` del Oficio antes de aceptar la solicitud (decisión explícita del propietario). El sello "Credenciales verificadas" solo aparece tras aprobación admin; especialidad es el único campo obligatorio del alta profesional. Categorías exclusivas por tipo (`pro-*` para Profesional). `ProviderType` (móvil, `core/utils/provider_type.dart`) agrega un valor `unknown` explícito — un string no reconocido ya NO se alias-ea silenciosamente a `oficio`; `'PROFESSIONAL'`/`'BUSINESS'` (inglés) siguen aceptándose como alias legacy de lectura únicamente (nunca se vuelven a emitir), canonicalizados en `ProvidersProvider.setType()` antes de llegar al backend. Auditoría de cierre completa (16 hallazgos de seguridad/pagos/categorías + UX móvil/web/admin + gaps de test, todos corregidos y probados) en `docs/AUDITORIA_SERVICIOS_PROFESIONALES_V1.md`. Los 6 SQL idempotentes (`profesionales_01..06_*.sql`) ya fueron aplicados manualmente en Supabase por el propietario.
 
 ## 8. Skills y preflight de agentes
 
@@ -177,20 +177,32 @@ expone headers defensivos y CSP `Report-Only`. Auditorías npm del 2026-07-16:
 cero vulnerabilidades high/critical; moderadas conocidas backend 20, admin 10,
 web 2 y una low admin, sin `--force` por riesgo de downgrades/cambios mayores.
 
+**Verificación de la tanda Servicios Profesionales V1, 2026-07-31 (conteos
+unitarios; no se repitió integración/E2E/contratos ni cobertura completa de
+§ arriba):** backend 73 suites/638 unitarios verde; mobile 231/231 verde,
+`flutter analyze` 14 infos de estilo preexistentes y cero warnings/errores;
+admin 10 archivos/26 tests verde, `tsc --noEmit` limpio; web `npm run build`
+(incluye TypeScript) limpio, 18 rutas generadas. **Producción confirmada:**
+PR #55 squash `09c1711`; CI Backend/Mobile/Admin verde, Vercel preview
+web/admin verde. Render `GET /health` responde 200 y
+`GET /admin/professional-migrations` sin JWT responde 401, comprobando el
+runtime nuevo desplegado sin mutar datos.
+
 ## 10. Estado / pendientes
 
-- **En curso — Servicios Profesionales V1 (rama `feat/profesionales-v1`, NO mergeada):** Fases 0-4
-  completas (commits `b3a8ff5`/`0dc3672`/`edfeea8`/`3b50671`) + auditoría de cierre de esta tanda
-  (2026-07-31, commits locales adicionales aún sin push — ver `docs/AUDITORIA_SERVICIOS_PROFESIONALES_V1.md`
-  para el detalle completo de hallazgos/fixes/tests). Verificación final: backend 73 suites/638 tests,
-  mobile 231/231 + analyze limpio, admin 10 archivos/26 tests + tsc limpio, web build+TS limpio — las 4
-  apps verdes. Pendiente explícito de código: el propietario debe aplicar manualmente
-  `profesionales_06_features_categorias_pro.sql` en Supabase (no ejecutado por ningún agente, regla
-  dura del proyecto). Gaps de cobertura conocidos, no bloqueantes: sin test del handler de socket
-  `PROFESSIONAL_MIGRATION_APPROVED/REJECTED` (móvil no tiene infraestructura de socket falso todavía);
-  `web/` sigue sin infraestructura de test (cero vitest/RTL/jsdom) — el bug crítico de crash del panel
-  que se corrigió ahí no tiene regresión propia. Ningún push a `main` ni PR abierto hasta aprobación
-  explícita del propietario.
+- **Servicios Profesionales V1 mergeado y verificado (2026-07-31):** PR #55, squash `09c1711`, 132
+  archivos, CI Backend/Mobile/Admin verde. Fases 0-4 + auditoría de cierre completa (16 hallazgos de
+  seguridad/pagos/categorías + UX móvil/web/admin + gaps de test, todos corregidos y probados — detalle
+  en `docs/AUDITORIA_SERVICIOS_PROFESIONALES_V1.md`) + 4 regresiones de tests/fixtures desactualizados
+  detectadas y corregidas en la verificación final. Verificación previa al merge: backend 73 suites/638
+  tests, mobile 231/231 + analyze limpio, admin 26 tests + tsc limpio, web build+TS limpio. Los 6 SQL
+  idempotentes `profesionales_01..06_*.sql` fueron aplicados manualmente en Supabase por el propietario
+  (gate SQL cumplido antes del squash-merge). Post-merge: Render respondió `GET /health` 200 y
+  `GET /admin/professional-migrations` sin JWT respondió 401 (confirma el runtime nuevo desplegado sin
+  mutar datos); Vercel web/admin con preview verde en el PR. Gaps de cobertura conocidos, no
+  bloqueantes: sin test del handler de socket `PROFESSIONAL_MIGRATION_APPROVED/REJECTED` (móvil no tiene
+  infraestructura de socket falso todavía); `web/` sigue sin infraestructura de test (cero
+  vitest/RTL/jsdom) — el bug crítico de crash del panel que se corrigió ahí no tiene regresión propia.
 - **Desplegado antes de PR #49:** todo el backlog OBSERVACIONES (10 ítems, PRs #20–#25), correos (#26), tema adaptativo + back-panel (#27), Alcance por distritos (#28, SQL aplicado), landing web + wizard registro + coords en registro (#31, SQL trigger aplicado), descarga QR Yape migrada a `gal` + `file_paths.xml` faltante (#33). Trigger `subscription_audit_log` aplicado y versionado en `backend/prisma/sql/audit_log.sql` (#34) — lo usa `payments.service` vía GUC `app.current_user_id`. **Reducción de superficie:** subastas, ofertas, referidos/monedas, agenda y cotización OCULTAS; Carta/Catálogo restringidos a NEGOCIO. PlanRequest deprecado (endpoint vivo para apps viejas; tabla conservada), retención previa de notifs leídas 7d / no leídas 30d, fix fila histórica de payments en primer pago Yape y fix `markNotificationRead` admin sin scope.
 - **Mergeado y verificado:** PR #37, squash `002791d` (2026-07-12), ocultó referidos/monedas, agenda y cotización en backend, móvil, web y Ofi sin borrar código. El usuario aplicó manualmente `backend/prisma/sql/ocultar_features_kb.sql` en Supabase: solo desactiva la entrada de conocimiento de Ofi; no cambia schema ni elimina triggers/funciones. El 2026-07-13 se verificaron Render sano, flags públicos apagados, CI verde y deploys Vercel web/admin exitosos.
 - **Release consolidado 2026-07 desplegado:** PR #49, squash `db0d000`, apiló PRs #39–#48. Incluye hardening 7A–7F, runtime Next 16, UX autorizada web/móvil, errores de auth manual, retención 5/30 días, overlays globales de aprobación/rechazo, ciclo de notificaciones Admin, ocultamiento Admin de Referidos/Recompensas y alta única de foto faltante. Render/Vercel y CI verificados el 2026-07-22. No hubo schema, SQL ni ejecución contra Supabase.
