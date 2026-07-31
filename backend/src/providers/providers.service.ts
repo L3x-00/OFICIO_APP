@@ -31,6 +31,7 @@ const PRIVATE_PUBLIC_PROVIDER_FIELDS = [
 ] as const;
 
 type PublicProfessionalProvider = {
+  id: number;
   type: string;
   providerCategories: Array<{
     category?: {
@@ -43,6 +44,7 @@ type PublicProfessionalProvider = {
 
 type PublicProfessionalProviderDelegate = {
   findFirst(args: unknown): Promise<PublicProfessionalProvider | null>;
+  findMany(args: unknown): Promise<PublicProfessionalProvider[]>;
 };
 
 @Injectable()
@@ -272,7 +274,12 @@ export class ProvidersService {
     const skip = (page - 1) * limit;
 
     const [providers, total] = await Promise.all([
-      this.prisma.provider.findMany({
+      // Cast: el cliente Prisma local puede estar un commit detrás del
+      // schema durante esta tanda (professionalProfile/verificationDocs)
+      // — mismo workaround que findOne() hasta que CI regenere el cliente.
+      (
+        this.prisma.provider as unknown as PublicProfessionalProviderDelegate
+      ).findMany({
         where,
         skip,
         take: limit,
@@ -310,6 +317,12 @@ export class ProvidersService {
             },
           },
           subscription: { select: { plan: true, status: true } },
+          professionalProfile: { select: { specialty: true } },
+          verificationDocs: {
+            where: { docType: 'certificado', status: 'APROBADO' },
+            select: { id: true },
+            take: 1,
+          },
         },
         orderBy,
       }),
@@ -513,7 +526,9 @@ export class ProvidersService {
     // 4. Para cada padre top, los primeros 8 proveedores por prioridad de plan.
     const groups = await Promise.all(
       ranked.map(async (r) => {
-        const providers = await this.prisma.provider.findMany({
+        const providers = await (
+          this.prisma.provider as unknown as PublicProfessionalProviderDelegate
+        ).findMany({
           where: {
             ...VISIBLE_APPROVED,
             // isPrimary: true → solo su categoría insignia. Sin esto un
@@ -546,6 +561,12 @@ export class ProvidersService {
               },
             },
             subscription: { select: { plan: true, status: true } },
+            professionalProfile: { select: { specialty: true } },
+            verificationDocs: {
+              where: { docType: 'certificado', status: 'APROBADO' },
+              select: { id: true },
+              take: 1,
+            },
           },
           orderBy: [{ planPriority: 'asc' }, { averageRating: 'desc' }],
           take: 8,
@@ -667,7 +688,9 @@ export class ProvidersService {
     }
 
     // 2. Hidratamos el shape de tarjeta completo para esos ids.
-    const providers = await this.prisma.provider.findMany({
+    const providers = await (
+      this.prisma.provider as unknown as PublicProfessionalProviderDelegate
+    ).findMany({
       where: hydrateWhere,
       include: {
         providerCategories: {
@@ -690,6 +713,12 @@ export class ProvidersService {
           },
         },
         subscription: { select: { plan: true, status: true } },
+        professionalProfile: { select: { specialty: true } },
+        verificationDocs: {
+          where: { docType: 'certificado', status: 'APROBADO' },
+          select: { id: true },
+          take: 1,
+        },
       },
     });
 

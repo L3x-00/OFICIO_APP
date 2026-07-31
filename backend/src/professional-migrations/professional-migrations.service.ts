@@ -107,6 +107,7 @@ export class ProfessionalMigrationsService {
       select: {
         id: true,
         businessName: true,
+        verificationStatus: true,
         providerCategories: {
           select: {
             isPrimary: true,
@@ -119,6 +120,13 @@ export class ProfessionalMigrationsService {
     if (!provider) {
       throw new BadRequestException(
         'Solo un perfil de Oficios puede solicitar el cambio a servicio profesional',
+      );
+    }
+    // Mismo gate que trust-validation: no se pueden revisar credenciales
+    // sobre un Oficio que un admin todavía no validó como real.
+    if (provider.verificationStatus !== 'APROBADO') {
+      throw new BadRequestException(
+        'Tu perfil de Oficio debe estar aprobado antes de solicitar el cambio a servicio profesional',
       );
     }
 
@@ -347,6 +355,12 @@ export class ProfessionalMigrationsService {
             type: true,
             phone: true,
             description: true,
+            // El revisor necesita ver si el Oficio de origen sigue
+            // PENDIENTE/RECHAZADO antes de aprobar credenciales — hoy no
+            // hay ningún gate que lo impida en submit().
+            verificationStatus: true,
+            trustStatus: true,
+            isVisible: true,
             images: { select: { id: true, url: true, isCover: true } },
             user: { select: { firstName: true, lastName: true, email: true } },
           },

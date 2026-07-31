@@ -69,7 +69,7 @@ export class MercadoPagoService {
 
     // 2. Validar que el user tiene el perfil del providerType pedido.
     //    Evita pagar para un perfil inexistente y desperdiciar webhook.
-    const provider = await this.prisma.provider.findUnique({
+    let provider = await this.prisma.provider.findUnique({
       where: {
         userId_type: {
           userId: params.userId,
@@ -78,6 +78,19 @@ export class MercadoPagoService {
       },
       select: { id: true },
     });
+    // El cliente puede pedir OFICIO con el estado local desactualizado justo
+    // después de aprobarse una migración a PROFESIONAL (mismo Provider.id,
+    // mismo XOR). Reintentar con el tipo real antes de rechazar.
+    let resolvedType: ProviderTypeValue = params.providerType;
+    if (!provider && params.providerType === 'OFICIO') {
+      provider = await this.prisma.provider.findUnique({
+        where: {
+          userId_type: { userId: params.userId, type: 'PROFESIONAL' as any },
+        },
+        select: { id: true },
+      });
+      if (provider) resolvedType = 'PROFESIONAL' as ProviderTypeValue;
+    }
     if (!provider) {
       throw new BadRequestException(
         `No tienes un perfil ${params.providerType} para activar el plan`,
@@ -91,9 +104,9 @@ export class MercadoPagoService {
       body: {
         items: [
           {
-            id: `plan-${params.plan.toLowerCase()}-${params.providerType.toLowerCase()}`,
+            id: `plan-${params.plan.toLowerCase()}-${resolvedType.toLowerCase()}`,
             title: meta.description,
-            description: `Suscripción al plan ${params.plan} (${params.providerType}) en Servi`,
+            description: `Suscripción al plan ${params.plan} (${resolvedType}) en Servi`,
             quantity: 1,
             currency_id: 'PEN',
             unit_price: meta.price,

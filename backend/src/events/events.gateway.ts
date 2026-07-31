@@ -314,7 +314,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       | 'USER_PENDING'
       | 'NEW_USER_VERIFIED'
       | 'NEW_YAPE_PAYMENT'
-      | 'NEW_MP_PAYMENT', // pago MercadoPago auto-aprobado
+      | 'NEW_MP_PAYMENT' // pago MercadoPago auto-aprobado
+      | 'MP_PAYMENT_UNRESOLVED', // pago MP cobrado sin provider resuelto (legacy ambiguo/sin perfil)
     data?: Record<string, unknown>,
   ) {
     this.server.to('admin').emit('adminEvent', {

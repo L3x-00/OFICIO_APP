@@ -119,7 +119,17 @@ export class PaymentsService {
         'Indica el tipo de perfil para enviar el comprobante',
       );
     }
-    const provider = candidates[0];
+    let provider: { id: number } | undefined = candidates[0];
+    // El cliente puede pedir OFICIO con el estado local desactualizado justo
+    // después de aprobarse una migración a PROFESIONAL (mismo Provider.id,
+    // mismo XOR). Reintentar con el tipo real antes de rechazar.
+    if (!provider && providerType === 'OFICIO') {
+      provider =
+        (await this.prisma.provider.findFirst({
+          where: { userId, type: 'PROFESIONAL' as any },
+          select: { id: true },
+        })) ?? undefined;
+    }
     if (!provider)
       throw new ForbiddenException('No tienes un perfil de proveedor');
 
@@ -580,6 +590,12 @@ export class PaymentsService {
       });
       if (candidates.length === 1) provider = candidates[0];
       if (candidates.length > 1) {
+        await this.recordUnresolvedMpPayment(
+          paymentId,
+          userId,
+          amount,
+          'ambiguo (2+ perfiles, referencia legacy sin tipo)',
+        );
         this.logger.error(
           `Pago legacy ${paymentId} ambiguo para userId=${userId}; requiere conciliación manual`,
         );
@@ -588,6 +604,12 @@ export class PaymentsService {
     }
 
     if (!provider) {
+      await this.recordUnresolvedMpPayment(
+        paymentId,
+        userId,
+        amount,
+        `sin perfil (type=${providerType ?? 'legacy'})`,
+      );
       this.logger.error(
         `No se encontró provider para userId=${userId}, type=${providerType ?? 'legacy'}`,
       );
@@ -692,5 +714,40 @@ export class PaymentsService {
     this.logger.log(
       `✅ Suscripción activada: providerId=${provider.id}, plan=${plan}`,
     );
+  }
+
+  /**
+   * Un pago MercadoPago ya cobrado que no pudo resolverse a un provider
+   * (referencia legacy ambigua o sin perfil) antes solo dejaba un
+   * `logger.error` — stdout de Render es efímero y el admin no tenía
+   * ninguna señal ni rastro persistente del cobro. Persiste + emite en
+   * vivo, igual que el camino feliz (NEW_MP_PAYMENT).
+   */
+  private async recordUnresolvedMpPayment(
+    paymentId: string,
+    userId: number,
+    amount: number,
+    reason: string,
+  ): Promise<void> {
+    try {
+      await this.prisma.adminNotification.create({
+        data: {
+          type: 'MP_PAYMENT_UNRESOLVED',
+          title: 'Pago MercadoPago sin conciliar',
+          message: `Pago ${paymentId} de S/${amount} (userId=${userId}) quedó ${reason}. Requiere conciliación manual.`,
+          metadata: { paymentId, userId, amount },
+        },
+      });
+      this.events.emitAdminEvent('MP_PAYMENT_UNRESOLVED', {
+        paymentId,
+        userId,
+        amount,
+      });
+    } catch (e) {
+      // Nunca dejar que un fallo al notificar rompa el ack del webhook.
+      this.logger.error(
+        `No se pudo registrar aviso de pago no conciliado ${paymentId}: ${e}`,
+      );
+    }
   }
 }

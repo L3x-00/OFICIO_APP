@@ -89,6 +89,27 @@ describe('PaymentsService (unit)', () => {
       ).rejects.toThrow(ForbiddenException);
     });
 
+    it('pide OFICIO pero ya migró a PROFESIONAL → reintenta y cobra (no Forbidden)', async () => {
+      prisma.provider.findMany.mockResolvedValue([]); // findMany({type:'OFICIO'}) → nada
+      prisma.provider.findFirst.mockResolvedValue({ id: 9 }); // fallback findFirst({type:'PROFESIONAL'})
+      prisma.yapePayment.create.mockResolvedValue({ id: 3 });
+
+      await service.submitYapePayment(7, {
+        plan: 'PREMIUM',
+        providerType: 'OFICIO',
+      } as any);
+
+      expect(prisma.provider.findFirst).toHaveBeenCalledWith({
+        where: { userId: 7, type: 'PROFESIONAL' },
+        select: { id: true },
+      });
+      expect(prisma.yapePayment.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ providerId: 9 }),
+        }),
+      );
+    });
+
     it('plan no válido → BadRequest', async () => {
       prisma.provider.findMany.mockResolvedValue([{ id: 1 }]);
       await expect(
@@ -414,13 +435,31 @@ describe('PaymentsService (unit)', () => {
       expect(push.sendToUser).not.toHaveBeenCalled();
     });
 
-    it('provider inexistente → retorna en silencio (no 500 del webhook)', async () => {
+    it('provider inexistente → retorna en silencio (no 500 del webhook) pero deja rastro persistido para el admin', async () => {
       prisma.payment.findFirst.mockResolvedValue(null);
       prisma.provider.findFirst.mockResolvedValue(null);
       await expect(
         service.activateSubscriptionFromPayment(base),
       ).resolves.toBeUndefined();
       expect(prisma.$transaction).not.toHaveBeenCalled();
+      // Antes de este fix, este caso solo dejaba un logger.error — dinero
+      // cobrado sin ningún rastro que el admin pudiera ver.
+      expect(prisma.adminNotification.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            type: 'MP_PAYMENT_UNRESOLVED',
+            metadata: expect.objectContaining({
+              paymentId: base.paymentId,
+              userId: base.userId,
+              amount: base.amount,
+            }),
+          }),
+        }),
+      );
+      expect(events.emitAdminEvent).toHaveBeenCalledWith(
+        'MP_PAYMENT_UNRESOLVED',
+        expect.objectContaining({ paymentId: base.paymentId }),
+      );
     });
 
     it('éxito: upsert con endDate EXACTO 30 días + pago con reference=paymentId + evento NEW_MP_PAYMENT + push', async () => {
@@ -524,6 +563,26 @@ describe('PaymentsService (unit)', () => {
       );
       expect(prisma.provider.update).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 10 } }),
+      );
+    });
+
+    it('referencia legacy sin tipo y con 2+ perfiles → ambigua, deja rastro persistido para el admin', async () => {
+      prisma.payment.findFirst.mockResolvedValue(null);
+      prisma.provider.findMany.mockResolvedValue([{ id: 10 }, { id: 11 }]);
+
+      await expect(
+        service.activateSubscriptionFromPayment({
+          ...base,
+          providerId: undefined,
+          providerType: undefined,
+        }),
+      ).resolves.toBeUndefined();
+
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expect(prisma.adminNotification.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ type: 'MP_PAYMENT_UNRESOLVED' }),
+        }),
       );
     });
   });

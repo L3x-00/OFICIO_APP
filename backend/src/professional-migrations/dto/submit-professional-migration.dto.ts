@@ -21,9 +21,14 @@ const optionalTrimmedText = ({ value }: { value: unknown }) => {
 const categoryIdsFromFormData = ({ value }: { value: unknown }) => {
   if (Array.isArray(value)) return value.map(Number);
   if (typeof value !== 'string') return value;
+  // Con una sola especialidad, el campo repetido `categoryIds` llega como
+  // string escalar (no array) — sin este caso, JSON.parse('12') devuelve el
+  // número 12, no un array, y @IsArray() rechaza la solicitud con 400.
   try {
     const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.map(Number) : value;
+    if (Array.isArray(parsed)) return parsed.map(Number);
+    if (typeof parsed === 'number') return [parsed];
+    return value.split(',').map((id) => Number(id.trim()));
   } catch {
     return value.split(',').map((id) => Number(id.trim()));
   }

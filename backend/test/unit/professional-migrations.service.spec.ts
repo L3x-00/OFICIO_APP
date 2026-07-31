@@ -48,6 +48,7 @@ describe('ProfessionalMigrationsService (unit)', () => {
     prisma.provider.findFirst.mockResolvedValue({
       id: 10,
       businessName: 'Obras López',
+      verificationStatus: 'APROBADO',
       providerCategories: [
         {
           isPrimary: true,
@@ -123,6 +124,21 @@ describe('ProfessionalMigrationsService (unit)', () => {
     await expect(service.submit(7, dto as any)).rejects.toThrow(
       ConflictException,
     );
+    expect(minio.uploadFile).not.toHaveBeenCalled();
+  });
+
+  it('Oficio PENDIENTE o RECHAZADO → BadRequest antes de crear la solicitud', async () => {
+    prisma.provider.findFirst.mockResolvedValue({
+      id: 10,
+      businessName: 'Obras López',
+      verificationStatus: 'PENDIENTE',
+      providerCategories: [],
+    });
+
+    await expect(service.submit(7, dto as any)).rejects.toThrow(
+      BadRequestException,
+    );
+    expect(prisma.professionalMigrationRequest.create).not.toHaveBeenCalled();
     expect(minio.uploadFile).not.toHaveBeenCalled();
   });
 

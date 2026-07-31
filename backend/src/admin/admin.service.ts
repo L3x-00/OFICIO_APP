@@ -900,6 +900,7 @@ export class AdminService {
               'REFERRAL_CODE_USED',
               'NEW_USER_VERIFIED',
               'USER_PENDING',
+              'MP_PAYMENT_UNRESOLVED',
             ],
           },
         },

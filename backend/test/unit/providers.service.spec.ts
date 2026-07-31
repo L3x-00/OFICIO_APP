@@ -248,6 +248,23 @@ describe('ProvidersService (unit)', () => {
       expect(res[0].phone).toBe('999'); // PREMIUM intacto
     });
 
+    it('hidratación incluye professionalProfile+verificationDocs (mismo gap que findAll)', async () => {
+      prisma.$queryRaw.mockResolvedValue([{ id: 1, dist_m: 500 }]);
+      prisma.provider.findMany.mockResolvedValue([
+        { id: 1, phone: '999', subscription: { plan: 'PREMIUM' }, images: [] },
+      ]);
+      await service.getNearby(-12, -77, 5);
+      const include = prisma.provider.findMany.mock.calls[0][0].include;
+      expect(include.professionalProfile).toEqual({
+        select: { specialty: true },
+      });
+      expect(include.verificationDocs).toEqual(
+        expect.objectContaining({
+          where: { docType: 'certificado', status: 'APROBADO' },
+        }),
+      );
+    });
+
     it('respeta los filtros activos: categoría/tipo entran al where de hidratación', async () => {
       // Sin esto, buscar por radio dentro de "Gasfiteros" devolvía a TODOS los
       // cercanos. El filtro se aplica en el findMany del paso 2 (Prisma).
@@ -317,6 +334,37 @@ describe('ProvidersService (unit)', () => {
         BadRequestException,
       );
       expect(prisma.category.findMany).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getFeaturedGrouped() — home agrupada por categoría padre', () => {
+    it('include del findMany por padre selecciona professionalProfile+verificationDocs', async () => {
+      prisma.providerCategory.groupBy.mockResolvedValue([
+        { categoryId: 4, _count: { providerId: 3 } },
+      ]);
+      prisma.category.findMany.mockResolvedValue([
+        {
+          id: 3,
+          name: 'Legal',
+          slug: 'legal',
+          iconUrl: null,
+          children: [{ id: 4 }],
+        },
+      ]);
+      prisma.provider.findMany.mockResolvedValue([]);
+
+      await service.getFeaturedGrouped();
+
+      expect(prisma.provider.findMany).toHaveBeenCalledTimes(1);
+      const include = prisma.provider.findMany.mock.calls[0][0].include;
+      expect(include.professionalProfile).toEqual({
+        select: { specialty: true },
+      });
+      expect(include.verificationDocs).toEqual(
+        expect.objectContaining({
+          where: { docType: 'certificado', status: 'APROBADO' },
+        }),
+      );
     });
   });
 
@@ -502,6 +550,25 @@ describe('ProvidersService (unit)', () => {
       prisma.locality.findMany.mockResolvedValue(CATALOG);
       prisma.provider.findMany.mockResolvedValue([]);
       prisma.provider.count.mockResolvedValue(0);
+    });
+
+    /// Antes solo findOne() seleccionaba professionalProfile/verificationDocs
+    /// — un Profesional aparecía sin especialidad ni sello en el listado,
+    /// justo donde el cliente compara y elige. Sin esta regresión, el bug
+    /// vuelve en silencio si alguien reescribe el include.
+    it('include selecciona professionalProfile+verificationDocs (especialidad y sello visibles en listado)', async () => {
+      await service.findAll({});
+      const include = prisma.provider.findMany.mock.calls[0][0].include;
+      expect(include.professionalProfile).toEqual({
+        select: { specialty: true },
+      });
+      expect(include.verificationDocs).toEqual(
+        expect.objectContaining({
+          where: { docType: 'certificado', status: 'APROBADO' },
+          select: { id: true },
+          take: 1,
+        }),
+      );
     });
 
     /// El filtro de distrito debe matchear registrado O cobertura de pago —

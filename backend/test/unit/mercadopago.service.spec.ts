@@ -72,6 +72,26 @@ describe('MercadoPagoService (unit)', () => {
       expect(prefCreate).not.toHaveBeenCalled();
     });
 
+    it('pide OFICIO pero ya migró a PROFESIONAL → reintenta con PROFESIONAL y cobra (no 400)', async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: 7, email: 'a@b.com' });
+      prisma.provider.findUnique
+        .mockResolvedValueOnce(null) // 1ª llamada: type OFICIO → no existe
+        .mockResolvedValueOnce({ id: 5 }); // 2ª llamada: type PROFESIONAL → hit
+
+      const res = await service.createPreference(params); // params.providerType === 'OFICIO'
+
+      expect(prisma.provider.findUnique).toHaveBeenNthCalledWith(2, {
+        where: { userId_type: { userId: 7, type: 'PROFESIONAL' } },
+        select: { id: true },
+      });
+      expect(prefCreate).toHaveBeenCalled();
+      const body = prefCreate.mock.calls[0][0].body;
+      expect(body.external_reference).toBe('provider_5_user_7_plan_ESTANDAR');
+      // El detalle del item también refleja el tipo resuelto, no el pedido.
+      expect(body.items[0].description).toContain('PROFESIONAL');
+      expect(res.preferenceId).toBe('pref-1');
+    });
+
     it('éxito: unit_price viene del catálogo y external_reference conserva el Provider.id', async () => {
       prisma.user.findUnique.mockResolvedValue({ id: 7, email: 'a@b.com' });
       prisma.provider.findUnique.mockResolvedValue({ id: 5 });
