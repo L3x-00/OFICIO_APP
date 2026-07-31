@@ -259,9 +259,9 @@ class _ProfessionalMigrationScreenState
                   color: AppColors.available.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.school_rounded,
-                  color: AppColors.available,
+                  color: AppColors.tintOn(AppColors.available, c.isDark),
                   size: 38,
                 ),
               ),
@@ -296,7 +296,7 @@ class _ProfessionalMigrationScreenState
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.available,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.onSolid(AppColors.available),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -464,18 +464,18 @@ class _ProfessionalMigrationScreenState
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.available,
               disabledBackgroundColor: c.bgCard,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.onSolid(AppColors.available),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
             child: _submitting
-                ? const SizedBox(
+                ? SizedBox(
                     width: 22,
                     height: 22,
                     child: CircularProgressIndicator(
-                      color: Colors.white,
+                      color: AppColors.onSolid(AppColors.available),
                       strokeWidth: 2,
                     ),
                   )
@@ -511,9 +511,9 @@ class _InfoBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
+          Icon(
             Icons.school_rounded,
-            color: AppColors.available,
+            color: AppColors.tintOn(AppColors.available, c.isDark),
             size: 22,
           ),
           const SizedBox(width: 12),
@@ -754,9 +754,9 @@ class _PendingStatusView extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.hourglass_top_rounded,
-                    color: AppColors.available,
+                    color: AppColors.tintOn(AppColors.available, c.isDark),
                     size: 22,
                   ),
                   const SizedBox(width: 10),

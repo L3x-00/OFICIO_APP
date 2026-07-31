@@ -424,12 +424,16 @@ class _PanelAppBar extends StatelessWidget implements PreferredSizeWidget {
         children: [
           Icon(style.icon, size: 14, color: style.color),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: style.color,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: style.color,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           if (_canSwitch) ...[

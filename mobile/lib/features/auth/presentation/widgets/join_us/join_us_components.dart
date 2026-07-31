@@ -165,6 +165,12 @@ class TypeCard extends StatelessWidget {
   final List<Color> gradient;
   final VoidCallback onTap;
 
+  /// Color del glifo sobre el fill sólido del [gradient]. Blanco por
+  /// defecto (correcto para los gradientes oscuros de Oficio/Negocio) —
+  /// los llamadores con un gradiente claro (ej. Profesional, verde) deben
+  /// pasar `AppColors.onSolid(...)` explícito para no lavar el ícono.
+  final Color iconColor;
+
   const TypeCard({
     super.key,
     required this.icon,
@@ -173,6 +179,7 @@ class TypeCard extends StatelessWidget {
     required this.tag,
     required this.gradient,
     required this.onTap,
+    this.iconColor = Colors.white,
   });
 
   @override
@@ -196,7 +203,7 @@ class TypeCard extends StatelessWidget {
                 gradient: LinearGradient(colors: gradient),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: Colors.white, size: 26),
+              child: Icon(icon, color: iconColor, size: 26),
             ),
             const SizedBox(width: 16),
             Expanded(

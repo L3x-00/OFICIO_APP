@@ -67,6 +67,12 @@ class DashboardProvider extends ChangeNotifier {
   Future<void> loadDashboard({String? providerType, bool force = false}) async {
     if (_status == DashboardStatus.loading) return;
 
+    // Si no se especifica tipo, mantener el activo — sin esto, un caller
+    // sin tipo (reintentar, tras cancelar plan, retorno de MercadoPago)
+    // borraba el tipo activo y el backend responde 400 en cuanto el
+    // usuario tiene 2 perfiles (individual + Negocio).
+    providerType ??= _currentProviderType;
+
     // ¿Tenemos ya datos válidos del mismo perfil? (se evalúa con el tipo
     // ANTES de reasignarlo). En modo silencioso no tocamos el spinner.
     final sameProfileLoaded =

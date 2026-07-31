@@ -38,7 +38,11 @@ class FilterBar extends StatelessWidget {
       icon: Icons.school_rounded,
       value: 'PROFESIONAL',
       activeColor: AppColors.available,
-      foreground: Colors.white,
+      // AppColors.onSolid(available) da amberDeep (luminancia > 0.22) —
+      // blanco-sobre-verde-claro no llega a AA (2.63:1). No se puede llamar
+      // onSolid() aquí porque la lista es const; se referencia el mismo
+      // valor que ya devolvería.
+      foreground: AppColors.amberDeep,
     ),
     _TypeChipData(
       label: 'Negocios',

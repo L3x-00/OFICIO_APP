@@ -150,15 +150,20 @@ class _JoinUsFABState extends State<JoinUsFAB>
     // o aprobar un perfil mientras el socket está dormido.
     auth.refreshProviderStatus();
 
-    final oficioStatus = auth.verificationStatusFor('OFICIO');
+    // XOR: el usuario nunca tiene OFICIO y PROFESIONAL a la vez — el que
+    // sí tenga es "el" tipo individual para decidir qué panel abrir.
+    final individualType = auth.hasProfessionalProfile
+        ? 'PROFESIONAL'
+        : 'OFICIO';
+    final individualStatus = auth.verificationStatusFor(individualType);
     final negocioStatus = auth.verificationStatusFor('NEGOCIO');
-    final hasOficio = oficioStatus != null;
+    final hasIndividual = individualStatus != null;
     final hasNegocio = negocioStatus != null;
 
     // Si el user tiene los dos tipos registrados (cualquier combinación
     // de estados) → mostramos el chooser con banners por perfil. Esto
     // cubre el caso obs#4: uno aprobado + otro rechazado.
-    if (hasOficio && hasNegocio) {
+    if (hasIndividual && hasNegocio) {
       _showPanelChoiceModal(context);
       return;
     }
@@ -166,8 +171,8 @@ class _JoinUsFABState extends State<JoinUsFAB>
     // Un solo perfil: si está aprobado, push directo al panel; si está
     // rechazado o pendiente, abrir el modal de Únete (que ya pinta
     // PendingBanner / RejectedBanner para ese tipo).
-    final onlyType = hasOficio ? 'OFICIO' : 'NEGOCIO';
-    final onlyStatus = hasOficio ? oficioStatus : negocioStatus;
+    final onlyType = hasIndividual ? individualType : 'NEGOCIO';
+    final onlyStatus = hasIndividual ? individualStatus : negocioStatus;
     if (onlyStatus == 'APROBADO') {
       Navigator.of(context, rootNavigator: true).push(
         MaterialPageRoute(
@@ -195,7 +200,11 @@ class _JoinUsFABState extends State<JoinUsFAB>
         // instante).
         return Consumer<AuthProvider>(
           builder: (_, auth, _) {
-            final oficioStatus = auth.verificationStatusFor('OFICIO');
+            final individualType = auth.hasProfessionalProfile
+                ? 'PROFESIONAL'
+                : 'OFICIO';
+            final isProfesional = individualType == 'PROFESIONAL';
+            final individualStatus = auth.verificationStatusFor(individualType);
             final negocioStatus = auth.verificationStatusFor('NEGOCIO');
 
             return Container(
@@ -240,17 +249,23 @@ class _JoinUsFABState extends State<JoinUsFAB>
                   ),
                   const SizedBox(height: 20),
                   _ProfileChoiceCard(
-                    icon: Icons.handyman_rounded,
-                    title: 'Perfil Profesional',
-                    color: AppColors.primary,
-                    status: oficioStatus,
-                    rejectionReason: auth.rejectionReasonFor('OFICIO'),
+                    icon: isProfesional
+                        ? Icons.school_rounded
+                        : Icons.handyman_rounded,
+                    title: isProfesional
+                        ? 'Perfil de Servicio profesional'
+                        : 'Perfil Profesional',
+                    color: isProfesional
+                        ? AppColors.available
+                        : AppColors.primary,
+                    status: individualStatus,
+                    rejectionReason: auth.rejectionReasonFor(individualType),
                     onApprovedTap: () {
                       Navigator.pop(sheetCtx);
                       Navigator.of(context, rootNavigator: true).push(
                         MaterialPageRoute(
                           builder: (_) =>
-                              const ProviderPanel(providerType: 'OFICIO'),
+                              ProviderPanel(providerType: individualType),
                         ),
                       );
                     },
@@ -259,9 +274,9 @@ class _JoinUsFABState extends State<JoinUsFAB>
                       Navigator.of(context, rootNavigator: true).push(
                         MaterialPageRoute(
                           builder: (_) => ProviderOnboardingForm(
-                            providerType: 'OFICIO',
+                            providerType: individualType,
                             isStandalone: true,
-                            initialData: auth.providerDataFor('OFICIO'),
+                            initialData: auth.providerDataFor(individualType),
                           ),
                         ),
                       );

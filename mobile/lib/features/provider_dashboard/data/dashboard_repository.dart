@@ -273,8 +273,11 @@ class DashboardRepository {
 
   // ── REPORTE DE PROBLEMA DE PLATAFORMA ────────────────────
 
-  Future<void> cancelPlan() async {
-    await _dio.patch('/payments/cancel-plan');
+  Future<void> cancelPlan({String? type}) async {
+    await _dio.patch(
+      '/payments/cancel-plan',
+      queryParameters: type != null ? {'type': type} : null,
+    );
   }
 
   Future<void> reportPlatformIssue({

@@ -107,7 +107,12 @@ class ProfilePreviewMock extends StatelessWidget {
                             : isProfesional
                             ? Icons.school_rounded
                             : Icons.person_rounded,
-                        color: Colors.white,
+                        // El gradiente de Profesional (verde claro) lava un
+                        // glifo blanco — AppColors.onSolid() decide por
+                        // luminancia real en vez de asumir blanco siempre.
+                        color: isProfesional
+                            ? AppColors.onSolid(AppColors.available)
+                            : Colors.white,
                         size: 20,
                       ),
                     ),

@@ -32,9 +32,17 @@ class ProviderInfo extends StatelessWidget {
         Text(
           provider.type.label,
           style: TextStyle(
-            color: provider.type == ProviderType.negocio
-                ? AppColors.tintOn(AppColors.business, c.isDark)
-                : AppColors.primary,
+            color: switch (provider.type) {
+              ProviderType.negocio => AppColors.tintOn(
+                AppColors.business,
+                c.isDark,
+              ),
+              ProviderType.profesional => AppColors.tintOn(
+                AppColors.available,
+                c.isDark,
+              ),
+              _ => AppColors.primary,
+            },
             fontSize: 11,
             fontWeight: FontWeight.w700,
           ),

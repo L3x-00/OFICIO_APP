@@ -238,7 +238,11 @@ class _PlanCardState extends State<PlanCard> {
       return;
     }
 
-    final ok = await YapePaymentScreen.show(context, plan: widget.plan.id);
+    final ok = await YapePaymentScreen.show(
+      context,
+      plan: widget.plan.id,
+      providerType: dash.currentProviderType,
+    );
     if (ok == true && mounted) {
       // Marca local + recarga del dashboard para que la pill "Revisión
       // pendiente" aparezca al instante sin esperar al próximo refresh.
@@ -572,7 +576,9 @@ class _CancelPlanButtonState extends State<CancelPlanButton> {
     if (confirmed != true || !mounted) return;
     setState(() => _loading = true);
     try {
-      await DashboardRepository().cancelPlan();
+      await DashboardRepository().cancelPlan(
+        type: widget.dash.currentProviderType,
+      );
       if (!mounted) return;
       await widget.dash.loadDashboard();
       if (!mounted) return;

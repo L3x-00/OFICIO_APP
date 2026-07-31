@@ -34,18 +34,31 @@ void main() {
     return req.queryParameters;
   }
 
-  test('setType("BUSINESS") envía type=BUSINESS al backend', () async {
-    stubProvidersList();
-    final p = ProvidersProvider();
-    await p.setType('BUSINESS');
-    expect(lastProvidersQuery()['type'], 'BUSINESS');
-  });
+  test(
+    'setType("BUSINESS") canonicaliza el alias legacy y envía type=NEGOCIO',
+    () async {
+      stubProvidersList();
+      final p = ProvidersProvider();
+      await p.setType('BUSINESS');
+      expect(lastProvidersQuery()['type'], 'NEGOCIO');
+    },
+  );
 
-  test('setType("PROFESSIONAL") envía type=PROFESSIONAL', () async {
+  test(
+    'setType("PROFESSIONAL") es alias legacy de OFICIO y envía type=OFICIO',
+    () async {
+      stubProvidersList();
+      final p = ProvidersProvider();
+      await p.setType('PROFESSIONAL');
+      expect(lastProvidersQuery()['type'], 'OFICIO');
+    },
+  );
+
+  test('setType("PROFESIONAL") envía type=PROFESIONAL al backend', () async {
     stubProvidersList();
     final p = ProvidersProvider();
-    await p.setType('PROFESSIONAL');
-    expect(lastProvidersQuery()['type'], 'PROFESSIONAL');
+    await p.setType('PROFESIONAL');
+    expect(lastProvidersQuery()['type'], 'PROFESIONAL');
   });
 
   test('setSortBy("reviews") envía sortBy=reviews', () async {

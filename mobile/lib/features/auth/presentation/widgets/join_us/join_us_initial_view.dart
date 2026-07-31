@@ -351,6 +351,7 @@ class JoinUsInitialView extends StatelessWidget {
                       icon: Icons.handyman_rounded,
                       label: 'Perfil Profesional aprobado',
                       gradient: const [Color(0xFF00C6FF), Color(0xFF0072FF)],
+                      accentColor: AppColors.primary,
                       onTap: () {
                         Navigator.pop(context);
                         onOpenPanel('OFICIO');
@@ -390,6 +391,7 @@ class JoinUsInitialView extends StatelessWidget {
                           'Tu formación + nuestra plataforma = más clientes.\nAbogado, ingeniero, contador, arquitecto…',
                       tag: 'PROFESIONAL',
                       gradient: const [Color(0xFF7ED9A0), AppColors.available],
+                      iconColor: AppColors.onSolid(AppColors.available),
                       onTap: () => onSelectType('PROFESIONAL'),
                     ),
                     const SizedBox(height: 14),
@@ -407,6 +409,7 @@ class JoinUsInitialView extends StatelessWidget {
                       icon: Icons.school_rounded,
                       label: 'Perfil de Especialista aprobado',
                       gradient: const [Color(0xFF7ED9A0), AppColors.available],
+                      iconColor: AppColors.onSolid(AppColors.available),
                       onTap: () {
                         Navigator.pop(context);
                         onOpenPanel('PROFESIONAL');
@@ -460,6 +463,7 @@ class JoinUsInitialView extends StatelessWidget {
                       icon: Icons.storefront_rounded,
                       label: 'Negocio aprobado',
                       gradient: const [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+                      accentColor: AppColors.business,
                       onTap: () {
                         Navigator.pop(context);
                         onOpenPanel('NEGOCIO');
