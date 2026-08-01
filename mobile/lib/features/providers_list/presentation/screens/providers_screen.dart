@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/feature_flags.dart';
+import '../../../../core/router/app_router.dart' show AppRoutes;
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../ai_assistant/presentation/ai_assistant_fab.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../localities/data/dynamic_locations.dart';
+import '../../../notifications/presentation/providers/notifications_provider.dart';
 import '../../../referrals/presentation/screens/referral_screen.dart';
 import '../../../showcase/showcase_data.dart';
 import '../../../showcase/showcase_overlay.dart';
@@ -222,6 +225,9 @@ class _ProvidersViewState extends State<_ProvidersView>
             ],
           ),
           actions: [
+            // Campana de alertas — antes vivía como tab del bottom nav;
+            // ahora navega al mismo branch (/alerts) desde el AppBar.
+            const _AlertsBellButton(),
             // Botón de filtros — el deck lo destaca como "Filtros
             // avanzados". Mismo spec en registered y guest.
             ShowcaseTarget(
@@ -466,6 +472,105 @@ class _CompactLocationChip extends StatelessWidget {
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Campana de alertas (AppBar) ───────────────────────────
+// Minimalista: sin bordes ni fondo, solo el ícono + un punto rojo cuando
+// hay no leídos. Oscila (swing) cuando unreadCount pasa de 0 a >0 —
+// mientras el widget está vivo, no en el mount con no-leídos preexistentes.
+class _AlertsBellButton extends StatefulWidget {
+  const _AlertsBellButton();
+
+  @override
+  State<_AlertsBellButton> createState() => _AlertsBellButtonState();
+}
+
+class _AlertsBellButtonState extends State<_AlertsBellButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _swingController;
+  late final Animation<double> _swing;
+  late int _lastUnread;
+
+  @override
+  void initState() {
+    super.initState();
+    // Semilla con el valor actual — evita que no-leídos preexistentes al
+    // abrir la pantalla disparen el swing como si fuera una notificación
+    // nueva (solo debe animar una transición 0 → >0 en vivo).
+    _lastUnread = context.read<NotificationsProvider>().unreadCount;
+    _swingController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _swing = TweenSequence<double>(
+      [
+        TweenSequenceItem(tween: Tween(begin: 0.0, end: -0.14), weight: 1),
+        TweenSequenceItem(tween: Tween(begin: -0.14, end: 0.11), weight: 1),
+        TweenSequenceItem(tween: Tween(begin: 0.11, end: -0.06), weight: 1),
+        TweenSequenceItem(tween: Tween(begin: -0.06, end: 0.0), weight: 1),
+      ],
+    ).animate(CurvedAnimation(parent: _swingController, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _swingController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final auth = context.watch<AuthProvider>();
+    final isGuest = auth.isGuest || auth.user == null;
+    final unread = context.watch<NotificationsProvider>().unreadCount;
+
+    if (unread > 0 && _lastUnread == 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _swingController.forward(from: 0);
+      });
+    }
+    _lastUnread = unread;
+
+    return ShowcaseTarget(
+      step: kShowcaseStepsRegistered.firstWhere(
+        (s) => s.key == kShowcaseAlertsTab,
+      ),
+      isLast: isLastShowcaseStep(kShowcaseAlertsTab, isGuest: isGuest),
+      targetHeight: 40,
+      targetWidth: 40,
+      child: AnimatedBuilder(
+        animation: _swing,
+        builder: (_, child) =>
+            Transform.rotate(angle: _swing.value, child: child),
+        child: IconButton(
+          tooltip: 'Alertas',
+          onPressed: () => StatefulNavigationShell.of(
+            context,
+          ).goBranch(AppRoutes.tabAlertas),
+          icon: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Icon(Icons.notifications_none_rounded, color: c.textSecondary),
+              if (unread > 0)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE53935),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
