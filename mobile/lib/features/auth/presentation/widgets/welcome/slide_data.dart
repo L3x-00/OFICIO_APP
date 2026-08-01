@@ -6,11 +6,13 @@ class SlideData {
   final String subtitle;
   final Widget visual;
   final Color accentColor;
+  final String backgroundImage;
 
   const SlideData({
     required this.title,
     required this.subtitle,
     required this.visual,
     required this.accentColor,
+    required this.backgroundImage,
   });
 }

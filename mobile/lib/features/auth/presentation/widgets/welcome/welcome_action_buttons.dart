@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -44,7 +45,10 @@ class WelcomeActionButtons extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: accentColor,
-                foregroundColor: isLastPage ? Colors.black87 : Colors.white,
+                // Glifo sobre fill sólido de accent ⇒ onSolid decide por
+                // luminancia. Los acentos nuevos (ámbar, terracota, violeta,
+                // teal) no llegan a 4.5:1 con blanco fijo.
+                foregroundColor: AppColors.onSolid(accentColor),
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
@@ -79,7 +83,8 @@ class WelcomeActionButtons extends StatelessWidget {
             child: TextButton(
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => const LoginScreen(initialMode: AuthMode.login),
+                  builder: (_) =>
+                      const LoginScreen(initialMode: AuthMode.login),
                 ),
               ),
               style: TextButton.styleFrom(
