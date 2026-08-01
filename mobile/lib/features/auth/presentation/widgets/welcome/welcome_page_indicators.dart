@@ -25,10 +25,10 @@ class PageIndicators extends StatelessWidget {
           duration: const Duration(milliseconds: 350),
           curve: Curves.easeInOut,
           margin: const EdgeInsets.symmetric(horizontal: 4),
-          width:  active ? 28 : 8,
+          width: active ? 28 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color:  active ? accentColor : c.textMuted.withValues(alpha: 0.3),
+            color: active ? accentColor : c.textMuted.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(4),
           ),
         );

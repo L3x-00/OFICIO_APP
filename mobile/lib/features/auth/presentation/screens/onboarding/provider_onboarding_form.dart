@@ -11,7 +11,6 @@ import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:mobile/core/services/geocoding_service.dart';
 import 'package:mobile/core/utils/geocoding_helper.dart';
 import 'package:mobile/core/utils/permission_service.dart';
-import 'package:mobile/core/utils/plan_limits.dart';
 import 'package:mobile/features/payments/presentation/screens/yape_payment_screen.dart';
 import 'package:mobile/features/payments/presentation/providers/payments_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,20 +20,20 @@ import '../../providers/auth_provider.dart';
 import '../../../../provider_dashboard/data/dashboard_repository.dart';
 import '../../../../providers_list/data/providers_repository.dart';
 import '../../../../../core/errors/failures.dart';
-import '../../../../../shared/widgets/collapsible_schedule.dart';
-import '../../../../../shared/widgets/phone_input_section.dart';
-import 'widgets/onboarding_photo_section.dart';
-import 'widgets/onboarding_address_section.dart';
-import 'widgets/onboarding_social_section.dart';
-
-// Nuevos imports factorizados
 import 'widgets/onboarding_form_components.dart';
 import 'widgets/onboarding_category_section.dart';
-import 'widgets/onboarding_location_section.dart';
-import 'widgets/onboarding_delivery_section.dart';
 import 'widgets/onboarding_plan_section.dart';
 import 'widgets/plan_choice_sheet.dart';
 import 'widgets/registration_success_dialog.dart';
+
+// Secciones de acordeón factorizadas — cada una separa el diseño (widget
+// sin estado propio, recibe controllers/valores/callbacks) de la lógica
+// (que vive en _ProviderOnboardingFormState, sin cambios de comportamiento).
+import 'widgets/onboarding_accordion_section.dart';
+import 'widgets/onboarding_continue_button.dart';
+import 'widgets/onboarding_basic_info_section.dart';
+import 'widgets/onboarding_professional_profile_section.dart';
+import 'widgets/onboarding_service_details_section.dart';
 
 class ProviderOnboardingForm extends StatefulWidget {
   final String? providerType;
@@ -102,6 +101,11 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
   // 👇 NUEVAS VARIABLES DE ESTADO PARA EL ACORDEÓN
   bool _isSection1Expanded = true;
   bool _isSection2Expanded = false;
+
+  // Sección 3 — SOLO existe (se renderiza y se lee) cuando
+  // `_isProfesional`. Para Oficio/Negocio queda siempre en `false` y sin
+  // efecto, porque esa sección nunca se construye para esos tipos.
+  bool _isSection3Expanded = false;
 
   Position? _gpsPosition;
   String? _department;
@@ -207,11 +211,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
       _phoneSeed = _phone;
       _whatsappSeed = _whatsapp;
 
-      // 👇 LÓGICA DE RESTAURACIÓN: Si la sección 1 ya está completa al precargar, abrimos la 2.
-      if (_isSection1Complete()) {
-        _isSection1Expanded = false;
-        _isSection2Expanded = true;
-      }
+      // 👇 LÓGICA DE RESTAURACIÓN: abre la siguiente sección pendiente si
+      // lo ya cargado la deja completa (ver _restoreSectionExpansion).
+      _restoreSectionExpansion();
     } else {
       _restoreDraft();
     }
@@ -371,13 +373,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
         _selectedCategories = restoredCats;
       });
 
-      // 👇 LÓGICA DE RESTAURACIÓN: Abre la Sección 2 si la 1 ya estaba completa.
-      if (_isSection1Complete()) {
-        setState(() {
-          _isSection1Expanded = false;
-          _isSection2Expanded = true;
-        });
-      }
+      // 👇 LÓGICA DE RESTAURACIÓN: abre la siguiente sección pendiente si
+      // lo recuperado del borrador la deja completa.
+      setState(_restoreSectionExpansion);
 
       _showSnack('Recuperamos los datos que habías ingresado.');
     } catch (_) {}
@@ -519,18 +517,38 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
     if (!_isOficio && ruc.isNotEmpty && !RegExp(r'^\d{11}$').hasMatch(ruc)) {
       return false;
     }
-    if (_isProfesional && _professionalSpecialtyCtrl.text.trim().length < 2) {
-      return false;
-    }
     return true;
   }
 
-  bool _isSection2Complete() {
+  /// Completitud de la sección "Perfil Profesional" (solo PROFESIONAL).
+  /// Antes vivía dentro de `_isSection1Complete`; se separó junto con los
+  /// campos que valida al dividir esa sección en dos.
+  bool _isProfessionalProfileComplete() =>
+      _professionalSpecialtyCtrl.text.trim().length >= 2;
+
+  bool _isServiceDetailsComplete() {
     if (_selectedCategories.isEmpty) return false;
     if (_descriptionController.text.trim().length < 10) return false;
     if (_photos.isEmpty) return false;
     if (!_isOficio && !_hasAdminLocation) return false;
     return true;
+  }
+
+  /// Abre la sección pendiente cuando datos precargados (initialData o
+  /// borrador) ya la dejan completa — mismo criterio para los 2 orígenes.
+  /// NO envuelve en `setState`: cada llamador decide (initState muta
+  /// directo antes del primer build; `_restoreDraft` lo envuelve porque
+  /// corre después del primer build).
+  void _restoreSectionExpansion() {
+    if (!_isSection1Complete()) return;
+    _isSection1Expanded = false;
+    if (_isProfesional && !_isProfessionalProfileComplete()) {
+      _isSection2Expanded = true;
+    } else if (_isProfesional) {
+      _isSection3Expanded = true;
+    } else {
+      _isSection2Expanded = true;
+    }
   }
 
   // ── Submit Logic ─────────────────────────────────
@@ -892,86 +910,6 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
     );
   }
 
-  // ── Widget Acordeón Reutilizable ─────────────────────────
-  Widget _buildSection({
-    required String title,
-    required bool isExpanded,
-    required bool isComplete,
-    required VoidCallback onToggle,
-    required List<Widget> children,
-  }) {
-    final c = context.colors;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: c.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          width: 0.5,
-          color: isComplete
-              ? AppColors.available.withValues(alpha: 0.4)
-              : c.border,
-        ),
-      ),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: onToggle,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: TextStyle(
-                        color: c.textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  if (isComplete)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: Icon(
-                        Icons.check_circle,
-                        size: 18,
-                        color: AppColors.available,
-                      ),
-                    ),
-                  AnimatedRotation(
-                    turns: isExpanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 300),
-                    child: Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: c.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            alignment: Alignment.topCenter,
-            child: isExpanded
-                ? Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: children,
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          ),
-        ],
-      ),
-    );
-  }
-
   // ── Build Orchestator ────────────────────────────
   @override
   Widget build(BuildContext context) {
@@ -1016,250 +954,167 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
               const SizedBox(height: 24),
 
               // ── SECCIÓN 1: INFORMACIÓN BÁSICA ───────────────────
-              _buildSection(
+              OnboardingAccordionSection(
                 title: 'Información Básica',
                 isExpanded: _isSection1Expanded,
                 isComplete: _isSection1Complete(),
                 onToggle: () => setState(() {
                   _isSection1Expanded = !_isSection1Expanded;
-                  if (_isSection1Expanded) _isSection2Expanded = false;
+                  if (_isSection1Expanded) {
+                    _isSection2Expanded = false;
+                    _isSection3Expanded = false;
+                  }
                 }),
                 children: [
-                  FormFieldTile(
-                    controller: _businessNameController,
-                    label: _isOficio
+                  OnboardingBasicInfoSection(
+                    businessNameController: _businessNameController,
+                    dniController: _dniController,
+                    rucController: _rucController,
+                    isOficio: _isOficio,
+                    nameLabel: _isOficio
                         ? 'Nombre del profesional *'
                         : 'Nombre del negocio *',
-                    hint: _nameFieldHint,
-                    icon: _nameFieldIcon,
-                  ),
-                  const SizedBox(height: 14),
-                  if (_isOficio) ...[
-                    FormFieldTile(
-                      controller: _dniController,
-                      label: 'DNI del titular (opcional)',
-                      hint: '12345678',
-                      icon: Icons.badge_outlined,
-                      keyboardType: TextInputType.number,
-                      maxLength: 8,
-                    ),
-                    const SizedBox(height: 14),
-                  ],
-                  if (_isProfesional) ...[
-                    FormFieldTile(
-                      controller: _professionalSpecialtyCtrl,
-                      label: 'Especialidad *',
-                      hint: 'Ej: Abogado corporativo, Contador tributario…',
-                      icon: Icons.school_outlined,
-                      maxLength: 120,
-                    ),
-                    const SizedBox(height: 14),
-                    FormFieldTile(
-                      controller: _professionalTitleCtrl,
-                      label: 'Título o certificado (opcional)',
-                      hint: 'Ej: Abogado colegiado, CPC N° 12345',
-                      icon: Icons.workspace_premium_outlined,
-                      maxLength: 160,
-                    ),
-                    const SizedBox(height: 14),
-                    FormFieldTile(
-                      controller: _professionalInstitutionCtrl,
-                      label: 'Universidad o institución (opcional)',
-                      hint: 'Ej: Universidad Nacional del Centro',
-                      icon: Icons.account_balance_outlined,
-                      maxLength: 160,
-                    ),
-                    const SizedBox(height: 14),
-                    FormFieldTile(
-                      controller: _professionalYearsExperienceCtrl,
-                      label: 'Años de experiencia (opcional)',
-                      hint: 'Ej: 5',
-                      icon: Icons.timelapse_outlined,
-                      keyboardType: TextInputType.number,
-                      maxLength: 2,
-                    ),
-                    const SizedBox(height: 14),
-                    FormFieldTile(
-                      controller: _professionalRegistrationNumberCtrl,
-                      label: 'N° de colegiatura o registro (opcional)',
-                      hint: 'Ej: CAL 12345',
-                      icon: Icons.confirmation_number_outlined,
-                      maxLength: 100,
-                    ),
-                    const SizedBox(height: 14),
-                    FormFieldTile(
-                      controller: _professionalRegistrationIssuerCtrl,
-                      label: 'Entidad que lo emite (opcional)',
-                      hint: 'Ej: Colegio de Abogados de Lima',
-                      icon: Icons.apartment_outlined,
-                      maxLength: 160,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6, left: 4),
-                      child: Text(
-                        'El título, la institución y la colegiatura son '
-                        'opcionales, pero generan más confianza con tus '
-                        'clientes.',
-                        style: TextStyle(color: c.textMuted, fontSize: 11),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                  ],
-                  if (!_isOficio) ...[
-                    FormFieldTile(
-                      controller: _rucController,
-                      label: 'RUC (opcional)',
-                      hint: '20123456789',
-                      icon: Icons.receipt_long_outlined,
-                      keyboardType: TextInputType.number,
-                      maxLength: 11,
-                    ),
-                    const SizedBox(height: 14),
-                  ],
-                  PhoneInputSection(
-                    key: ValueKey('phone-$_phoneSeed-$_whatsappSeed'),
-                    initialPhone: _phoneSeed.isEmpty ? null : _phoneSeed,
-                    initialWhatsapp: _whatsappSeed.isEmpty
-                        ? null
-                        : _whatsappSeed,
-                    onChange: (phone, wap) => setState(() {
+                    nameHint: _nameFieldHint,
+                    nameIcon: _nameFieldIcon,
+                    phoneSeed: _phoneSeed,
+                    whatsappSeed: _whatsappSeed,
+                    onPhoneChanged: (phone, wap) => setState(() {
                       _phone = phone;
                       _whatsapp = wap ?? '';
                     }),
                   ),
                   const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        if (_isSection1Complete()) {
-                          setState(() {
-                            _isSection1Expanded = false;
-                            _isSection2Expanded = true;
-                          });
-                        } else {
-                          _showSnack(
-                            'Completa los campos obligatorios para continuar.',
-                            isError: true,
-                          );
-                        }
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Continuar',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            Icons.arrow_forward_rounded,
-                            size: 18,
-                            color: AppColors.primary,
-                          ),
-                        ],
-                      ),
-                    ),
+                  OnboardingContinueButton(
+                    onPressed: () {
+                      if (_isSection1Complete()) {
+                        setState(() {
+                          _isSection1Expanded = false;
+                          _isSection2Expanded = true;
+                        });
+                      } else {
+                        _showSnack(
+                          'Completa los campos obligatorios para continuar.',
+                          isError: true,
+                        );
+                      }
+                    },
                   ),
                 ],
               ),
 
-              // ── SECCIÓN 2: DETALLES DEL SERVICIO ────────────────
-              _buildSection(
+              // ── SECCIÓN 2 (solo PROFESIONAL): PERFIL PROFESIONAL ──
+              // Antes estos campos vivían dentro de "Información Básica"
+              // (la hacían enorme). Oficio/Negocio no muestran esta
+              // sección — su flujo de 2 secciones queda intacto.
+              if (_isProfesional)
+                OnboardingAccordionSection(
+                  title: 'Perfil Profesional',
+                  isExpanded: _isSection2Expanded,
+                  isComplete: _isProfessionalProfileComplete(),
+                  onToggle: () => setState(() {
+                    _isSection2Expanded = !_isSection2Expanded;
+                    if (_isSection2Expanded) {
+                      _isSection1Expanded = false;
+                      _isSection3Expanded = false;
+                    }
+                  }),
+                  children: [
+                    OnboardingProfessionalProfileSection(
+                      specialtyController: _professionalSpecialtyCtrl,
+                      titleController: _professionalTitleCtrl,
+                      institutionController: _professionalInstitutionCtrl,
+                      yearsExperienceController:
+                          _professionalYearsExperienceCtrl,
+                      registrationNumberController:
+                          _professionalRegistrationNumberCtrl,
+                      registrationIssuerController:
+                          _professionalRegistrationIssuerCtrl,
+                    ),
+                    const SizedBox(height: 16),
+                    OnboardingContinueButton(
+                      onPressed: () {
+                        if (_isProfessionalProfileComplete()) {
+                          setState(() {
+                            _isSection2Expanded = false;
+                            _isSection3Expanded = true;
+                          });
+                        } else {
+                          _showSnack(
+                            'Completa tu especialidad para continuar.',
+                            isError: true,
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+
+              // ── SECCIÓN FINAL: DETALLES DEL SERVICIO ────────────
+              // Oficio/Negocio: sección 2 (igual que siempre). Profesional:
+              // sección 3, sin botón "Continuar" (es la última).
+              OnboardingAccordionSection(
                 title: 'Detalles del Servicio',
-                isExpanded: _isSection2Expanded,
-                isComplete: _isSection2Complete(),
+                isExpanded: _isProfesional
+                    ? _isSection3Expanded
+                    : _isSection2Expanded,
+                isComplete: _isServiceDetailsComplete(),
                 onToggle: () => setState(() {
-                  _isSection2Expanded = !_isSection2Expanded;
-                  if (_isSection2Expanded) _isSection1Expanded = false;
+                  if (_isProfesional) {
+                    _isSection3Expanded = !_isSection3Expanded;
+                    if (_isSection3Expanded) {
+                      _isSection1Expanded = false;
+                      _isSection2Expanded = false;
+                    }
+                  } else {
+                    _isSection2Expanded = !_isSection2Expanded;
+                    if (_isSection2Expanded) _isSection1Expanded = false;
+                  }
                 }),
                 children: [
-                  if (!_isOficio) ...[
-                    OnboardingAddressSection(
-                      addressController: _addressController,
-                      mapsUrlController: _mapsUrlController,
-                      showAddressSection: _showAddressSection,
-                      gpsLoading: _gpsLoading,
-                      gpsPosition: _gpsPosition,
-                      onToggleSection: () => setState(
-                        () => _showAddressSection = !_showAddressSection,
-                      ),
-                      onFetchGps: _fetchGpsLocation,
-                      onClearGps: () => setState(() {
-                        _gpsPosition = null;
-                        _addressController.clear();
-                      }),
-                      onParseMapsUrl: _parseMapsUrl,
-                    ),
-                    const SizedBox(height: 14),
-                  ],
-                  OnboardingCategorySection(
+                  OnboardingServiceDetailsSection(
                     providerType: widget.providerType,
+                    isOficio: _isOficio,
+                    planChoice: _planChoice,
+                    addressController: _addressController,
+                    mapsUrlController: _mapsUrlController,
+                    showAddressSection: _showAddressSection,
+                    gpsLoading: _gpsLoading,
+                    gpsPosition: _gpsPosition,
+                    onToggleAddressSection: () => setState(
+                      () => _showAddressSection = !_showAddressSection,
+                    ),
+                    onFetchGps: _fetchGpsLocation,
+                    onClearGps: () => setState(() {
+                      _gpsPosition = null;
+                      _addressController.clear();
+                    }),
+                    onParseMapsUrl: _parseMapsUrl,
                     categories: _categories,
-                    selected: _selectedCategories,
+                    selectedCategories: _selectedCategories,
                     primaryCategoryId: _primaryCategoryId,
-                    maxCategories: PlanLimits.specialties(_planChoice),
-                    onChanged: (sel, primary) => setState(() {
+                    onCategoriesChanged: (sel, primary) => setState(() {
                       _selectedCategories = sel;
                       _primaryCategoryId = primary;
                     }),
-                  ),
-                  const SizedBox(height: 14),
-                  FormFieldTile(
-                    controller: _descriptionController,
-                    label: _isOficio
-                        ? 'Describe tu servicio'
-                        : 'Describe tu negocio',
-                    hint: _isOficio
-                        ? 'Experiencia, especialidades, horario de trabajo...'
-                        : 'Qué ofreces, horarios, especialidades...',
-                    icon: Icons.description_outlined,
-                    maxLines: 4,
-                  ),
-                  const SizedBox(height: 14),
-                  OnboardingDeliverySection(
-                    isOficio: _isOficio,
+                    descriptionController: _descriptionController,
                     hasDelivery: _hasDelivery,
                     plenaCoordinacion: _plenaCoordinacion,
                     onDeliveryChanged: (v) => setState(() => _hasDelivery = v),
                     onPlenaChanged: (v) =>
                         setState(() => _plenaCoordinacion = v),
-                  ),
-                  const SizedBox(height: 14),
-                  if (!_isOficio) ...[
-                    CollapsibleSchedule(
-                      scheduleJson: _scheduleJson,
-                      onSave: (s) => setState(() => _scheduleJson = s),
-                    ),
-                    const SizedBox(height: 14),
-                  ],
-                  GestureDetector(
-                    onTap: () async {
-                      final locSection = OnboardingLocationSection(
-                        department: _department,
-                        province: _province,
-                        district: _district,
-                      );
-                      final result = await locSection.showPicker(context);
-                      if (result != null && mounted) {
-                        setState(() {
-                          _department = result.department;
-                          _province = result.province;
-                          _district = result.district;
-                        });
-                      }
+                    scheduleJson: _scheduleJson,
+                    onScheduleSaved: (s) => setState(() => _scheduleJson = s),
+                    department: _department,
+                    province: _province,
+                    district: _district,
+                    onLocationChanged: (dept, prov, dist) {
+                      if (!mounted) return;
+                      setState(() {
+                        _department = dept;
+                        _province = prov;
+                        _district = dist;
+                      });
                     },
-                    child: OnboardingLocationSection(
-                      department: _department,
-                      province: _province,
-                      district: _district,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  OnboardingSocialSection(
                     websiteCtrl: _websiteCtrl,
                     instagramCtrl: _instagramCtrl,
                     tiktokCtrl: _tiktokCtrl,
@@ -1268,10 +1123,6 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
                     twitterCtrl: _twitterCtrl,
                     telegramCtrl: _telegramCtrl,
                     whatsappBizCtrl: _whatsappBizCtrl,
-                    isNegocio: !_isOficio,
-                  ),
-                  const SizedBox(height: 14),
-                  OnboardingPhotoSection(
                     photos: _photos,
                     maxPhotos: _maxPhotos,
                     onPickPhoto: _pickPhoto,

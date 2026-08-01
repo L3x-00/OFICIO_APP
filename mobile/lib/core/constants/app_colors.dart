@@ -28,6 +28,14 @@ abstract class AppColors {
   static const Color amberDark = Color(0xFFA88944);
   static const Color amberDeep = Color(0xFF2A2418); // fondo oscuro cálido
 
+  // Categorías del carrusel de bienvenida — terracota/violeta/teal, elegidos
+  // para combinar con las ilustraciones de fondo de cada tipo de proveedor
+  // (distintos de primary/available/business, que son tonos funcionales
+  // usados en badges y tarjetas de proveedor reales).
+  static const Color oficioAccent = Color(0xFFD0886A);
+  static const Color profesionalAccent = Color(0xFF8B7EC8);
+  static const Color negocioAccent = Color(0xFF5A9E9F);
+
   // Estado de disponibilidad — con algo más de brillo para que los chips
   // de estado (abierto/cerrado) y los botones de acción RESALTEN sobre el
   // resto apagado, sin volverse neón.
