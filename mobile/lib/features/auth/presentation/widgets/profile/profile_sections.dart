@@ -33,8 +33,10 @@ class _ExpandableSectionState extends State<ExpandableSection>
       vsync: this,
       duration: const Duration(milliseconds: 220),
     );
-    _rotation = Tween<double>(begin: 0.0, end: 0.5)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+    _rotation = Tween<double>(
+      begin: 0.0,
+      end: 0.5,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -118,12 +120,15 @@ class _ExpandableSectionState extends State<ExpandableSection>
 }
 
 /// Ítem dentro de una [ExpandableSection]. Si [onTap] es null, no muestra
-/// chevron. Si [isLast] es false, añade un divisor debajo.
+/// chevron. Si [isLast] es false, añade un divisor debajo. [trailing]
+/// reemplaza el chevron por otro control (p. ej. el [Switch] de los toggles
+/// de Preferencias) manteniendo el mismo layout que el resto de ítems.
 class SectionItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
   final bool isLast;
+  final Widget? trailing;
 
   const SectionItem({
     super.key,
@@ -131,6 +136,7 @@ class SectionItem extends StatelessWidget {
     required this.label,
     this.onTap,
     this.isLast = false,
+    this.trailing,
   });
 
   @override
@@ -155,7 +161,9 @@ class SectionItem extends StatelessWidget {
                 ),
               ),
             ),
-            if (onTap != null)
+            if (trailing != null)
+              trailing!
+            else if (onTap != null)
               Icon(Icons.chevron_right_rounded, color: c.textMuted, size: 18),
           ],
         ),

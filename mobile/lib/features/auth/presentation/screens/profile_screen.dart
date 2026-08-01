@@ -419,17 +419,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: 'Preferencias',
             children: [
               ThemeToggleRow(theme: theme),
-              const SizedBox(height: 8),
               CategoryFilterToggleRow(prov: prov),
               // Toggle visibilidad del asistente Ofi.
               // Solo para clientes puros (sin perfil de proveedor).
               if (!auth.hasOficioProfile &&
                   !auth.hasProfessionalProfile &&
-                  !auth.hasNegocioProfile) ...[
-                const SizedBox(height: 8),
+                  !auth.hasNegocioProfile)
                 OfiVisibilityToggleRow(prov: prov),
-              ],
-              const SizedBox(height: 8),
               SectionItem(
                 icon: Icons.devices_rounded,
                 label: 'Cuentas guardadas en este dispositivo',
