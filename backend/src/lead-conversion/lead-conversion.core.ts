@@ -121,17 +121,23 @@ export function categoryIdsFromLead(lead: StagingLead): number[] {
 export function validateLeadConversionInput(lead: StagingLead): void {
   const businessName = lead.businessName?.trim() ?? '';
   if (businessName.length < 2 || businessName.length > 100) {
-    throw new Error(`Lead ${lead.leadKey}: nombre de negocio inválido (2-100 caracteres).`);
+    throw new Error(
+      `Lead ${lead.leadKey}: nombre de negocio inválido (2-100 caracteres).`,
+    );
   }
 
   const phone = lead.publicPhone?.trim() ?? '';
   if (phone.length < 6 || phone.length > 20) {
-    throw new Error(`Lead ${lead.leadKey}: teléfono inválido (6-20 caracteres).`);
+    throw new Error(
+      `Lead ${lead.leadKey}: teléfono inválido (6-20 caracteres).`,
+    );
   }
 
   const description = lead.introduction?.trim() ?? '';
   if (description.length < 10 || description.length > 1000) {
-    throw new Error(`Lead ${lead.leadKey}: descripción inválida (10-1000 caracteres).`);
+    throw new Error(
+      `Lead ${lead.leadKey}: descripción inválida (10-1000 caracteres).`,
+    );
   }
 
   const { latitude, longitude } = lead;
@@ -151,7 +157,9 @@ export function validateLeadConversionInput(lead: StagingLead): void {
   }
 
   if (lead.ruc && !/^\d{11}$/.test(lead.ruc.trim())) {
-    throw new Error(`Lead ${lead.leadKey}: RUC inválido (debe tener 11 dígitos).`);
+    throw new Error(
+      `Lead ${lead.leadKey}: RUC inválido (debe tener 11 dígitos).`,
+    );
   }
 }
 
