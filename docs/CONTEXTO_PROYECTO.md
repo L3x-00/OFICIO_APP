@@ -5,7 +5,7 @@ dar contexto completo sin explorar archivo por archivo. Claude lo auto-carga ví
 `@docs/CONTEXTO_PROYECTO.md` en `CLAUDE.md`; Codex debe leerlo explícitamente por
 instrucción de `AGENTS.md`. Mantener actualizado al cerrar cada tanda.
 
-**Última actualización:** 2026-07-31 · Estado: **Servicios Profesionales V1 mergeado a `main`** — PR #55, squash `09c1711`, CI Backend/Mobile/Admin verde, Render y Vercel confirmados con el runtime nuevo (ver §7 y §10). Subastas, ofertas, referidos/monedas, agenda y cotización continúan OCULTAS de forma reversible; Carta y Catálogo siguen visibles solo para proveedores NEGOCIO.
+**Última actualización:** 2026-08-10 · Estado: **Captación + conversión de leads NEGOCIO mergeada a `main`** — PR #58, squash `aac6865`, CI Backend/Mobile/Admin verde (herramienta LOCAL, no se importa en `AppModule` → runtime desplegado sin cambios). El propietario ya aplicó el SQL de staging en Supabase; falta correr la conversión en real (ver §7 y §10). Servicios Profesionales V1 (PR #55) sigue en prod. Subastas, ofertas, referidos/monedas, agenda y cotización continúan OCULTAS de forma reversible; Carta y Catálogo siguen visibles solo para proveedores NEGOCIO.
 
 ---
 
@@ -83,6 +83,7 @@ Cambios importantes: **rama nueva → commit → push a la rama → PR → CI ve
 - **UX móvil integrada en PR #49:** bottom sheets de registro/filtros usan root navigator; Perfil unifica altas y estados OFICIO/NEGOCIO en "Mis perfiles"; clientes puros pueden ocultar el FAB de Ofi con `SharedPreferences`. Los flags de Subastas/Ofertas/Referidos permanecen apagados.
 - **Coordenadas en registro** (PR #31): `RegisterProviderDto` acepta `latitude/longitude` opcionales y se persisten al crear el Provider (web las saca del enlace de Maps) — antes ningún cliente las enviaba y los proveedores nuevos no salían en búsqueda por radio. Trigger + backfill: `backend/prisma/sql/provider_location_geog_trigger.sql` (aplicado en Supabase).
 - **Servicios Profesionales V1** (PR #55, squash `09c1711`, mergeado 2026-07-31): tercer tipo de proveedor `PROFESIONAL` (abogados, ingenieros, contadores — credenciales verificadas) junto a `OFICIO`/`NEGOCIO`. Invariante XOR: cliente + (OFICIO **o** PROFESIONAL, nunca ambos) + NEGOCIO opcional, forzado por índice único parcial en BD + validación de servicio. Un OFICIO migra a PROFESIONAL vía `professional-migrations` (admin revisa documentos), preservando el mismo `Provider.id` — nunca crea un Provider duplicado; la migración NO otorga planes de cortesía, no toca referidos ni cambia el rol del usuario. `submit()` exige `verificationStatus === 'APROBADO'` del Oficio antes de aceptar la solicitud (decisión explícita del propietario). El sello "Credenciales verificadas" solo aparece tras aprobación admin; especialidad es el único campo obligatorio del alta profesional. Categorías exclusivas por tipo (`pro-*` para Profesional). `ProviderType` (móvil, `core/utils/provider_type.dart`) agrega un valor `unknown` explícito — un string no reconocido ya NO se alias-ea silenciosamente a `oficio`; `'PROFESSIONAL'`/`'BUSINESS'` (inglés) siguen aceptándose como alias legacy de lectura únicamente (nunca se vuelven a emitir), canonicalizados en `ProvidersProvider.setType()` antes de llegar al backend. Auditoría de cierre completa (16 hallazgos de seguridad/pagos/categorías + UX móvil/web/admin + gaps de test, todos corregidos y probados) en `docs/AUDITORIA_SERVICIOS_PROFESIONALES_V1.md`. Los 6 SQL idempotentes (`profesionales_01..06_*.sql`) ya fueron aplicados manualmente en Supabase por el propietario.
+- **Captación de leads NEGOCIO + conversión "Paso 6"** (PR #58, squash `aac6865`, mergeado 2026-08-10): pipeline para poblar Servi con negocios reales captados de Google Maps. El **scraper** vive en repo aparte `L3x-00/Servi-Scrapping` (panel local FastAPI + Playwright, Chromium visible, ≤5 consultas/lote y ≤20/consulta; extrae nombre/dirección/teléfono/categoría/horario/redes/fotos; RUC y WhatsApp manuales o por enlace explícito). Exporta `import.sql` a tablas de **staging** (`provider_lead_runs`/`provider_leads`/`provider_lead_photos`) con RLS + REVOKE; el SQL `provider_leads_staging.sql` lo aplica el propietario a mano en Supabase. **Cargar staging NO publica nada** (es privado, RLS). La **conversión** es una herramienta LOCAL e independiente en `oficio_app` (`backend/src/lead-conversion/` + `backend/scripts/convert-leads.ts`, `npm run convert-leads`), **no importada en `AppModule`**: toma leads `CONSENTED` y crea `User` + `Provider(NEGOCIO)` reusando la validación real del registro (`validateProviderCategorySelection`, `uniqueSlug`, bcrypt), en PENDIENTE por defecto o con `--approve` (visible + `Subscription` de cortesía + rol PROVEEDOR). Dry-run por defecto, idempotente por `convertedProviderId`; sube las fotos del lead a R2 best-effort (`--skip-photos`). Solo convierte con consentimiento humano (`CONSENTED`). La Opción A (auto-registro pre-cargado) quedó descartada por redundante: el tool ya crea la cuenta.
 
 ## 8. Skills y preflight de agentes
 
@@ -127,7 +128,7 @@ usa contexto canónico + rg y no lo regeneres sobre trabajo incompleto.
 # Backend (ESM)
 cd backend && npm run start:dev          # dev :3000
 npx tsc --noEmit                         # typecheck
-npm test                                 # unit (571 pasando)
+npm test                                 # unit (647 pasando)
 npm run test:integration                 # requiere stack Docker local
 npm run test:e2e                         # requiere stack Docker local
 npx cross-env RUN_GEMINI_CONTRACT_TESTS=true npm run test:contract  # Gemini real; requiere clave local
@@ -190,6 +191,19 @@ runtime nuevo desplegado sin mutar datos.
 
 ## 10. Estado / pendientes
 
+- **Captación + conversión de leads NEGOCIO mergeada (2026-08-10):** PR #58, squash `aac6865`, CI
+  Backend/Mobile/Admin verde, **sin gate SQL** (el staging no es modelo Prisma; se lee por SQL crudo).
+  Herramienta local `backend/src/lead-conversion/` + `scripts/convert-leads.ts`, **no importada en
+  `AppModule`** → el runtime desplegado en Render no cambia (Render redeploya el commit pero el módulo es
+  inerte). Verificación: tsc limpio, backend **74 suites / 647 tests**, y smoke local end-to-end contra
+  Postgres docker (dry-run → `--commit` PENDIENTE → `--approve` visible+Subscription+rol → idempotencia
+  0 candidatos → foto descargada y subida a MinIO local con `ProviderImage` de portada). **Estado SQL:**
+  el propietario ya aplicó `provider_leads_staging.sql` (staging + RLS/REVOKE + `convertedProviderId`) en
+  Supabase. **Pendiente del propietario:** cargar el `import.sql` del panel y correr la conversión en real
+  — apuntar `DATABASE_URL` a Supabase (el `.env` local es docker; `MINIO_*` ya es R2 de prod → **dry-run
+  primero**, `--commit` crea Users/Providers reales). El scraper se pusheó a `L3x-00/Servi-Scrapping`
+  (repo separado, worktree de `D:/servi-marketing`); su `data/` (SQLite + fotos, PII) y `.venv` nunca se
+  versionan.
 - **Servicios Profesionales V1 mergeado y verificado (2026-07-31):** PR #55, squash `09c1711`, 132
   archivos, CI Backend/Mobile/Admin verde. Fases 0-4 + auditoría de cierre completa (16 hallazgos de
   seguridad/pagos/categorías + UX móvil/web/admin + gaps de test, todos corregidos y probados — detalle
