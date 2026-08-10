@@ -49,8 +49,8 @@ const SELECT_LEADS = `
   SELECT "leadKey", "businessName", "publicPhone", "whatsapp", "ruc", "address",
          "department", "province", "district", "mappedCategoryId", "categoryIds",
          "scheduleJson", "introduction", "storeDelivery", "website", "instagram",
-         "facebook", "tiktok", "linkedin", "twitterX", "telegram", "consentStatus",
-         "convertedProviderId", "suggestedEmail", "suggestedPassword",
+          "facebook", "tiktok", "linkedin", "twitterX", "telegram", "consentStatus",
+          "latitude", "longitude", "convertedProviderId", "suggestedEmail", "suggestedPassword",
          (SELECT count(*)::int FROM "provider_lead_photos" ph WHERE ph."leadId" = "provider_leads"."id") AS "photoCount"
   FROM "provider_leads"
   WHERE "consentStatus" = 'CONSENTED'
