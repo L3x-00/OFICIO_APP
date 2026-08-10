@@ -8,6 +8,7 @@ import { BadRequestException } from '@nestjs/common';
 import {
   convertLead,
   categoryIdsFromLead,
+  validateLeadConversionInput,
   type StagingLead,
 } from '../../src/lead-conversion/lead-conversion.core.js';
 import { createPrismaMock, type PrismaMock } from '../mocks/prisma.mock';
@@ -35,6 +36,8 @@ function baseLead(overrides: Partial<StagingLead> = {}): StagingLead {
     linkedin: null,
     twitterX: null,
     telegram: null,
+    latitude: -12.0681,
+    longitude: -75.2102,
     consentStatus: 'CONSENTED',
     convertedProviderId: null,
     suggestedEmail: 'polloswanka-4f2a@leads.oficioapp.org.pe',
@@ -98,7 +101,7 @@ describe('lead-conversion.core (unit)', () => {
     const userData = prisma.user.create.mock.calls[0][0].data;
     expect(userData.email).toBe('polloswanka-4f2a@leads.oficioapp.org.pe');
     expect(userData.role).toBe('USUARIO');
-    expect(userData.isEmailVerified).toBe(true);
+    expect(userData.isEmailVerified).toBe(false);
     // bcrypt real: el hash empieza con el prefijo $2a/$2b/$2y.
     expect(userData.passwordHash).toMatch(/^\$2[aby]\$/);
     expect(userData.passwordHash).not.toBe('Xy7k2mAbc123def');
@@ -115,6 +118,8 @@ describe('lead-conversion.core (unit)', () => {
     expect(providerData.instagram).toBe('https://instagram.com/pollos');
     expect(providerData.description).toBe('Pollería en Huancayo con delivery.');
     expect(providerData.localityId).toBe(55);
+    expect(providerData.latitude).toBe(-12.0681);
+    expect(providerData.longitude).toBe(-75.2102);
     // Exactamente una Especialidad principal, y es la mappedCategoryId.
     const cats = providerData.providerCategories.create;
     expect(cats).toHaveLength(2);
@@ -143,6 +148,20 @@ describe('lead-conversion.core (unit)', () => {
       BadRequestException,
     );
     expect(prisma.provider.create).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['teléfono', { publicPhone: '123' }],
+    ['descripción', { introduction: 'corta' }],
+    ['coordenadas', { latitude: null, longitude: null }],
+    ['RUC', { ruc: '123' }],
+  ])('rechaza %s que el formulario real no aceptaría', async (_field, overrides) => {
+    await expect(convertLead(prisma as any, baseLead(overrides))).rejects.toThrow(/inválid|faltan coordenadas/i);
+    expect(prisma.provider.create).not.toHaveBeenCalled();
+  });
+
+  it('valida el nombre antes de consultar categorías o crear registros', () => {
+    expect(() => validateLeadConversionInput(baseLead({ businessName: ' ' }))).toThrow(/nombre/);
   });
 
   it('con --approve deja el negocio APROBADO/visible + Subscription + rol PROVEEDOR', async () => {

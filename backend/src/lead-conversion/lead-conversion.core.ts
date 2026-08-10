@@ -43,6 +43,8 @@ export interface StagingLead {
   linkedin: string | null;
   twitterX: string | null;
   telegram: string | null;
+  latitude: number | null;
+  longitude: number | null;
   consentStatus: string;
   convertedProviderId: number | null;
   suggestedEmail: string | null;
@@ -111,6 +113,49 @@ export function categoryIdsFromLead(lead: StagingLead): number[] {
 }
 
 /**
+ * Repite las invariantes imprescindibles del registro normal antes de tocar BD.
+ * El staging es SQL manual y no pasa por class-validator; sin esta compuerta se
+ * podían crear perfiles que el formulario real jamás aceptaría o que no aparecen
+ * en la búsqueda por radio.
+ */
+export function validateLeadConversionInput(lead: StagingLead): void {
+  const businessName = lead.businessName?.trim() ?? '';
+  if (businessName.length < 2 || businessName.length > 100) {
+    throw new Error(`Lead ${lead.leadKey}: nombre de negocio inválido (2-100 caracteres).`);
+  }
+
+  const phone = lead.publicPhone?.trim() ?? '';
+  if (phone.length < 6 || phone.length > 20) {
+    throw new Error(`Lead ${lead.leadKey}: teléfono inválido (6-20 caracteres).`);
+  }
+
+  const description = lead.introduction?.trim() ?? '';
+  if (description.length < 10 || description.length > 1000) {
+    throw new Error(`Lead ${lead.leadKey}: descripción inválida (10-1000 caracteres).`);
+  }
+
+  const { latitude, longitude } = lead;
+  if (
+    typeof latitude !== 'number' ||
+    !Number.isFinite(latitude) ||
+    latitude < -90 ||
+    latitude > 90 ||
+    typeof longitude !== 'number' ||
+    !Number.isFinite(longitude) ||
+    longitude < -180 ||
+    longitude > 180
+  ) {
+    throw new Error(
+      `Lead ${lead.leadKey}: faltan coordenadas válidas. Reexporta desde el panel con la ficha de Maps que incluya latitud y longitud.`,
+    );
+  }
+
+  if (lead.ruc && !/^\d{11}$/.test(lead.ruc.trim())) {
+    throw new Error(`Lead ${lead.leadKey}: RUC inválido (debe tener 11 dígitos).`);
+  }
+}
+
+/**
  * Resuelve la localidad del lead (dept/prov/dist). Réplica trimmeada del bloque
  * de `auth-registration.service.ts` (registro real): match case/acento-insensible;
  * si la localidad no existe en el catálogo, la crea (source USER) para que el
@@ -176,6 +221,7 @@ export async function convertLead(
     );
   }
   const email = lead.suggestedEmail.trim().toLowerCase();
+  validateLeadConversionInput(lead);
 
   // 2. Categorías (reuso de la validación real) — la primaria va primera.
   const orderedIds = categoryIdsFromLead(lead);
@@ -240,7 +286,10 @@ export async function convertLead(
           firstName: lead.businessName.trim().slice(0, 80) || 'Negocio',
           lastName: 'Negocio',
           role: 'USUARIO',
-          isEmailVerified: true,
+          // El email placeholder del staging no prueba propiedad de un inbox.
+          // La verificación real queda para el flujo de entrega/actualización
+          // de correo del negocio autorizado.
+          isEmailVerified: false,
           department: lead.department?.trim() || null,
           province: lead.province?.trim() || null,
           district: lead.district?.trim() || null,
@@ -270,6 +319,8 @@ export async function convertLead(
         linkedin: lead.linkedin?.trim() || null,
         twitterX: lead.twitterX?.trim() || null,
         telegram: lead.telegram?.trim() || null,
+        latitude: lead.latitude,
+        longitude: lead.longitude,
         localityId,
         // Prisma no acepta `null` literal en un campo JSON: si no hay horario,
         // se omite (la columna queda null por defecto).

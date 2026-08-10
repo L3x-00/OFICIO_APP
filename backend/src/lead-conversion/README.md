@@ -22,6 +22,9 @@ Se corre a mano contra la BD que apunte `DATABASE_URL` (local o Supabase).
 1. `provider_leads_staging.sql` aplicado en la BD (una sola vez).
 2. `import.sql` del panel cargado — genera `suggestedEmail`/`suggestedPassword`
    solo para leads `CONSENTED`.
+3. El lead tiene teléfono, descripción, categorías y coordenadas GPS válidas.
+   La herramienta rechaza una fila incompleta para no crear un Provider que el
+   formulario real rechazaría o que no aparecería en búsquedas por radio.
 
 ## Uso
 
@@ -61,9 +64,11 @@ guardadas del lead (`provider_lead_photos.url`) y las sube a R2 vía
 
 - Solo procesa leads `consentStatus = 'CONSENTED'`, sin `convertedProviderId`,
   con credenciales sugeridas presentes.
-- Crea `User` (rol USUARIO, `isEmailVerified`, password bcrypt del
+- Crea `User` (rol USUARIO, `isEmailVerified=false`, password bcrypt del
   `suggestedPassword`) + `Provider` NEGOCIO en **PENDIENTE / invisible**, con
   sus categorías (una principal) y la localidad resuelta desde dept/prov/dist.
+- Copia `latitude`/`longitude` del staging al Provider para alimentar el trigger
+  `location_geog`; sin ambas coordenadas la conversión se rechaza.
 - `--approve`: replica los efectos de la aprobación admin (verificado, visible,
   `planPriority`, rol PROVEEDOR y `Subscription` de cortesía). No emite
   notificaciones/FCM.

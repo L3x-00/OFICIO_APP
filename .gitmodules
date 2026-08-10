@@ -1,0 +1,4 @@
+[submodule "tools/provider-leads"]
+	path = tools/provider-leads
+	url = https://github.com/L3x-00/Servi-Scrapping.git
+	branch = main
