@@ -9,6 +9,7 @@
   "scripts": {
     "seed": "tsx prisma/seed.ts",
     "fix:image-urls": "npx tsx scripts/fix-image-urls.ts",
+    "convert-leads": "npx tsx scripts/convert-leads.ts",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint:staged": "eslint --fix",
