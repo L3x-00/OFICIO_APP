@@ -19,6 +19,14 @@ Se corre a mano contra la BD que apunte `DATABASE_URL` (local o Supabase).
 
 ## Requisitos previos
 
+0. Inicializar el submódulo que contiene el panel y su SQL:
+
+   ```bash
+   git submodule update --init --recursive
+   ```
+
+   El panel está en `tools/provider-leads/tools/provider-leads` y su DDL
+   idempotente en `sql/provider_leads_staging.sql`.
 1. `provider_leads_staging.sql` aplicado en la BD (una sola vez).
 2. `import.sql` del panel cargado — genera `suggestedEmail`/`suggestedPassword`
    solo para leads `CONSENTED`.
