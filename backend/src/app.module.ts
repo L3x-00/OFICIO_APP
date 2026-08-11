@@ -36,6 +36,7 @@ import { MenuModule } from './menu/menu.module.js';
 import { CatalogModule } from './catalog/catalog.module.js';
 import { QuotationsModule } from './quotations/quotations.module.js';
 import { ProfessionalMigrationsModule } from './professional-migrations/professional-migrations.module.js';
+import { LeadConversionModule } from './lead-conversion/lead-conversion.module.js';
 @Module({
   imports: [
     // 1. Configuración Global
@@ -147,6 +148,8 @@ import { ProfessionalMigrationsModule } from './professional-migrations/professi
     // Cotización (canal de presupuestos).
     QuotationsModule,
     ProfessionalMigrationsModule,
+    // Captación: conversión admin de leads NEGOCIO (staging) → Provider real.
+    LeadConversionModule,
   ],
   controllers: [AppController],
   providers: [

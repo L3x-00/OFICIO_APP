@@ -1222,3 +1222,69 @@ export const getAdminChats = (params: {
   if (params.activeWithin) q.append('activeWithin', String(params.activeWithin));
   return fetchApi<AdminChatsPage>(`/admin/chats?${q}`);
 };
+
+// ── CAPTACIÓN — conversión de leads NEGOCIO (staging) → Provider ────────────
+export interface CaptacionLead {
+  leadKey: string;
+  businessName: string;
+  district: string;
+  province: string;
+  consentStatus: string;
+  status: string;
+  convertedProviderId: number | null;
+  categoryName: string | null;
+  photoCount: number;
+}
+
+export interface CaptacionStats {
+  total: number;
+  consented: number;
+  converted: number;
+}
+
+export interface CaptacionListResponse {
+  items: CaptacionLead[];
+  total: number;
+  page: number;
+  pageSize: number;
+  pages: number;
+  stats: CaptacionStats | null;
+  stagingMissing: boolean;
+}
+
+export interface CaptacionConvertResult {
+  leadKey: string;
+  ok: boolean;
+  businessName?: string;
+  providerId?: number;
+  approved?: boolean;
+  reused?: boolean;
+  images?: number;
+  error?: string;
+}
+
+export interface CaptacionConvertResponse {
+  results: CaptacionConvertResult[];
+  converted: number;
+  failed: number;
+  stats: CaptacionStats;
+}
+
+export const getCaptacionLeads = (
+  params: { consent?: string; district?: string; converted?: string; page?: number; pageSize?: number } = {},
+) => {
+  const q = new URLSearchParams({
+    page: String(params.page ?? 1),
+    pageSize: String(params.pageSize ?? 25),
+  });
+  if (params.consent) q.set('consent', params.consent);
+  if (params.district) q.set('district', params.district);
+  if (params.converted) q.set('converted', params.converted);
+  return fetchApi<CaptacionListResponse>(`/admin/lead-conversion/leads?${q}`);
+};
+
+export const convertCaptacionLeads = (leadKeys: string[], approve: boolean) =>
+  fetchApi<CaptacionConvertResponse>('/admin/lead-conversion/convert', {
+    method: 'POST',
+    body: JSON.stringify({ leadKeys, approve }),
+  });

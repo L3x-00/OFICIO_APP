@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { convertLead, type StagingLead } from '../src/lead-conversion/lead-conversion.core.js';
 import { MinioService } from '../src/common/minio.service.js';
+import { downloadAndUploadPhotos } from '../src/lead-conversion/photo-upload.js';
 
 dotenv.config({ path: join(dirname(fileURLToPath(import.meta.url)), '../.env') });
 
@@ -71,24 +72,14 @@ type LeadRow = StagingLead & { photoCount?: number };
 /** Descarga las fotos del lead y las sube a R2. Best-effort por foto. */
 async function uploadLeadPhotos(minio: MinioService, leadKey: string): Promise<string[]> {
   const rows = (await prisma.$queryRawUnsafe(SELECT_PHOTOS, leadKey)) as { url: string }[];
-  const out: string[] = [];
-  for (const { url } of rows.slice(0, MAX_PHOTOS)) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 15_000);
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: { 'User-Agent': 'Mozilla/5.0 (ServiLeads)' },
-      });
-      clearTimeout(timer);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const buffer = Buffer.from(await response.arrayBuffer());
-      out.push(await minio.uploadFile(buffer, 'lead-photo.jpg', 'providers/gallery'));
-    } catch (error: any) {
-      console.log(`      ⚠ foto omitida (${error?.message ?? error})`);
-    }
-  }
-  return out;
+  return downloadAndUploadPhotos(
+    rows.map((r) => r.url),
+    (buffer, filename) => minio.uploadFile(buffer, filename, 'providers/gallery'),
+    {
+      limit: MAX_PHOTOS,
+      onError: (url, error: any) => console.log(`      ⚠ foto omitida (${error?.message ?? error})`),
+    },
+  );
 }
 
 async function run() {
