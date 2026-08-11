@@ -1260,6 +1260,9 @@ export interface CaptacionConvertResult {
   approved?: boolean;
   reused?: boolean;
   images?: number;
+  /** Credenciales de acceso — solo en la respuesta, se muestran una vez. */
+  email?: string;
+  password?: string | null;
   error?: string;
 }
 

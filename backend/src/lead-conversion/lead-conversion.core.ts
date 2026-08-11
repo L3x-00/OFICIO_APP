@@ -16,9 +16,33 @@
  * replica `admin/services/admin-trust.service.ts::approveVerification`.
  */
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 import { validateProviderCategorySelection } from '../common/provider-category-validation.js';
 import { uniqueSlug } from '../common/slug.util.js';
+
+/** Dominio real de los correos de acceso generados para los negocios. */
+const ACCESS_EMAIL_DOMAIN = 'oficioapp.org.pe';
+/** Alfabeto de la contraseña de acceso: alfanumérico sin caracteres ambiguos
+ *  (se quitan O/0/I/l/1 para que el negocio la tipee sin confundirse). */
+const ACCESS_ALPHABET =
+  'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+
+/**
+ * Contraseña de acceso inicial: 8 caracteres alfanuméricos, aleatoria. Se
+ * muestra UNA sola vez al admin (para dársela al negocio) y se re-hashea con
+ * bcrypt; el negocio la cambia al configurar su cuenta.
+ * ponytail: sesgo de módulo despreciable (alfabeto ~55) para una contraseña
+ * temporal de primer login; no es un secreto maestro.
+ */
+function generateAccessPassword(): string {
+  const bytes = randomBytes(8);
+  let out = '';
+  for (let i = 0; i < bytes.length; i++) {
+    out += ACCESS_ALPHABET[bytes[i] % ACCESS_ALPHABET.length];
+  }
+  return out;
+}
 
 /** Fila de `provider_leads` (solo los campos que consume la conversión). */
 export interface StagingLead {
@@ -69,6 +93,11 @@ export interface ConvertResult {
   images: number;
   /** true si el negocio ya existía (idempotencia): no se creó nada nuevo. */
   reused: boolean;
+  /** Email de acceso del negocio (`<slug>@oficioapp.org.pe`). Vacío si reused. */
+  email: string;
+  /** Contraseña en texto plano — SOLO para mostrarla una vez al admin. `null`
+   *  cuando reused (no se genera una nueva). NUNCA se persiste sin hashear. */
+  password: string | null;
 }
 
 // Prioridad de listado por plan/estado. Copia local del canónico
@@ -152,8 +181,12 @@ export async function resolveLocality(
 }
 
 /**
- * Convierte un lead CONSENTED en User + Provider(NEGOCIO). Idempotente: si ya
- * existe un usuario con el email sugerido y su NEGOCIO, no crea nada.
+ * Convierte un lead CONSENTED en User + Provider(NEGOCIO). Idempotente por
+ * `convertedProviderId`: si el lead ya fue convertido, no crea nada.
+ *
+ * Genera credenciales de acceso NUEVAS (email `<slug>@oficioapp.org.pe` +
+ * contraseña de 8 chars) — no usa las del scraper. La contraseña se devuelve en
+ * texto plano para mostrarla UNA vez al admin y se persiste solo hasheada.
  *
  * Crea el Provider en PENDIENTE/invisible (igual que un registro normal). Con
  * `approve:true` además lo aprueba/visibiliza y le crea la Subscription de
@@ -164,20 +197,34 @@ export async function convertLead(
   lead: StagingLead,
   opts: ConvertOptions = {},
 ): Promise<ConvertResult> {
-  // 1. Compuerta de consentimiento + credenciales sugeridas.
+  // 1. Compuerta de consentimiento (nunca se convierte sin CONSENTED).
   if (lead.consentStatus !== 'CONSENTED') {
     throw new Error(
       `Lead ${lead.leadKey}: solo se convierten leads CONSENTED (estado actual: ${lead.consentStatus}).`,
     );
   }
-  if (!lead.suggestedEmail || !lead.suggestedPassword) {
-    throw new Error(
-      `Lead ${lead.leadKey}: faltan credenciales sugeridas. Exporta import.sql (genera email/password de los CONSENTED) antes de convertir.`,
-    );
-  }
-  const email = lead.suggestedEmail.trim().toLowerCase();
 
-  // 2. Categorías (reuso de la validación real) — la primaria va primera.
+  // 2. Idempotencia por convertedProviderId: si ya se convirtió, no dupliques.
+  if (lead.convertedProviderId != null) {
+    const existing = await prisma.provider.findUnique({
+      where: { id: lead.convertedProviderId },
+      select: { id: true, userId: true },
+    });
+    if (existing) {
+      return {
+        leadKey: lead.leadKey,
+        userId: existing.userId,
+        providerId: existing.id,
+        approved: false,
+        images: 0,
+        reused: true,
+        email: '',
+        password: null,
+      };
+    }
+  }
+
+  // 3. Categorías (reuso de la validación real) — la primaria va primera.
   const orderedIds = categoryIdsFromLead(lead);
   const validCategoryIds = await validateProviderCategorySelection(
     prisma,
@@ -189,31 +236,22 @@ export async function convertLead(
       ? lead.mappedCategoryId
       : validCategoryIds[0];
 
-  // 3. Idempotencia: si el usuario ya existe y ya tiene un NEGOCIO, no dupliques.
-  const existingUser = await prisma.user.findUnique({
-    where: { email },
-    select: { id: true, hasUsedTrial: true },
-  });
-  if (existingUser) {
-    const existingProvider = await prisma.provider.findUnique({
-      where: {
-        userId_type: { userId: existingUser.id, type: 'NEGOCIO' as any },
-      },
-      select: { id: true },
-    });
-    if (existingProvider) {
-      return {
-        leadKey: lead.leadKey,
-        userId: existingUser.id,
-        providerId: existingProvider.id,
-        approved: false,
-        images: 0,
-        reused: true,
-      };
-    }
-  }
+  // 4. Credenciales GENERADAS al convertir (no las del scraper): email simple
+  //    en el dominio real con sufijo -2/-3 solo si colisiona (User.email único),
+  //    y contraseña de 8 chars que se muestra una vez y se re-hashea.
+  const emailLocal = await uniqueSlug(lead.businessName, async (candidate) =>
+    Boolean(
+      await prisma.user.findUnique({
+        where: { email: `${candidate}@${ACCESS_EMAIL_DOMAIN}` },
+        select: { id: true },
+      }),
+    ),
+  );
+  const email = `${emailLocal}@${ACCESS_EMAIL_DOMAIN}`;
+  const password = generateAccessPassword();
+  const passwordHash = await bcrypt.hash(password, 10);
 
-  // 4. Localidad + slug + hash (fuera de la transacción, como el registro real).
+  // 5. Localidad + slug (fuera de la transacción, como el registro real).
   const localityId = await resolveLocality(prisma, lead);
   const providerSlug = await uniqueSlug(lead.businessName, async (candidate) =>
     Boolean(
@@ -223,33 +261,25 @@ export async function convertLead(
       }),
     ),
   );
-  const passwordHash = await bcrypt.hash(lead.suggestedPassword, 10);
 
-  // 5. User + Provider (+ aprobación opcional) atómicos.
+  // 6. User + Provider (+ aprobación opcional) atómicos.
   const result = await prisma.$transaction(async (tx) => {
-    let userId: number;
-    let usedTrial: boolean;
-    if (existingUser) {
-      userId = existingUser.id;
-      usedTrial = existingUser.hasUsedTrial;
-    } else {
-      const created = await tx.user.create({
-        data: {
-          email,
-          passwordHash,
-          firstName: lead.businessName.trim().slice(0, 80) || 'Negocio',
-          lastName: 'Negocio',
-          role: 'USUARIO',
-          isEmailVerified: true,
-          department: lead.department?.trim() || null,
-          province: lead.province?.trim() || null,
-          district: lead.district?.trim() || null,
-        },
-        select: { id: true, hasUsedTrial: true },
-      });
-      userId = created.id;
-      usedTrial = created.hasUsedTrial;
-    }
+    const createdUser = await tx.user.create({
+      data: {
+        email,
+        passwordHash,
+        firstName: lead.businessName.trim().slice(0, 80) || 'Negocio',
+        lastName: 'Negocio',
+        role: 'USUARIO',
+        isEmailVerified: true,
+        department: lead.department?.trim() || null,
+        province: lead.province?.trim() || null,
+        district: lead.district?.trim() || null,
+      },
+      select: { id: true, hasUsedTrial: true },
+    });
+    const userId = createdUser.id;
+    const usedTrial = createdUser.hasUsedTrial;
 
     const provider = await tx.provider.create({
       data: {
@@ -350,5 +380,7 @@ export async function convertLead(
     approved: result.approved,
     images: result.images,
     reused: false,
+    email,
+    password,
   };
 }
