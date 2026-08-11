@@ -77,13 +77,6 @@ describe('lead-conversion.core (unit)', () => {
     expect(prisma.user.create).not.toHaveBeenCalled();
   });
 
-  it('rechaza si faltan credenciales sugeridas', async () => {
-    await expect(
-      convertLead(prisma as any, baseLead({ suggestedEmail: null })),
-    ).rejects.toThrow(/credenciales sugeridas/);
-    expect(prisma.provider.create).not.toHaveBeenCalled();
-  });
-
   it('crea User + Provider(NEGOCIO) en PENDIENTE, con bcrypt y una sola primaria', async () => {
     const res = await convertLead(prisma as any, baseLead());
 
@@ -95,13 +88,16 @@ describe('lead-conversion.core (unit)', () => {
       reused: false,
     });
 
+    // Email GENERADO en el dominio real (no el del scraper) + contraseña 8 chars.
+    expect(res.email).toBe('pollos-wanka@oficioapp.org.pe');
+    expect(res.password).toMatch(/^[A-Za-z0-9]{8}$/);
+
     const userData = prisma.user.create.mock.calls[0][0].data;
-    expect(userData.email).toBe('polloswanka-4f2a@leads.oficioapp.org.pe');
+    expect(userData.email).toBe('pollos-wanka@oficioapp.org.pe');
     expect(userData.role).toBe('USUARIO');
     expect(userData.isEmailVerified).toBe(true);
-    // bcrypt real: el hash empieza con el prefijo $2a/$2b/$2y.
+    // bcrypt real (de la contraseña generada): prefijo $2a/$2b/$2y.
     expect(userData.passwordHash).toMatch(/^\$2[aby]\$/);
-    expect(userData.passwordHash).not.toBe('Xy7k2mAbc123def');
 
     const providerData = prisma.provider.create.mock.calls[0][0].data;
     expect(providerData.type).toBe('NEGOCIO');
@@ -126,13 +122,21 @@ describe('lead-conversion.core (unit)', () => {
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
-  it('es idempotente: si el usuario ya tiene un NEGOCIO, no crea nada', async () => {
-    prisma.user.findUnique.mockResolvedValue({ id: 7, hasUsedTrial: false });
-    prisma.provider.findUnique.mockResolvedValue({ id: 99 });
+  it('es idempotente por convertedProviderId: no crea nada', async () => {
+    prisma.provider.findUnique.mockResolvedValue({ id: 99, userId: 7 });
 
-    const res = await convertLead(prisma as any, baseLead());
+    const res = await convertLead(
+      prisma as any,
+      baseLead({ convertedProviderId: 99 }),
+    );
 
-    expect(res).toMatchObject({ userId: 7, providerId: 99, reused: true, approved: false });
+    expect(res).toMatchObject({
+      userId: 7,
+      providerId: 99,
+      reused: true,
+      approved: false,
+      password: null,
+    });
     expect(prisma.user.create).not.toHaveBeenCalled();
     expect(prisma.provider.create).not.toHaveBeenCalled();
   });

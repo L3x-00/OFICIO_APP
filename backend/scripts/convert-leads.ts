@@ -132,7 +132,7 @@ async function run() {
 
     if (!COMMIT) {
       console.log(
-        `${n}. ${lead.businessName}\n      email: ${lead.suggestedEmail}\n      categorías: ${cats} · delivery: ${lead.storeDelivery ? 'sí' : 'no'} · fotos: ${lead.photoCount ?? 0} · ${lead.district ?? '—'}`,
+        `${n}. ${lead.businessName}\n      categorías: ${cats} · delivery: ${lead.storeDelivery ? 'sí' : 'no'} · fotos: ${lead.photoCount ?? 0} · ${lead.district ?? '—'}`,
       );
       continue;
     }
@@ -148,6 +148,8 @@ async function run() {
         console.log(
           `${n}. ✅ ${lead.businessName} — provider #${result.providerId}${result.approved ? ' (APROBADO/visible)' : ' (PENDIENTE)'} · ${result.images} foto(s)`,
         );
+        // Credenciales de acceso — se muestran acá una sola vez (dárselas al negocio).
+        if (result.password) console.log(`      🔑 ${result.email}  ·  ${result.password}`);
       }
       // Marcar el lead como convertido (idempotente por convertedProviderId).
       await prisma.$executeRawUnsafe(

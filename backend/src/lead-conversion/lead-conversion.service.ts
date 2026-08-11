@@ -143,6 +143,9 @@ export class LeadConversionService {
       approved?: boolean;
       reused?: boolean;
       images?: number;
+      /** Credenciales de acceso — solo en la respuesta, se muestran una vez. */
+      email?: string;
+      password?: string | null;
       error?: string;
     }> = [];
 
@@ -204,6 +207,8 @@ export class LeadConversionService {
           approved: res.approved,
           reused: res.reused,
           images: res.images,
+          email: res.email,
+          password: res.password,
         });
       } catch (error) {
         results.push({

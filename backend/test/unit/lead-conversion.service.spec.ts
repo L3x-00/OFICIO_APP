@@ -65,7 +65,7 @@ describe('LeadConversionService (unit)', () => {
         if (sql.includes('count(*) FILTER')) return Promise.resolve([{ total: 1, consented: 0, converted: 1 }]);
         return Promise.resolve([]);
       });
-      convertLeadMock.mockResolvedValue({ leadKey: 'l1', userId: 10, providerId: 20, approved: false, images: 0, reused: false });
+      convertLeadMock.mockResolvedValue({ leadKey: 'l1', userId: 10, providerId: 20, approved: false, images: 0, reused: false, email: 'pollos@oficioapp.org.pe', password: 'Ab12Cd34' });
 
       const res = await service.convert(['l1'], false);
 
@@ -77,7 +77,13 @@ describe('LeadConversionService (unit)', () => {
       expect(updateCall![2]).toBe('l1');
       expect(res.converted).toBe(1);
       expect(res.failed).toBe(0);
-      expect(res.results[0]).toMatchObject({ leadKey: 'l1', ok: true, providerId: 20 });
+      expect(res.results[0]).toMatchObject({
+        leadKey: 'l1',
+        ok: true,
+        providerId: 20,
+        email: 'pollos@oficioapp.org.pe',
+        password: 'Ab12Cd34',
+      });
     });
 
     it('un lead que falla no aborta el resto (best-effort)', async () => {

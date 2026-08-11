@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Store, RefreshCw, CheckCircle, Users, ShieldQuestion, ImageIcon, type LucideIcon } from 'lucide-react';
+import { Store, RefreshCw, CheckCircle, Users, ShieldQuestion, ImageIcon, KeyRound, Copy, X, type LucideIcon } from 'lucide-react';
 import {
   getCaptacionLeads,
   convertCaptacionLeads,
   CaptacionLead,
   CaptacionStats,
+  CaptacionConvertResult,
 } from '@/lib/api';
 
 type Tab = 'consented' | 'all' | 'converted';
@@ -38,6 +39,8 @@ export default function CaptacionPage() {
   const [approve, setApprove] = useState(false);
   const [busy, setBusy]       = useState<string | null>(null);
   const [message, setMessage] = useState('');
+  // Credenciales recién generadas — se muestran UNA vez (modal) y no se re-piden.
+  const [creds, setCreds]     = useState<CaptacionConvertResult[]>([]);
 
   const load = async () => {
     setLoading(true); setError('');
@@ -74,6 +77,9 @@ export default function CaptacionPage() {
         `${ok} convertido(s)${approve ? ' y publicados' : ' (pendientes de aprobación)'}.` +
         (fail.length ? ` ${fail.length} con error: ${fail.map(f => `${f.leadKey.slice(0, 8)}… ${f.error}`).join('; ')}` : ''),
       );
+      // Credenciales de los negocios recién creados — mostrar UNA vez.
+      const newCreds = res.results.filter(r => r.ok && r.password);
+      if (newCreds.length) setCreds(newCreds);
       if (res.stats) setStats(res.stats);
       await load();
     } catch (e) {
@@ -87,6 +93,8 @@ export default function CaptacionPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {creds.length > 0 && <CredsModal creds={creds} onClose={() => setCreds([])} />}
+
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
@@ -244,6 +252,87 @@ function StatChip({ label, value, color }: { label: string; value: number; color
     <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'var(--surface-1)', border: '1px solid var(--border-default)', minWidth: '150px' }}>
       <p style={{ fontSize: '22px', fontWeight: 700, color, lineHeight: 1 }}>{value}</p>
       <p style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginTop: '4px' }}>{label}</p>
+    </div>
+  );
+}
+
+// Modal de credenciales: se muestra UNA vez tras convertir. El backend nunca
+// devuelve la contraseña de nuevo (solo guarda el hash bcrypt), así que si el
+// admin cierra sin copiar, tiene que resetearla. Aviso explícito abajo.
+function CredsModal({ creds, onClose }: { creds: CaptacionConvertResult[]; onClose: () => void }) {
+  const [copied, setCopied] = useState<string | null>(null);
+  const copy = async (text: string, tag: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(tag);
+      setTimeout(() => setCopied((c) => (c === tag ? null : c)), 1500);
+    } catch {
+      /* clipboard bloqueado: el admin puede seleccionar y copiar a mano */
+    }
+  };
+  const allText = creds
+    .map((c) => `${c.businessName}\n  usuario: ${c.email}\n  contraseña: ${c.password}`)
+    .join('\n\n');
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: 'var(--surface-1)', border: '1px solid var(--border-default)', borderRadius: '16px', width: '100%', maxWidth: '560px', maxHeight: '85vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}
+      >
+        <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--border-default)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <KeyRound size={18} color="#8B5CF6" /> Credenciales de acceso
+          </h2>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex' }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div style={{ padding: '14px 22px', background: '#F59E0B14', borderBottom: '1px solid var(--border-default)', color: '#B45309', fontSize: '12.5px' }}>
+          ⚠️ Copiá y entregá estas credenciales al negocio <strong>ahora</strong>. Por seguridad, la contraseña <strong>no se vuelve a mostrar</strong>; si la perdés, tendrás que resetearla.
+        </div>
+
+        <div style={{ padding: '16px 22px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {creds.map((c) => (
+            <div key={c.leadKey} style={{ border: '1px solid var(--border-default)', borderRadius: '10px', padding: '12px 14px' }}>
+              <p style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)', marginBottom: '8px' }}>{c.businessName}</p>
+              <CredRow label="Usuario" value={c.email ?? ''} copied={copied === `e-${c.leadKey}`} onCopy={() => copy(c.email ?? '', `e-${c.leadKey}`)} />
+              <CredRow label="Contraseña" value={c.password ?? ''} mono copied={copied === `p-${c.leadKey}`} onCopy={() => copy(c.password ?? '', `p-${c.leadKey}`)} />
+            </div>
+          ))}
+        </div>
+
+        <div style={{ padding: '14px 22px', borderTop: '1px solid var(--border-default)', display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
+          <button
+            onClick={() => copy(allText, 'all')}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 14px', borderRadius: '8px', border: '1px solid var(--border-default)', background: 'var(--surface-3)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '13px' }}
+          >
+            <Copy size={13} /> {copied === 'all' ? 'Copiado ✓' : 'Copiar todo'}
+          </button>
+          <button
+            onClick={onClose}
+            style={{ padding: '9px 18px', borderRadius: '8px', border: 'none', background: '#8B5CF6', color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '13px' }}
+          >
+            Ya las copié
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CredRow({ label, value, mono, copied, onCopy }: { label: string; value: string; mono?: boolean; copied: boolean; onCopy: () => void }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+      <span style={{ fontSize: '11px', color: 'var(--text-tertiary)', width: '78px', flexShrink: 0 }}>{label}</span>
+      <code style={{ flex: 1, fontFamily: mono ? 'ui-monospace, monospace' : 'inherit', fontSize: '13px', color: 'var(--text-primary)', background: 'var(--surface-3)', border: '1px solid var(--border-default)', borderRadius: '6px', padding: '5px 9px', overflowX: 'auto', whiteSpace: 'nowrap' }}>{value}</code>
+      <button onClick={onCopy} title="Copiar" style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '5px 9px', borderRadius: '6px', border: '1px solid var(--border-default)', background: copied ? '#10B98122' : 'var(--surface-3)', color: copied ? '#10B981' : 'var(--text-secondary)', cursor: 'pointer', fontSize: '11px', flexShrink: 0 }}>
+        <Copy size={12} /> {copied ? '✓' : ''}
+      </button>
     </div>
   );
 }
