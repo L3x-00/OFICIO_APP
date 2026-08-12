@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">41.93% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/31</span>
+                <span class='fraction'>13/31</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">39.28% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/28</span>
+                <span class='fraction'>11/28</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">66.66% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>2/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">46.42% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/28</span>
+                <span class='fraction'>13/28</span>
             </div>
         
             
@@ -164,7 +164,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -175,17 +175,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -193,16 +194,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -217,7 +217,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -250,7 +250,7 @@
  * admin/web que aún lee `provider.category.name` (modelo singular legado).
  * No altera `providerCategories` — coexisten ambos.
  */
-<span class="cstat-no" title="statement not covered" >export function <span class="fstat-no" title="function not covered" >w</span>ithCategoryAlias&lt;</span>
+export function <span class="fstat-no" title="function not covered" >withCategoryAlias&lt;</span>
   T extends { providerCategories?: Array&lt;{ category: { name: string } }&gt; },
 &gt;(p: T): T &amp; { category: { name: string } } {
   const name = <span class="cstat-no" title="statement not covered" >p?.providerCategories?.[0]?.category?.name ?? 'Sin categoría';</span>
@@ -261,16 +261,16 @@
  * plan + status → prioridad de listado (1 = más arriba). Solo las
  * suscripciones ACTIVA escalan; cualquier otro estado cae a la cola (4).
  */
-<span class="cstat-no" title="statement not covered" >export function <span class="fstat-no" title="function not covered" >p</span>lanToPriority(</span>plan: string, status: string): number {
-<span class="cstat-no" title="statement not covered" >  if (status !== 'ACTIVA') <span class="cstat-no" title="statement not covered" >return 4;</span></span>
-<span class="cstat-no" title="statement not covered" >  switch (plan) {</span>
+export function planToPriority(plan: string, status: string): number {
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (status !== 'ACTIVA') <span class="cstat-no" title="statement not covered" >return 4;</span>
+  switch (plan) {
     case 'PREMIUM':
-<span class="cstat-no" title="statement not covered" >      return 1;</span>
+      return 1;
     case 'ESTANDAR':
-<span class="cstat-no" title="statement not covered" >      return 2;</span>
-    case 'GRATIS':
+      return 2;
+<span class="branch-2 cbranch-no" title="branch not covered" >    case 'GRATIS':</span>
 <span class="cstat-no" title="statement not covered" >      return 3;</span>
-    default:
+<span class="branch-3 cbranch-no" title="branch not covered" >    default:</span>
 <span class="cstat-no" title="statement not covered" >      return 4;</span>
   }
 }
@@ -280,15 +280,15 @@
  * Borrado SELECTIVO — ya no usamos flushAll para no purgar caches de otros
  * módulos en el mismo Redis. Recibe el `cacheManager` por parámetro.
  */
-<span class="cstat-no" title="statement not covered" >export a</span>sync function <span class="fstat-no" title="function not covered" >clearProvidersCache(</span>cacheManager: any): Promise&lt;void&gt; {
-  const PATTERN = <span class="cstat-no" title="statement not covered" >'providers_*';</span>
-<span class="cstat-no" title="statement not covered" >  try {</span>
-    const cm = <span class="cstat-no" title="statement not covered" >cacheManager;</span>
+export async function clearProvidersCache(cacheManager: any): Promise&lt;void&gt; {
+  const PATTERN = 'providers_*';
+  try {
+    const cm = cacheManager;
     const client =
-<span class="cstat-no" title="statement not covered" >      cm?.store?.getClient?.() ?? cm?.client ?? cm?.store?.client ?? null;</span>
+      cm?.store?.getClient?.() ?? cm?.client ?? cm?.store?.client ?? null;
 &nbsp;
     // Caso ideal: cliente Redis con SCAN (cache-manager-redis-yet expone uno).
-<span class="cstat-no" title="statement not covered" >    if (client &amp;&amp; typeof client.scanIterator === 'function') {</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (client &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >typeof client.scanIterator === 'function')</span> {
       const toDelete: string[] = <span class="cstat-no" title="statement not covered" >[];</span>
 <span class="cstat-no" title="statement not covered" >      for await (const key of client.scanIterator({</span>
         MATCH: PATTERN,
@@ -303,7 +303,7 @@
     }
 &nbsp;
     // Fallback: KEYS (bloqueante, solo en datasets pequeños).
-<span class="cstat-no" title="statement not covered" >    if (client &amp;&amp; typeof client.keys === 'function') {</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (client &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >typeof client.keys === 'function')</span> {
       const keys: string[] = <span class="cstat-no" title="statement not covered" >await client.keys(PATTERN);</span>
 <span class="cstat-no" title="statement not covered" >      if (keys.length &gt; 0) {</span>
 <span class="cstat-no" title="statement not covered" >        if (typeof client.del === 'function') <span class="cstat-no" title="statement not covered" >await client.del(keys);</span></span>
@@ -328,7 +328,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-21T14:24:01.290Z
+                at 2026-07-22T20:07:11.356Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

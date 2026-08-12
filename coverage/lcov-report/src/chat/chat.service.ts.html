@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">73.83% </span>
+                <span class="strong">74.31% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>79/107</span>
+                <span class='fraction'>81/109</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">51.45% </span>
+                <span class="strong">53.27% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>53/103</span>
+                <span class='fraction'>57/107</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">74.48% </span>
+                <span class="strong">75% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>73/98</span>
+                <span class='fraction'>75/100</span>
             </div>
         
             
@@ -552,7 +552,27 @@
 <a name='L487'></a><a href='#L487'>487</a>
 <a name='L488'></a><a href='#L488'>488</a>
 <a name='L489'></a><a href='#L489'>489</a>
-<a name='L490'></a><a href='#L490'>490</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L490'></a><a href='#L490'>490</a>
+<a name='L491'></a><a href='#L491'>491</a>
+<a name='L492'></a><a href='#L492'>492</a>
+<a name='L493'></a><a href='#L493'>493</a>
+<a name='L494'></a><a href='#L494'>494</a>
+<a name='L495'></a><a href='#L495'>495</a>
+<a name='L496'></a><a href='#L496'>496</a>
+<a name='L497'></a><a href='#L497'>497</a>
+<a name='L498'></a><a href='#L498'>498</a>
+<a name='L499'></a><a href='#L499'>499</a>
+<a name='L500'></a><a href='#L500'>500</a>
+<a name='L501'></a><a href='#L501'>501</a>
+<a name='L502'></a><a href='#L502'>502</a>
+<a name='L503'></a><a href='#L503'>503</a>
+<a name='L504'></a><a href='#L504'>504</a>
+<a name='L505'></a><a href='#L505'>505</a>
+<a name='L506'></a><a href='#L506'>506</a>
+<a name='L507'></a><a href='#L507'>507</a>
+<a name='L508'></a><a href='#L508'>508</a>
+<a name='L509'></a><a href='#L509'>509</a>
+<a name='L510'></a><a href='#L510'>510</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -728,6 +748,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -760,6 +791,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -804,6 +843,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1200,7 +1240,7 @@ export class ChatService {
 &nbsp;
     const room = await this.prisma.chatRoom.findUnique({
       where: { id: dto.chatRoomId },
-      include: { provider: { select: { userId: true } } },
+      include: { provider: { select: { userId: true, type: true } } },
     });
     if (!room) throw new NotFoundException('Sala de chat no encontrada');
 &nbsp;
@@ -1214,6 +1254,17 @@ export class ChatService {
 &nbsp;
     const receiverUserId =
       senderUserId === room.clientId ? providerOwnerUserId : room.clientId;
+&nbsp;
+    // Independencia de roles (#7): la notif de chat pertenece a UN rol concreto,
+    // no es cross-cutting. Si va AL PROVEEDOR (la envió el cliente) lleva su
+    // perfil (OFICIO/NEGOCIO) → el otro panel del mismo user NO la ve. Si va al
+    // CLIENTE, marcamos 'CLIENTE' (centinela) para que tampoco aparezca en los
+    // paneles de proveedor (no matchea OFICIO/NEGOCIO ni el branch null/null
+    // cross-cutting de getMyNotifications); sí aparece en "Alertas" (sin filtro).
+    const receiverIsProvider = senderUserId === room.clientId;
+    const notifProfileType = receiverIsProvider
+      ? room.provider.type
+      : 'CLIENTE';
 &nbsp;
     // Necesitamos el nombre del sender para titular la notificación
     // ("Mensaje de Juan Pérez" en vez del genérico "Nuevo mensaje").
@@ -1253,9 +1304,17 @@ export class ChatService {
         data: {
           providerId: null,
           targetUserId: receiverUserId,
+          targetProfileType: notifProfileType,
           type: 'CHAT_MESSAGE',
           title: notifTitle,
           message: message.content,
+          // Deep-link persistido: al tocar la notif desde el historial (tras
+          // reabrir la app) se abre el hilo correcto. Sin esto caía a la lista.
+          metadata: {
+            chatRoomId: message.chatRoomId,
+            messageId: message.id,
+            senderId: message.senderId,
+          },
         },
       })
       .catch(<span class="fstat-no" title="function not covered" >(e</span>) =&gt;
@@ -1297,6 +1356,7 @@ export class ChatService {
             title: notifTitle,
             body: message.content,
             targetUserId: receiverUserId,
+            targetProfileType: notifProfileType ?? undefined,
             avatarUrl: senderAvatar ?? undefined,
             // Deep-link: sin chatRoomId el inbox in-app caía a la lista de
             // chats vacía en vez de abrir el hilo del remitente. Mismo dato
@@ -1537,7 +1597,7 @@ export class ChatService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-21T14:24:01.290Z
+                at 2026-07-22T20:07:11.356Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

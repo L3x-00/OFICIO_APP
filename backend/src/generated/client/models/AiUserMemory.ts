@@ -45,6 +45,8 @@ export type AiUserMemoryMinAggregateOutputType = {
   id: number | null
   userId: number | null
   lastIntent: string | null
+  consentGranted: boolean | null
+  expiresAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -53,6 +55,8 @@ export type AiUserMemoryMaxAggregateOutputType = {
   id: number | null
   userId: number | null
   lastIntent: string | null
+  consentGranted: boolean | null
+  expiresAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -63,6 +67,8 @@ export type AiUserMemoryCountAggregateOutputType = {
   searchCategories: number
   recentProviderIds: number
   lastIntent: number
+  consentGranted: number
+  expiresAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -85,6 +91,8 @@ export type AiUserMemoryMinAggregateInputType = {
   id?: true
   userId?: true
   lastIntent?: true
+  consentGranted?: true
+  expiresAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -93,6 +101,8 @@ export type AiUserMemoryMaxAggregateInputType = {
   id?: true
   userId?: true
   lastIntent?: true
+  consentGranted?: true
+  expiresAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -103,6 +113,8 @@ export type AiUserMemoryCountAggregateInputType = {
   searchCategories?: true
   recentProviderIds?: true
   lastIntent?: true
+  consentGranted?: true
+  expiresAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -200,6 +212,8 @@ export type AiUserMemoryGroupByOutputType = {
   searchCategories: string[]
   recentProviderIds: number[]
   lastIntent: string | null
+  consentGranted: boolean
+  expiresAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: AiUserMemoryCountAggregateOutputType | null
@@ -233,6 +247,8 @@ export type AiUserMemoryWhereInput = {
   searchCategories?: Prisma.StringNullableListFilter<"AiUserMemory">
   recentProviderIds?: Prisma.IntNullableListFilter<"AiUserMemory">
   lastIntent?: Prisma.StringNullableFilter<"AiUserMemory"> | string | null
+  consentGranted?: Prisma.BoolFilter<"AiUserMemory"> | boolean
+  expiresAt?: Prisma.DateTimeNullableFilter<"AiUserMemory"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"AiUserMemory"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AiUserMemory"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -244,6 +260,8 @@ export type AiUserMemoryOrderByWithRelationInput = {
   searchCategories?: Prisma.SortOrder
   recentProviderIds?: Prisma.SortOrder
   lastIntent?: Prisma.SortOrderInput | Prisma.SortOrder
+  consentGranted?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -258,6 +276,8 @@ export type AiUserMemoryWhereUniqueInput = Prisma.AtLeast<{
   searchCategories?: Prisma.StringNullableListFilter<"AiUserMemory">
   recentProviderIds?: Prisma.IntNullableListFilter<"AiUserMemory">
   lastIntent?: Prisma.StringNullableFilter<"AiUserMemory"> | string | null
+  consentGranted?: Prisma.BoolFilter<"AiUserMemory"> | boolean
+  expiresAt?: Prisma.DateTimeNullableFilter<"AiUserMemory"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"AiUserMemory"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AiUserMemory"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -269,6 +289,8 @@ export type AiUserMemoryOrderByWithAggregationInput = {
   searchCategories?: Prisma.SortOrder
   recentProviderIds?: Prisma.SortOrder
   lastIntent?: Prisma.SortOrderInput | Prisma.SortOrder
+  consentGranted?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.AiUserMemoryCountOrderByAggregateInput
@@ -287,6 +309,8 @@ export type AiUserMemoryScalarWhereWithAggregatesInput = {
   searchCategories?: Prisma.StringNullableListFilter<"AiUserMemory">
   recentProviderIds?: Prisma.IntNullableListFilter<"AiUserMemory">
   lastIntent?: Prisma.StringNullableWithAggregatesFilter<"AiUserMemory"> | string | null
+  consentGranted?: Prisma.BoolWithAggregatesFilter<"AiUserMemory"> | boolean
+  expiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AiUserMemory"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"AiUserMemory"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"AiUserMemory"> | Date | string
 }
@@ -295,6 +319,8 @@ export type AiUserMemoryCreateInput = {
   searchCategories?: Prisma.AiUserMemoryCreatesearchCategoriesInput | string[]
   recentProviderIds?: Prisma.AiUserMemoryCreaterecentProviderIdsInput | number[]
   lastIntent?: string | null
+  consentGranted?: boolean
+  expiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutAiMemoryInput
@@ -306,6 +332,8 @@ export type AiUserMemoryUncheckedCreateInput = {
   searchCategories?: Prisma.AiUserMemoryCreatesearchCategoriesInput | string[]
   recentProviderIds?: Prisma.AiUserMemoryCreaterecentProviderIdsInput | number[]
   lastIntent?: string | null
+  consentGranted?: boolean
+  expiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -314,6 +342,8 @@ export type AiUserMemoryUpdateInput = {
   searchCategories?: Prisma.AiUserMemoryUpdatesearchCategoriesInput | string[]
   recentProviderIds?: Prisma.AiUserMemoryUpdaterecentProviderIdsInput | number[]
   lastIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consentGranted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutAiMemoryNestedInput
@@ -325,6 +355,8 @@ export type AiUserMemoryUncheckedUpdateInput = {
   searchCategories?: Prisma.AiUserMemoryUpdatesearchCategoriesInput | string[]
   recentProviderIds?: Prisma.AiUserMemoryUpdaterecentProviderIdsInput | number[]
   lastIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consentGranted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -335,6 +367,8 @@ export type AiUserMemoryCreateManyInput = {
   searchCategories?: Prisma.AiUserMemoryCreatesearchCategoriesInput | string[]
   recentProviderIds?: Prisma.AiUserMemoryCreaterecentProviderIdsInput | number[]
   lastIntent?: string | null
+  consentGranted?: boolean
+  expiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -343,6 +377,8 @@ export type AiUserMemoryUpdateManyMutationInput = {
   searchCategories?: Prisma.AiUserMemoryUpdatesearchCategoriesInput | string[]
   recentProviderIds?: Prisma.AiUserMemoryUpdaterecentProviderIdsInput | number[]
   lastIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consentGranted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -353,6 +389,8 @@ export type AiUserMemoryUncheckedUpdateManyInput = {
   searchCategories?: Prisma.AiUserMemoryUpdatesearchCategoriesInput | string[]
   recentProviderIds?: Prisma.AiUserMemoryUpdaterecentProviderIdsInput | number[]
   lastIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consentGranted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -384,6 +422,8 @@ export type AiUserMemoryCountOrderByAggregateInput = {
   searchCategories?: Prisma.SortOrder
   recentProviderIds?: Prisma.SortOrder
   lastIntent?: Prisma.SortOrder
+  consentGranted?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -398,6 +438,8 @@ export type AiUserMemoryMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   lastIntent?: Prisma.SortOrder
+  consentGranted?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -406,6 +448,8 @@ export type AiUserMemoryMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   lastIntent?: Prisma.SortOrder
+  consentGranted?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -470,6 +514,8 @@ export type AiUserMemoryCreateWithoutUserInput = {
   searchCategories?: Prisma.AiUserMemoryCreatesearchCategoriesInput | string[]
   recentProviderIds?: Prisma.AiUserMemoryCreaterecentProviderIdsInput | number[]
   lastIntent?: string | null
+  consentGranted?: boolean
+  expiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -479,6 +525,8 @@ export type AiUserMemoryUncheckedCreateWithoutUserInput = {
   searchCategories?: Prisma.AiUserMemoryCreatesearchCategoriesInput | string[]
   recentProviderIds?: Prisma.AiUserMemoryCreaterecentProviderIdsInput | number[]
   lastIntent?: string | null
+  consentGranted?: boolean
+  expiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -503,6 +551,8 @@ export type AiUserMemoryUpdateWithoutUserInput = {
   searchCategories?: Prisma.AiUserMemoryUpdatesearchCategoriesInput | string[]
   recentProviderIds?: Prisma.AiUserMemoryUpdaterecentProviderIdsInput | number[]
   lastIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consentGranted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -512,6 +562,8 @@ export type AiUserMemoryUncheckedUpdateWithoutUserInput = {
   searchCategories?: Prisma.AiUserMemoryUpdatesearchCategoriesInput | string[]
   recentProviderIds?: Prisma.AiUserMemoryUpdaterecentProviderIdsInput | number[]
   lastIntent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consentGranted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -524,6 +576,8 @@ export type AiUserMemorySelect<ExtArgs extends runtime.Types.Extensions.Internal
   searchCategories?: boolean
   recentProviderIds?: boolean
   lastIntent?: boolean
+  consentGranted?: boolean
+  expiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -535,6 +589,8 @@ export type AiUserMemorySelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   searchCategories?: boolean
   recentProviderIds?: boolean
   lastIntent?: boolean
+  consentGranted?: boolean
+  expiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -546,6 +602,8 @@ export type AiUserMemorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   searchCategories?: boolean
   recentProviderIds?: boolean
   lastIntent?: boolean
+  consentGranted?: boolean
+  expiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -557,11 +615,13 @@ export type AiUserMemorySelectScalar = {
   searchCategories?: boolean
   recentProviderIds?: boolean
   lastIntent?: boolean
+  consentGranted?: boolean
+  expiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type AiUserMemoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "searchCategories" | "recentProviderIds" | "lastIntent" | "createdAt" | "updatedAt", ExtArgs["result"]["aiUserMemory"]>
+export type AiUserMemoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "searchCategories" | "recentProviderIds" | "lastIntent" | "consentGranted" | "expiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["aiUserMemory"]>
 export type AiUserMemoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -592,6 +652,14 @@ export type $AiUserMemoryPayload<ExtArgs extends runtime.Types.Extensions.Intern
      * Última intención: 'search' | 'faq' | 'financial' | 'other'.
      */
     lastIntent: string | null
+    /**
+     * Flag interno heredado; nunca se expone a clientes.
+     */
+    consentGranted: boolean
+    /**
+     * Vencimiento renovado por cada turno útil; null = memoria aún no inicializada.
+     */
+    expiresAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["aiUserMemory"]>
@@ -1023,6 +1091,8 @@ export interface AiUserMemoryFieldRefs {
   readonly searchCategories: Prisma.FieldRef<"AiUserMemory", 'String[]'>
   readonly recentProviderIds: Prisma.FieldRef<"AiUserMemory", 'Int[]'>
   readonly lastIntent: Prisma.FieldRef<"AiUserMemory", 'String'>
+  readonly consentGranted: Prisma.FieldRef<"AiUserMemory", 'Boolean'>
+  readonly expiresAt: Prisma.FieldRef<"AiUserMemory", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"AiUserMemory", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"AiUserMemory", 'DateTime'>
 }

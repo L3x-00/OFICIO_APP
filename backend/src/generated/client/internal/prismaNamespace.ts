@@ -430,7 +430,8 @@ export const ModelName = {
   AiConversation: 'AiConversation',
   AiMessage: 'AiMessage',
   AiUserMemory: 'AiUserMemory',
-  AiProviderMemory: 'AiProviderMemory'
+  AiProviderMemory: 'AiProviderMemory',
+  AiLearningCandidate: 'AiLearningCandidate'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -446,7 +447,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "appointment" | "menuItem" | "catalogProduct" | "quotationRequest" | "providerCategory" | "provider" | "providerCoverage" | "providerImage" | "subscription" | "subscriptionAuditLog" | "userReport" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport" | "platformIssue" | "trustValidationRequest" | "serviceRequest" | "offer" | "yapePayment" | "userPenalty" | "referralCode" | "referral" | "referralReward" | "coinRedemption" | "chatRoom" | "chatMessage" | "offerPost" | "offerPostCategory" | "offerReport" | "spatial_ref_sys" | "aiKnowledgeEntry" | "aiConversation" | "aiMessage" | "aiUserMemory" | "aiProviderMemory"
+    modelProps: "user" | "otpCode" | "refreshToken" | "locality" | "category" | "appointment" | "menuItem" | "catalogProduct" | "quotationRequest" | "providerCategory" | "provider" | "providerCoverage" | "providerImage" | "subscription" | "subscriptionAuditLog" | "userReport" | "payment" | "planRequest" | "review" | "reviewReply" | "favorite" | "verificationDoc" | "providerAnalytic" | "adminNotification" | "recommendation" | "providerReport" | "platformIssue" | "trustValidationRequest" | "serviceRequest" | "offer" | "yapePayment" | "userPenalty" | "referralCode" | "referral" | "referralReward" | "coinRedemption" | "chatRoom" | "chatMessage" | "offerPost" | "offerPostCategory" | "offerReport" | "spatial_ref_sys" | "aiKnowledgeEntry" | "aiConversation" | "aiMessage" | "aiUserMemory" | "aiProviderMemory" | "aiLearningCandidate"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3928,6 +3929,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AiLearningCandidate: {
+      payload: Prisma.$AiLearningCandidatePayload<ExtArgs>
+      fields: Prisma.AiLearningCandidateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AiLearningCandidateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLearningCandidatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AiLearningCandidateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLearningCandidatePayload>
+        }
+        findFirst: {
+          args: Prisma.AiLearningCandidateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLearningCandidatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AiLearningCandidateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLearningCandidatePayload>
+        }
+        findMany: {
+          args: Prisma.AiLearningCandidateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLearningCandidatePayload>[]
+        }
+        create: {
+          args: Prisma.AiLearningCandidateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLearningCandidatePayload>
+        }
+        createMany: {
+          args: Prisma.AiLearningCandidateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AiLearningCandidateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLearningCandidatePayload>[]
+        }
+        delete: {
+          args: Prisma.AiLearningCandidateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLearningCandidatePayload>
+        }
+        update: {
+          args: Prisma.AiLearningCandidateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLearningCandidatePayload>
+        }
+        deleteMany: {
+          args: Prisma.AiLearningCandidateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AiLearningCandidateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AiLearningCandidateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLearningCandidatePayload>[]
+        }
+        upsert: {
+          args: Prisma.AiLearningCandidateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLearningCandidatePayload>
+        }
+        aggregate: {
+          args: Prisma.AiLearningCandidateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAiLearningCandidate>
+        }
+        groupBy: {
+          args: Prisma.AiLearningCandidateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiLearningCandidateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AiLearningCandidateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiLearningCandidateCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -4655,6 +4730,8 @@ export const AiUserMemoryScalarFieldEnum = {
   searchCategories: 'searchCategories',
   recentProviderIds: 'recentProviderIds',
   lastIntent: 'lastIntent',
+  consentGranted: 'consentGranted',
+  expiresAt: 'expiresAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -4672,6 +4749,20 @@ export const AiProviderMemoryScalarFieldEnum = {
 } as const
 
 export type AiProviderMemoryScalarFieldEnum = (typeof AiProviderMemoryScalarFieldEnum)[keyof typeof AiProviderMemoryScalarFieldEnum]
+
+
+export const AiLearningCandidateScalarFieldEnum = {
+  id: 'id',
+  topic: 'topic',
+  intent: 'intent',
+  occurrences: 'occurrences',
+  status: 'status',
+  lastSeenAt: 'lastSeenAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiLearningCandidateScalarFieldEnum = (typeof AiLearningCandidateScalarFieldEnum)[keyof typeof AiLearningCandidateScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -5269,6 +5360,7 @@ export type GlobalOmitConfig = {
   aiMessage?: Prisma.AiMessageOmit
   aiUserMemory?: Prisma.AiUserMemoryOmit
   aiProviderMemory?: Prisma.AiProviderMemoryOmit
+  aiLearningCandidate?: Prisma.AiLearningCandidateOmit
 }
 
 /* Types for Logging */

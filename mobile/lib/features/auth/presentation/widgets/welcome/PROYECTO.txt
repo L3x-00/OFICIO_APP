@@ -1,0 +1,1655 @@
+PROYECTO
+├── 📁 .github/
+│   └── 📁 workflows/
+│       └── ⚙️ ci.yml
+├── 📁 .husky/
+│   ├── 📁 _/
+│   │   ├── ⚙️ .gitignore
+│   │   ├── 📄 applypatch-msg
+│   │   ├── 📄 commit-msg
+│   │   ├── 📄 h
+│   │   ├── 📄 husky.sh
+│   │   ├── 📄 post-applypatch
+│   │   ├── 📄 post-checkout
+│   │   ├── 📄 post-commit
+│   │   ├── 📄 post-merge
+│   │   ├── 📄 post-rewrite
+│   │   ├── 📄 pre-applypatch
+│   │   ├── 📄 pre-auto-gc
+│   │   ├── 📄 pre-commit
+│   │   ├── 📄 pre-merge-commit
+│   │   ├── 📄 pre-push
+│   │   ├── 📄 pre-rebase
+│   │   └── 📄 prepare-commit-msg
+│   └── 📄 pre-commit
+├── 📁 admin/
+│   ├── 📁 app/
+│   │   ├── 📁 analytics/
+│   │   │   ├── 📁 ia/
+│   │   │   │   └── 📄 page.tsx
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 broadcast/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 categories/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 emails/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 login/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 management/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 marketplace/
+│   │   │   ├── 📁 chats/
+│   │   │   │   └── 📄 page.tsx
+│   │   │   └── 📁 offers/
+│   │   │       └── 📄 page.tsx
+│   │   ├── 📁 notifications/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 operations/
+│   │   │   ├── 📁 payments/
+│   │   │   │   └── 📄 page.tsx
+│   │   │   └── 📁 queue/
+│   │   │       └── 📄 page.tsx
+│   │   ├── 📁 p/
+│   │   │   └── 📁 [slug]/
+│   │   │       └── 📄 page.tsx
+│   │   ├── 📁 plan-requests/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 professional-migrations/
+│   │   │   ├── 📁 [id]/
+│   │   │   │   └── 📄 page.tsx
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 providers/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 referrals/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 reports/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 reviews/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 rewards/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 test/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 trust-validation/
+│   │   │   ├── 📁 [id]/
+│   │   │   │   └── 📄 page.tsx
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 users/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 users-geo/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 verification/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 yape-payments/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📄 favicon.ico
+│   │   ├── 🎨 globals.css
+│   │   ├── 📄 layout.tsx
+│   │   └── 📄 page.tsx
+│   ├── 📁 components/
+│   │   ├── 📁 charts/
+│   │   │   └── 📄 referrals-monthly-chart.tsx
+│   │   ├── 📁 management/
+│   │   │   ├── 📄 management-header.tsx
+│   │   │   ├── 📄 management-stat-card.tsx
+│   │   │   └── 📄 management-tabs.tsx
+│   │   ├── 📁 maps/
+│   │   │   └── 📄 peru-providers-map.tsx
+│   │   ├── 📁 ui/
+│   │   │   ├── 📄 badge.tsx
+│   │   │   ├── 📄 button.tsx
+│   │   │   ├── 📄 card.tsx
+│   │   │   └── 📄 tabs.tsx
+│   │   ├── 📄 admin-tabs.tsx
+│   │   ├── 📄 ai-analytics-content.tsx
+│   │   ├── 📄 ai-chat-widget.tsx
+│   │   ├── 📄 analytics-chart.tsx
+│   │   ├── 📄 analytics-content.tsx
+│   │   ├── 📄 create-provider-modal.tsx
+│   │   ├── 📄 dashboard-refresh.tsx
+│   │   ├── 📄 edit-provider-modal.tsx
+│   │   ├── 📄 expiring-providers-modal.tsx
+│   │   ├── 📄 grace-providers-table.tsx
+│   │   ├── 📄 layout-shell.tsx
+│   │   ├── 📄 metric-card.tsx
+│   │   ├── 📄 notification-detail-modal.tsx
+│   │   ├── 📄 notifications-list.tsx
+│   │   ├── 📄 pending-approvals-table.tsx
+│   │   ├── 📄 provider-detail-modal.tsx
+│   │   ├── 📄 provider-photo-gallery.tsx
+│   │   ├── 📄 providers-list.tsx
+│   │   ├── 📄 referrals-widget.tsx
+│   │   ├── 📄 reports-dashboard.tsx
+│   │   ├── 📄 reviews-moderation-table.tsx
+│   │   ├── 📄 sidebar.tsx
+│   │   ├── 📄 status-badge.tsx
+│   │   ├── 📄 user-detail-modal.tsx
+│   │   ├── 📄 users-geo-content.tsx
+│   │   ├── 📄 users-list.tsx
+│   │   └── 📄 verification-queue.tsx
+│   ├── 📁 hooks/
+│   │   └── 📄 useAdminSocket.ts
+│   ├── 📁 lib/
+│   │   ├── 📄 api-client.ts
+│   │   ├── 📄 api.ts
+│   │   ├── 📄 socket.ts
+│   │   ├── 📄 use-admin-realtime.ts
+│   │   └── 📄 utils.ts
+│   ├── 📁 public/
+│   │   ├── 🖼️ facebook.svg
+│   │   ├── 🖼️ file.svg
+│   │   ├── 🖼️ globe.svg
+│   │   ├── 🖼️ instagram.svg
+│   │   ├── 🖼️ linkedin.svg
+│   │   ├── 🖼️ next.svg
+│   │   ├── 🖼️ telegram.svg
+│   │   ├── 🖼️ tiktok.svg
+│   │   ├── 🖼️ twitterx.svg
+│   │   ├── 🖼️ vercel.svg
+│   │   ├── 🖼️ website.svg
+│   │   ├── 🖼️ whatsapp.svg
+│   │   └── 🖼️ window.svg
+│   ├── 📁 test/
+│   │   ├── 📄 ai-chat-widget.test.tsx
+│   │   ├── 📄 api-client-formdata.test.ts
+│   │   ├── 📄 api.test.ts
+│   │   ├── 📄 expiring-providers-modal.test.tsx
+│   │   ├── 📄 metric-card.test.tsx
+│   │   ├── 📄 notification-detail-modal.test.tsx
+│   │   ├── 📄 notifications-list.test.tsx
+│   │   ├── 📄 provider-photo-gallery.test.tsx
+│   │   ├── 📄 setup.ts
+│   │   ├── 📄 sidebar.test.tsx
+│   │   └── 📄 use-admin-socket.test.tsx
+│   ├── ⚙️ .gitignore
+│   ├── 📝 AGENTS.md
+│   ├── 📝 README.md
+│   ├── 📄 eslint.config.mjs
+│   ├── 📄 next-env.d.ts
+│   ├── 📄 next.config.ts
+│   ├── ⚙️ package-lock.json
+│   ├── ⚙️ package.json
+│   ├── 📄 postcss.config.mjs
+│   ├── 📄 sentry.client.config.ts
+│   ├── 📄 sentry.server.config.ts
+│   ├── 📄 tailwind.config.ts
+│   ├── ⚙️ tsconfig.json
+│   ├── 📄 tsconfig.tsbuildinfo
+│   ├── ⚙️ vercel.json
+│   └── 📄 vitest.config.ts
+├── 📁 backend/
+│   ├── 📁 docs/
+│   │   └── 📝 mercadopago-deploy.md
+│   ├── 📁 prisma/
+│   │   ├── 📁 migrations/
+│   │   │   ├── 📁 0_init/
+│   │   │   │   └── 📄 migration.sql
+│   │   │   └── ⚙️ migration_lock.toml
+│   │   ├── 📁 sql/
+│   │   │   ├── 📄 actualizar_soporte_ofi.sql
+│   │   │   ├── 📄 ai_learning_candidates.sql
+│   │   │   ├── 📄 ai_memory_governance.sql
+│   │   │   ├── 📄 ai_memory_tables.sql
+│   │   │   ├── 📄 alcance_distritos.sql
+│   │   │   ├── 📄 audit_log.sql
+│   │   │   ├── 📄 auditar_servicios_profesionales.sql
+│   │   │   ├── 📄 ocultar_features_kb.sql
+│   │   │   ├── 📄 offer_cancel_count.sql
+│   │   │   ├── 📄 pr1_features_agenda.sql
+│   │   │   ├── 📄 pr2_carta_catalogo.sql
+│   │   │   ├── 📄 pr_cotizacion.sql
+│   │   │   ├── 📄 pr_notif_metadata.sql
+│   │   │   ├── 📄 profesionales_01_provider_type.sql
+│   │   │   ├── 📄 profesionales_02_perfiles_y_migraciones.sql
+│   │   │   ├── 📄 profesionales_03_auditar_referencias_mercadopago.sql
+│   │   │   ├── 📄 profesionales_04_pago_mercadopago.sql
+│   │   │   ├── 📄 profesionales_05_catalogo_inicial.sql
+│   │   │   ├── 📄 profesionales_06_features_categorias_pro.sql
+│   │   │   ├── 📄 provider_location_geog_trigger.sql
+│   │   │   ├── 📄 provider_privacy_toggles.sql
+│   │   │   ├── 📄 subasta_contact_fields.sql
+│   │   │   ├── 📄 user_inactivity_email.sql
+│   │   │   ├── 📄 user_reports.sql
+│   │   │   └── 📄 yape_uploaded_amount.sql
+│   │   ├── 📄 add-provider-slug.sql
+│   │   ├── 📄 prisma.module.ts
+│   │   ├── 📄 prisma.service.ts
+│   │   ├── 📄 schema.prisma
+│   │   ├── 📄 seed.ts
+│   │   └── 📄 update-localities.sql
+│   ├── 📁 scripts/
+│   │   ├── 📄 admin-jwt.ts
+│   │   ├── 📄 check-flagged.ts
+│   │   ├── 📄 fix-image-urls.ts
+│   │   ├── 📄 fix-inactive-localities-with-approved-providers.sql
+│   │   ├── 📄 list-tables.ts
+│   │   ├── 📄 seed-test-data.ts
+│   │   ├── 📄 smoke-check.ts
+│   │   ├── 📄 smoke-jwt.ts
+│   │   ├── 📄 smoke-sanitizer.ts
+│   │   ├── ⚙️ users-backup.json
+│   │   ├── 📄 users-backup.ts
+│   │   └── 📄 users-restore.ts
+│   ├── 📁 src/
+│   │   ├── 📁 admin/
+│   │   │   ├── 📁 dto/
+│   │   │   │   ├── 📄 broadcast-email.dto.ts
+│   │   │   │   ├── 📄 broadcast-notification.dto.ts
+│   │   │   │   ├── 📄 category.dto.ts
+│   │   │   │   ├── 📄 create-provider.dto.ts
+│   │   │   │   ├── 📄 notifications-query.dto.ts
+│   │   │   │   ├── 📄 notify-provider.dto.ts
+│   │   │   │   ├── 📄 reason.dto.ts
+│   │   │   │   └── 📄 update-provider.dto.ts
+│   │   │   ├── 📁 services/
+│   │   │   │   ├── 📄 admin-categories.service.ts
+│   │   │   │   ├── 📄 admin-dashboard.service.ts
+│   │   │   │   ├── 📄 admin-payments.service.ts
+│   │   │   │   ├── 📄 admin-reports.service.ts
+│   │   │   │   ├── 📄 admin-shared.ts
+│   │   │   │   └── 📄 admin-trust.service.ts
+│   │   │   ├── 📄 admin.controller.ts
+│   │   │   ├── 📄 admin.module.ts
+│   │   │   └── 📄 admin.service.ts
+│   │   ├── 📁 ai-assistant/
+│   │   │   ├── 📁 dto/
+│   │   │   │   ├── 📄 ask-ai.dto.ts
+│   │   │   │   └── 📄 sandbox-ai.dto.ts
+│   │   │   ├── 📁 providers/
+│   │   │   │   └── 📄 openrouter.provider.ts
+│   │   │   ├── 📁 strategies/
+│   │   │   │   ├── 📄 admin.strategy.ts
+│   │   │   │   ├── 📄 ai-context.strategy.ts
+│   │   │   │   ├── 📄 client.strategy.ts
+│   │   │   │   ├── 📄 guest.strategy.ts
+│   │   │   │   └── 📄 provider.strategy.ts
+│   │   │   ├── 📁 tools/
+│   │   │   │   ├── 📄 admin-tools.ts
+│   │   │   │   ├── 📄 common-tools.ts
+│   │   │   │   ├── 📄 provider-tools.ts
+│   │   │   │   ├── 📄 tool-registry.ts
+│   │   │   │   └── 📄 user-tools.ts
+│   │   │   ├── 📄 ai-analytics.controller.ts
+│   │   │   ├── 📄 ai-analytics.service.ts
+│   │   │   ├── 📄 ai-assistant.constants.ts
+│   │   │   ├── 📄 ai-assistant.controller.ts
+│   │   │   ├── 📄 ai-assistant.helpers.ts
+│   │   │   ├── 📄 ai-assistant.module.ts
+│   │   │   ├── 📄 ai-assistant.service.ts
+│   │   │   ├── 📄 ai-assistant.types.ts
+│   │   │   ├── 📄 ai-circuit-breaker.service.ts
+│   │   │   ├── 📄 ai-conversation.service.ts
+│   │   │   ├── 📄 ai-data-access.service.ts
+│   │   │   ├── 📄 ai-feature-flag.service.ts
+│   │   │   ├── 📄 ai-guardrails.service.ts
+│   │   │   ├── 📄 ai-knowledge.seeder.ts
+│   │   │   ├── 📄 ai-knowledge.service.ts
+│   │   │   ├── 📄 ai-learning-publisher.service.ts
+│   │   │   ├── 📄 ai-learning-review.service.ts
+│   │   │   ├── 📄 ai-learning.service.ts
+│   │   │   ├── 📄 ai-memory.service.ts
+│   │   │   ├── 📄 ai-quota.service.ts
+│   │   │   ├── 📄 ai-response-formatter.ts
+│   │   │   ├── 📄 ai-retention.service.ts
+│   │   │   └── 📄 ai-sanitizer.service.ts
+│   │   ├── 📁 appointments/
+│   │   │   ├── 📁 dto/
+│   │   │   │   ├── 📄 create-appointment.dto.ts
+│   │   │   │   ├── 📄 reject-appointment.dto.ts
+│   │   │   │   └── 📄 set-schedule.dto.ts
+│   │   │   ├── 📄 appointments.controller.ts
+│   │   │   ├── 📄 appointments.module.ts
+│   │   │   └── 📄 appointments.service.ts
+│   │   ├── 📁 auth/
+│   │   │   ├── 📁 dto/
+│   │   │   │   ├── 📄 forgot-password.dto.ts
+│   │   │   │   ├── 📄 login.dto.ts
+│   │   │   │   ├── 📄 register-provider.dto.ts
+│   │   │   │   ├── 📄 register-user.dto.ts
+│   │   │   │   ├── 📄 reset-password.dto.ts
+│   │   │   │   ├── 📄 send-otp.dto.ts
+│   │   │   │   ├── 📄 social-login.dto.ts
+│   │   │   │   └── 📄 verify-otp.dto.ts
+│   │   │   ├── 📁 services/
+│   │   │   │   ├── 📄 auth-account.service.ts
+│   │   │   │   ├── 📄 auth-registration.service.ts
+│   │   │   │   └── 📄 auth-shared.ts
+│   │   │   ├── 📁 strategy/
+│   │   │   │   └── 📄 google.strategy.ts
+│   │   │   ├── 📄 auth.controller.ts
+│   │   │   ├── 📄 auth.module.ts
+│   │   │   ├── 📄 auth.service.ts
+│   │   │   ├── 📄 jwt.guard.ts
+│   │   │   ├── 📄 jwt.strategy.ts
+│   │   │   ├── 📄 roles.decorator.ts
+│   │   │   └── 📄 roles.guard.ts
+│   │   ├── 📁 catalog/
+│   │   │   ├── 📁 dto/
+│   │   │   │   ├── 📄 create-catalog-product.dto.ts
+│   │   │   │   └── 📄 update-catalog-product.dto.ts
+│   │   │   ├── 📄 catalog.controller.ts
+│   │   │   ├── 📄 catalog.module.ts
+│   │   │   └── 📄 catalog.service.ts
+│   │   ├── 📁 chat/
+│   │   │   ├── 📁 dto/
+│   │   │   │   ├── 📄 create-chat-message.dto.ts
+│   │   │   │   └── 📄 create-chat-room.dto.ts
+│   │   │   ├── 📄 chat.controller.ts
+│   │   │   ├── 📄 chat.module.ts
+│   │   │   └── 📄 chat.service.ts
+│   │   ├── 📁 common/
+│   │   │   ├── 📁 dto/
+│   │   │   │   └── 📄 reorder.dto.ts
+│   │   │   ├── 📁 filters/
+│   │   │   │   └── 📄 prisma-exception.filter.ts
+│   │   │   ├── 📁 interceptors/
+│   │   │   │   ├── 📄 bigint.interceptor.ts
+│   │   │   │   └── 📄 diagnostic.interceptor.ts
+│   │   │   ├── 📁 interfaces/
+│   │   │   │   └── 📄 auth-request.ts
+│   │   │   ├── 📄 common.module.ts
+│   │   │   ├── 📄 feature-flag.guard.ts
+│   │   │   ├── 📄 minio.service.ts
+│   │   │   ├── 📄 multer-image.config.ts
+│   │   │   ├── 📄 provider-category-validation.ts
+│   │   │   ├── 📄 provider-features.module.ts
+│   │   │   ├── 📄 provider-features.service.ts
+│   │   │   ├── 📄 provider-type.ts
+│   │   │   ├── 📄 service-image-validation.ts
+│   │   │   ├── 📄 sign-images.interceptor.ts
+│   │   │   ├── 📄 slug.util.ts
+│   │   │   └── 📄 storefront.helpers.ts
+│   │   ├── 📁 email/
+│   │   │   ├── 📄 email-retention.service.ts
+│   │   │   ├── 📄 email-templates.ts
+│   │   │   ├── 📄 email.module.ts
+│   │   │   └── 📄 email.service.ts
+│   │   ├── 📁 events/
+│   │   │   ├── 📄 events.gateway.ts
+│   │   │   └── 📄 events.module.ts
+│   │   ├── 📁 favorites/
+│   │   │   ├── 📄 favorites.controller.ts
+│   │   │   ├── 📄 favorites.module.ts
+│   │   │   └── 📄 favorites.service.ts
+│   │   ├── 📁 firebase/
+│   │   │   ├── 📄 firebase.module.ts
+│   │   │   ├── 📄 firebase.service.ts
+│   │   │   └── 📄 push-notifications.service.ts
+│   │   ├── 📁 localities/
+│   │   │   ├── 📁 dto/
+│   │   │   │   ├── 📄 admin-locality.dto.ts
+│   │   │   │   └── 📄 suggest-locality.dto.ts
+│   │   │   ├── 📄 localities.controller.ts
+│   │   │   ├── 📄 localities.module.ts
+│   │   │   └── 📄 localities.service.ts
+│   │   ├── 📁 menu/
+│   │   │   ├── 📁 dto/
+│   │   │   │   ├── 📄 create-menu-item.dto.ts
+│   │   │   │   └── 📄 update-menu-item.dto.ts
+│   │   │   ├── 📄 menu.controller.ts
+│   │   │   ├── 📄 menu.module.ts
+│   │   │   └── 📄 menu.service.ts
+│   │   ├── 📁 offer-posts/
+│   │   │   ├── 📁 dto/
+│   │   │   │   ├── 📄 create-offer-post.dto.ts
+│   │   │   │   └── 📄 report-offer.dto.ts
+│   │   │   ├── 📄 offer-posts.controller.ts
+│   │   │   ├── 📄 offer-posts.module.ts
+│   │   │   └── 📄 offer-posts.service.ts
+│   │   ├── 📁 payments/
+│   │   │   ├── 📁 dto/
+│   │   │   │   └── 📄 submit-yape.dto.ts
+│   │   │   ├── 📁 mercadopago/
+│   │   │   │   ├── 📁 dto/
+│   │   │   │   │   └── 📄 create-preference.dto.ts
+│   │   │   │   ├── 📄 mercadopago.controller.ts
+│   │   │   │   ├── 📄 mercadopago.module.ts
+│   │   │   │   └── 📄 mercadopago.service.ts
+│   │   │   ├── 📄 payments.controller.ts
+│   │   │   ├── 📄 payments.module.ts
+│   │   │   └── 📄 payments.service.ts
+│   │   ├── 📁 professional-migrations/
+│   │   │   ├── 📁 dto/
+│   │   │   │   ├── 📄 reject-professional-migration.dto.ts
+│   │   │   │   └── 📄 submit-professional-migration.dto.ts
+│   │   │   ├── 📄 professional-migrations.controller.ts
+│   │   │   ├── 📄 professional-migrations.module.ts
+│   │   │   └── 📄 professional-migrations.service.ts
+│   │   ├── 📁 provider-profile/
+│   │   │   ├── 📁 dto/
+│   │   │   │   └── 📄 update-own-provider-profile.dto.ts
+│   │   │   ├── 📄 provider-profile.controller.ts
+│   │   │   ├── 📄 provider-profile.module.ts
+│   │   │   └── 📄 provider-profile.service.ts
+│   │   ├── 📁 providers/
+│   │   │   ├── 📁 dto/
+│   │   │   │   └── 📄 track-event.dto.ts
+│   │   │   ├── 📄 providers.controller.ts
+│   │   │   ├── 📄 providers.module.ts
+│   │   │   ├── 📄 providers.service.ts
+│   │   │   └── 📄 public-profile.controller.ts
+│   │   ├── 📁 quotations/
+│   │   │   ├── 📁 dto/
+│   │   │   │   ├── 📄 create-quotation.dto.ts
+│   │   │   │   └── 📄 respond-quotation.dto.ts
+│   │   │   ├── 📄 quotations.controller.ts
+│   │   │   ├── 📄 quotations.module.ts
+│   │   │   └── 📄 quotations.service.ts
+│   │   ├── 📁 referrals/
+│   │   │   ├── 📄 referrals.controller.ts
+│   │   │   ├── 📄 referrals.module.ts
+│   │   │   └── 📄 referrals.service.ts
+│   │   ├── 📁 reviews/
+│   │   │   ├── 📁 dto/
+│   │   │   │   └── 📄 create-review.dto.ts
+│   │   │   ├── 📄 reviews.controller.ts
+│   │   │   ├── 📄 reviews.module.ts
+│   │   │   ├── 📄 reviews.service.ts
+│   │   │   └── 📄 upload.controller.ts
+│   │   ├── 📁 subastas/
+│   │   │   ├── 📁 dto/
+│   │   │   │   ├── 📄 accept-offer.dto.ts
+│   │   │   │   ├── 📄 arrived.dto.ts
+│   │   │   │   ├── 📄 create-service-request.dto.ts
+│   │   │   │   ├── 📄 paginate-requests.dto.ts
+│   │   │   │   └── 📄 submit-offer.dto.ts
+│   │   │   ├── 📄 subastas.controller.ts
+│   │   │   ├── 📄 subastas.module.ts
+│   │   │   └── 📄 subastas.service.ts
+│   │   ├── 📁 trust-validation/
+│   │   │   ├── 📄 trust-validation.controller.ts
+│   │   │   ├── 📄 trust-validation.module.ts
+│   │   │   └── 📄 trust-validation.service.ts
+│   │   ├── 📁 user-reports/
+│   │   │   ├── 📁 dto/
+│   │   │   │   └── 📄 create-user-report.dto.ts
+│   │   │   ├── 📄 user-reports.module.ts
+│   │   │   └── 📄 user-reports.service.ts
+│   │   ├── 📁 users/
+│   │   │   ├── 📁 dto/
+│   │   │   │   ├── 📄 change-password.dto.ts
+│   │   │   │   └── 📄 update-profile.dto.ts
+│   │   │   ├── 📄 users.controller.ts
+│   │   │   ├── 📄 users.module.ts
+│   │   │   └── 📄 users.service.ts
+│   │   ├── 📄 app.controller.ts
+│   │   ├── 📄 app.module.ts
+│   │   ├── 📄 app.service.ts
+│   │   └── 📄 main.ts
+│   ├── 📁 test/
+│   │   ├── 📁 contracts/
+│   │   │   ├── 📁 ai-assistant/
+│   │   │   │   └── 📄 gemini.contract.spec.ts
+│   │   │   ├── 📁 fixtures/
+│   │   │   │   └── ⚙️ gemini-response.snapshot.json
+│   │   │   └── 📄 setup-contract.ts
+│   │   ├── 📁 e2e/
+│   │   │   ├── 📁 ai-assistant/
+│   │   │   │   ├── ⚙️ .gitkeep
+│   │   │   │   └── 📄 ai-assistant.e2e-spec.ts
+│   │   │   └── 📄 app.e2e-spec.ts
+│   │   ├── 📁 fixtures/
+│   │   │   ├── 📄 providers.fixture.ts
+│   │   │   └── 📄 users.fixture.ts
+│   │   ├── 📁 integration/
+│   │   │   ├── 📁 ai-assistant/
+│   │   │   │   ├── ⚙️ .gitkeep
+│   │   │   │   ├── 📄 ai-conversation.integration.spec.ts
+│   │   │   │   ├── 📄 ai-data-access.integration.spec.ts
+│   │   │   │   ├── 📄 analytics.integration.spec.ts
+│   │   │   │   ├── 📄 audit.integration.spec.ts
+│   │   │   │   ├── 📄 cache.integration.spec.ts
+│   │   │   │   ├── 📄 circuit-breaker.integration.spec.ts
+│   │   │   │   ├── 📄 function-calling.integration.spec.ts
+│   │   │   │   ├── 📄 multi-tool.integration.spec.ts
+│   │   │   │   ├── 📄 openrouter-fallback.integration.spec.ts
+│   │   │   │   ├── 📄 quota-race.integration.spec.ts
+│   │   │   │   └── 📄 security.integration.spec.ts
+│   │   │   ├── 📁 migrations/
+│   │   │   │   └── 📄 ai-migrations.spec.ts
+│   │   │   ├── 📄 auth.flow.spec.ts
+│   │   │   ├── 📄 chat.flow.spec.ts
+│   │   │   ├── 📄 migrations.spec.ts
+│   │   │   ├── 📄 payments.flow.spec.ts
+│   │   │   ├── 📄 referrals.flow.spec.ts
+│   │   │   ├── 📄 setup-env.ts
+│   │   │   ├── 📄 subastas.flow.spec.ts
+│   │   │   └── 📄 trust.flow.spec.ts
+│   │   ├── 📁 mocks/
+│   │   │   ├── 📄 config.mock.ts
+│   │   │   ├── 📄 events-gateway.mock.ts
+│   │   │   ├── 📄 jwt.mock.ts
+│   │   │   ├── 📄 prisma-client.stub.ts
+│   │   │   ├── 📄 prisma.mock.ts
+│   │   │   └── 📄 push.mock.ts
+│   │   ├── 📁 unit/
+│   │   │   ├── 📁 ai-assistant/
+│   │   │   │   ├── 📄 admin-router.spec.ts
+│   │   │   │   ├── 📄 ai-assistant.service.spec.ts
+│   │   │   │   ├── 📄 ai-circuit-breaker.service.spec.ts
+│   │   │   │   ├── 📄 ai-conversation.guard.spec.ts
+│   │   │   │   ├── 📄 ai-feature-flag.service.spec.ts
+│   │   │   │   ├── 📄 ai-guardrails.service.spec.ts
+│   │   │   │   ├── 📄 ai-learning-publisher.spec.ts
+│   │   │   │   ├── 📄 ai-learning-review.spec.ts
+│   │   │   │   ├── 📄 ai-learning.spec.ts
+│   │   │   │   ├── 📄 ai-memory.spec.ts
+│   │   │   │   ├── 📄 ai-response-formatter.spec.ts
+│   │   │   │   ├── 📄 ai-retention.spec.ts
+│   │   │   │   ├── 📄 ai-sanitizer.service.spec.ts
+│   │   │   │   ├── 📄 openrouter-fallback.spec.ts
+│   │   │   │   ├── 📄 openrouter.provider.spec.ts
+│   │   │   │   ├── 📄 provider-results.spec.ts
+│   │   │   │   ├── 📄 semantic-cache.spec.ts
+│   │   │   │   └── 📄 tool-registry.spec.ts
+│   │   │   ├── 📄 admin-categories.service.spec.ts
+│   │   │   ├── 📄 admin-notify.spec.ts
+│   │   │   ├── 📄 admin-payments.service.spec.ts
+│   │   │   ├── 📄 admin-professional.service.spec.ts
+│   │   │   ├── 📄 admin-provider-image.spec.ts
+│   │   │   ├── 📄 admin-reports-security.spec.ts
+│   │   │   ├── 📄 admin-trust.service.spec.ts
+│   │   │   ├── 📄 appointments.service.spec.ts
+│   │   │   ├── 📄 auth-account.service.spec.ts
+│   │   │   ├── 📄 auth-registration.service.spec.ts
+│   │   │   ├── 📄 auth-strategies.spec.ts
+│   │   │   ├── 📄 auth.controller.spec.ts
+│   │   │   ├── 📄 auth.service.spec.ts
+│   │   │   ├── 📄 bigint.interceptor.spec.ts
+│   │   │   ├── 📄 catalog.service.spec.ts
+│   │   │   ├── 📄 chat.service.spec.ts
+│   │   │   ├── 📄 coverage.service.spec.ts
+│   │   │   ├── 📄 email.service.spec.ts
+│   │   │   ├── 📄 events.gateway.spec.ts
+│   │   │   ├── 📄 favorites.service.spec.ts
+│   │   │   ├── 📄 feature-flag.guard.spec.ts
+│   │   │   ├── 📄 localities.service.spec.ts
+│   │   │   ├── 📄 menu.service.spec.ts
+│   │   │   ├── 📄 mercadopago.service.spec.ts
+│   │   │   ├── 📄 minio-upload-security.spec.ts
+│   │   │   ├── 📄 minio-url-security.spec.ts
+│   │   │   ├── 📄 minio.service.spec.ts
+│   │   │   ├── 📄 multer-image.config.spec.ts
+│   │   │   ├── 📄 offer-posts.regression.spec.ts
+│   │   │   ├── 📄 payments.regression.spec.ts
+│   │   │   ├── 📄 payments.service.spec.ts
+│   │   │   ├── 📄 prisma-exception.filter.spec.ts
+│   │   │   ├── 📄 professional-migrations.service.spec.ts
+│   │   │   ├── 📄 provider-features.service.spec.ts
+│   │   │   ├── 📄 provider-notification-retention.spec.ts
+│   │   │   ├── 📄 provider-profile.service.spec.ts
+│   │   │   ├── 📄 providers-featured-grouped.spec.ts
+│   │   │   ├── 📄 providers.gating.spec.ts
+│   │   │   ├── 📄 providers.service.spec.ts
+│   │   │   ├── 📄 public-controller-security.spec.ts
+│   │   │   ├── 📄 public-profile.controller.spec.ts
+│   │   │   ├── 📄 quotations.service.spec.ts
+│   │   │   ├── 📄 referrals.service.spec.ts
+│   │   │   ├── 📄 reviews.service.spec.ts
+│   │   │   ├── 📄 service-image-validation.spec.ts
+│   │   │   ├── 📄 sign-images.interceptor.spec.ts
+│   │   │   ├── 📄 subastas-penalty.spec.ts
+│   │   │   ├── 📄 subastas.service.spec.ts
+│   │   │   ├── 📄 submit-professional-migration.dto.spec.ts
+│   │   │   ├── 📄 trust-validation.service.spec.ts
+│   │   │   ├── 📄 upload.controller.security.spec.ts
+│   │   │   ├── 📄 user-reports.service.spec.ts
+│   │   │   ├── 📄 users.account.spec.ts
+│   │   │   ├── 📄 users.regression.spec.ts
+│   │   │   └── 📄 users.service.spec.ts
+│   │   ├── 📁 utils/
+│   │   │   ├── 📄 db.util.ts
+│   │   │   └── 📄 factories.ts
+│   │   ├── ⚙️ jest-contract.json
+│   │   ├── ⚙️ jest-e2e.json
+│   │   ├── ⚙️ jest-integration.json
+│   │   └── ⚙️ tsconfig.json
+│   ├── ⚙️ .env.example
+│   ├── ⚙️ .gitignore
+│   ├── ⚙️ .prettierrc
+│   ├── 📝 README.md
+│   ├── 📄 eslint.config.mjs
+│   ├── ⚙️ firebase-service-account.json
+│   ├── ⚙️ nest-cli.json
+│   ├── ⚙️ package-lock.json
+│   ├── ⚙️ package.json
+│   ├── 📄 prisma.config.ts
+│   └── ⚙️ tsconfig.json
+├── 📁 docs/
+│   ├── 📝 ARQUITECTURA_DESPLIEGUE.md
+│   ├── 📝 AUDITORIA_SERVICIOS_PROFESIONALES_V1.md
+│   ├── 📝 AUDITORÍA_TÉCNICA.md
+│   ├── 📝 CONTEXTO_PROYECTO.md
+│   ├── 📝 ESTADO_ACTUAL.md
+│   ├── 📝 PLAN_SERVICIOS_PROFESIONALES_V1.md
+│   ├── 📝 REACTIVACION_FUNCIONALIDADES_OCULTAS.md
+│   ├── 📝 REPORTE_RELEASE_2026-07-22.md
+│   ├── 📝 REPORTE_SERVICIOS_PROFESIONALES_V1.md
+│   └── 📝 SEGURIDAD_OPERATIVA.md
+├── 📁 graphify-out/
+│   ├── ⚙️ .graphify_ast.json
+│   ├── ⚙️ .graphify_detect.json
+│   ├── ⚙️ .graphify_labels.json
+│   ├── ⚙️ .graphify_python
+│   ├── ⚙️ .graphify_root
+│   ├── ⚙️ .graphify_semantic.json
+│   ├── 📝 GRAPH_REPORT.md
+│   ├── 🐍 _gen_html.py
+│   ├── 🐍 _relabel_html.py
+│   ├── 🐍 _run_build.py
+│   ├── 🌐 graph-overview.html
+│   └── ⚙️ graph.json
+├── 📁 mobile/
+│   ├── 📁 .dart_tool/
+│   │   ├── 📁 extension_discovery/
+│   │   │   └── ⚙️ vs_code.json
+│   │   ├── 📁 flutter_build/
+│   │   │   ├── 📁 b48ee05821a55862e6140ee06a368cd0/
+│   │   │   │   ├── 📁 arm64-v8a/
+│   │   │   │   │   └── ⚙️ app.so
+│   │   │   │   ├── 📁 armeabi-v7a/
+│   │   │   │   │   └── ⚙️ app.so
+│   │   │   │   ├── 📁 x86_64/
+│   │   │   │   │   └── ⚙️ app.so
+│   │   │   │   ├── ⚙️ .filecache
+│   │   │   │   ├── 📄 _composite.stamp
+│   │   │   │   ├── 📄 android_aot_bundle_release_android-arm.stamp
+│   │   │   │   ├── 📄 android_aot_bundle_release_android-arm64.stamp
+│   │   │   │   ├── 📄 android_aot_bundle_release_android-x64.stamp
+│   │   │   │   ├── 📄 android_aot_release_android-arm.stamp
+│   │   │   │   ├── 📄 android_aot_release_android-arm64.stamp
+│   │   │   │   ├── 📄 android_aot_release_android-x64.stamp
+│   │   │   │   ├── 📄 aot_android_asset_bundle.stamp
+│   │   │   │   ├── 📄 app.dill
+│   │   │   │   ├── 📄 dart_build.d
+│   │   │   │   ├── 📄 dart_build.stamp
+│   │   │   │   ├── ⚙️ dart_build_result.json
+│   │   │   │   ├── 📄 flutter_android_aot_bundle_release_android-arm.d
+│   │   │   │   ├── 📄 flutter_android_aot_bundle_release_android-arm64.d
+│   │   │   │   ├── 📄 flutter_android_aot_bundle_release_android-x64.d
+│   │   │   │   ├── 📄 flutter_android_aot_release_android-arm.d
+│   │   │   │   ├── 📄 flutter_android_aot_release_android-arm64.d
+│   │   │   │   ├── 📄 flutter_android_aot_release_android-x64.d
+│   │   │   │   ├── 📄 flutter_assets.d
+│   │   │   │   ├── 📄 gen_dart_plugin_registrant.stamp
+│   │   │   │   ├── 📄 gen_localizations.stamp
+│   │   │   │   ├── 📄 install_code_assets.d
+│   │   │   │   ├── 📄 install_code_assets.stamp
+│   │   │   │   ├── 📄 kernel_snapshot_program.d
+│   │   │   │   ├── 📄 kernel_snapshot_program.stamp
+│   │   │   │   ├── ⚙️ native_assets.json
+│   │   │   │   └── ⚙️ outputs.json
+│   │   │   └── 📄 dart_plugin_registrant.dart
+│   │   ├── 📁 hooks_runner/
+│   │   │   ├── 📁 objective_c/
+│   │   │   │   ├── 📁 0e9dd36a4b/
+│   │   │   │   │   ├── ⚙️ .lock
+│   │   │   │   │   ├── ⚙️ dependencies.dependencies_hash_file.json
+│   │   │   │   │   ├── ⚙️ hook.dependencies_hash_file.json
+│   │   │   │   │   ├── 📄 hook.dill
+│   │   │   │   │   ├── 📄 hook.dill.d
+│   │   │   │   │   ├── ⚙️ input.json
+│   │   │   │   │   ├── ⚙️ output.json
+│   │   │   │   │   ├── 📄 stderr.txt
+│   │   │   │   │   └── 📄 stdout.txt
+│   │   │   │   ├── 📁 74b9685c23/
+│   │   │   │   │   ├── ⚙️ .lock
+│   │   │   │   │   ├── ⚙️ dependencies.dependencies_hash_file.json
+│   │   │   │   │   ├── ⚙️ hook.dependencies_hash_file.json
+│   │   │   │   │   ├── 📄 hook.dill
+│   │   │   │   │   ├── 📄 hook.dill.d
+│   │   │   │   │   ├── ⚙️ input.json
+│   │   │   │   │   ├── ⚙️ output.json
+│   │   │   │   │   ├── 📄 stderr.txt
+│   │   │   │   │   └── 📄 stdout.txt
+│   │   │   │   └── 📁 af70a4d4ea/
+│   │   │   │       ├── ⚙️ .lock
+│   │   │   │       ├── ⚙️ dependencies.dependencies_hash_file.json
+│   │   │   │       ├── ⚙️ hook.dependencies_hash_file.json
+│   │   │   │       ├── 📄 hook.dill
+│   │   │   │       ├── 📄 hook.dill.d
+│   │   │   │       ├── ⚙️ input.json
+│   │   │   │       ├── ⚙️ output.json
+│   │   │   │       ├── 📄 stderr.txt
+│   │   │   │       └── 📄 stdout.txt
+│   │   │   └── 📁 shared/
+│   │   │       └── 📁 objective_c/
+│   │   │           └── ⚙️ .lock
+│   │   ├── ⚙️ package_config.json
+│   │   ├── ⚙️ package_graph.json
+│   │   └── 📄 version
+│   ├── 📁 android/
+│   │   ├── 📁 .gradle/
+│   │   │   ├── 📁 8.14/
+│   │   │   │   ├── 📁 checksums/
+│   │   │   │   │   ├── 📄 checksums.lock
+│   │   │   │   │   ├── ⚙️ md5-checksums.bin
+│   │   │   │   │   └── ⚙️ sha1-checksums.bin
+│   │   │   │   ├── 📁 executionHistory/
+│   │   │   │   │   ├── ⚙️ executionHistory.bin
+│   │   │   │   │   └── 📄 executionHistory.lock
+│   │   │   │   ├── 📁 expanded/
+│   │   │   │   ├── 📁 fileChanges/
+│   │   │   │   │   └── ⚙️ last-build.bin
+│   │   │   │   ├── 📁 fileHashes/
+│   │   │   │   │   ├── ⚙️ fileHashes.bin
+│   │   │   │   │   ├── 📄 fileHashes.lock
+│   │   │   │   │   └── ⚙️ resourceHashesCache.bin
+│   │   │   │   ├── 📁 vcsMetadata/
+│   │   │   │   └── 📄 gc.properties
+│   │   │   ├── 📁 buildOutputCleanup/
+│   │   │   │   ├── 📄 buildOutputCleanup.lock
+│   │   │   │   ├── 📄 cache.properties
+│   │   │   │   └── ⚙️ outputFiles.bin
+│   │   │   ├── 📁 noVersion/
+│   │   │   │   └── 📄 buildLogic.lock
+│   │   │   ├── 📁 vcs-1/
+│   │   │   │   └── 📄 gc.properties
+│   │   │   └── 📄 file-system.probe
+│   │   ├── 📁 .kotlin/
+│   │   │   └── 📁 sessions/
+│   │   ├── 📁 app/
+│   │   │   ├── 📁 src/
+│   │   │   │   ├── 📁 debug/
+│   │   │   │   │   └── ⚙️ AndroidManifest.xml
+│   │   │   │   ├── 📁 main/
+│   │   │   │   │   ├── 📁 assets/
+│   │   │   │   │   │   └── 📄 adi-registration.properties
+│   │   │   │   │   ├── 📁 java/
+│   │   │   │   │   │   └── 📁 io/
+│   │   │   │   │   │       └── 📁 flutter/
+│   │   │   │   │   │           └── 📁 plugins/
+│   │   │   │   │   │               └── ☕ GeneratedPluginRegistrant.java
+│   │   │   │   │   ├── 📁 kotlin/
+│   │   │   │   │   │   └── 📁 com/
+│   │   │   │   │   │       └── 📁 oficioapp/
+│   │   │   │   │   │           └── 📁 mobile/
+│   │   │   │   │   │               └── ☕ MainActivity.kt
+│   │   │   │   │   ├── 📁 res/
+│   │   │   │   │   │   ├── 📁 drawable/
+│   │   │   │   │   │   │   ├── 🖼️ background.png
+│   │   │   │   │   │   │   └── ⚙️ launch_background.xml
+│   │   │   │   │   │   ├── 📁 drawable-hdpi/
+│   │   │   │   │   │   │   ├── 🖼️ android12splash.png
+│   │   │   │   │   │   │   ├── 🖼️ ic_launcher_foreground.png
+│   │   │   │   │   │   │   └── 🖼️ splash.png
+│   │   │   │   │   │   ├── 📁 drawable-mdpi/
+│   │   │   │   │   │   │   ├── 🖼️ android12splash.png
+│   │   │   │   │   │   │   ├── 🖼️ ic_launcher_foreground.png
+│   │   │   │   │   │   │   └── 🖼️ splash.png
+│   │   │   │   │   │   ├── 📁 drawable-night/
+│   │   │   │   │   │   │   ├── 🖼️ background.png
+│   │   │   │   │   │   │   └── ⚙️ launch_background.xml
+│   │   │   │   │   │   ├── 📁 drawable-night-hdpi/
+│   │   │   │   │   │   │   ├── 🖼️ android12splash.png
+│   │   │   │   │   │   │   └── 🖼️ splash.png
+│   │   │   │   │   │   ├── 📁 drawable-night-mdpi/
+│   │   │   │   │   │   │   ├── 🖼️ android12splash.png
+│   │   │   │   │   │   │   └── 🖼️ splash.png
+│   │   │   │   │   │   ├── 📁 drawable-night-v21/
+│   │   │   │   │   │   │   ├── 🖼️ background.png
+│   │   │   │   │   │   │   └── ⚙️ launch_background.xml
+│   │   │   │   │   │   ├── 📁 drawable-night-xhdpi/
+│   │   │   │   │   │   │   ├── 🖼️ android12splash.png
+│   │   │   │   │   │   │   └── 🖼️ splash.png
+│   │   │   │   │   │   ├── 📁 drawable-night-xxhdpi/
+│   │   │   │   │   │   │   ├── 🖼️ android12splash.png
+│   │   │   │   │   │   │   └── 🖼️ splash.png
+│   │   │   │   │   │   ├── 📁 drawable-night-xxxhdpi/
+│   │   │   │   │   │   │   ├── 🖼️ android12splash.png
+│   │   │   │   │   │   │   └── 🖼️ splash.png
+│   │   │   │   │   │   ├── 📁 drawable-v21/
+│   │   │   │   │   │   │   ├── 🖼️ background.png
+│   │   │   │   │   │   │   └── ⚙️ launch_background.xml
+│   │   │   │   │   │   ├── 📁 drawable-xhdpi/
+│   │   │   │   │   │   │   ├── 🖼️ android12splash.png
+│   │   │   │   │   │   │   ├── 🖼️ ic_launcher_foreground.png
+│   │   │   │   │   │   │   └── 🖼️ splash.png
+│   │   │   │   │   │   ├── 📁 drawable-xxhdpi/
+│   │   │   │   │   │   │   ├── 🖼️ android12splash.png
+│   │   │   │   │   │   │   ├── 🖼️ ic_launcher_foreground.png
+│   │   │   │   │   │   │   └── 🖼️ splash.png
+│   │   │   │   │   │   ├── 📁 drawable-xxxhdpi/
+│   │   │   │   │   │   │   ├── 🖼️ android12splash.png
+│   │   │   │   │   │   │   ├── 🖼️ ic_launcher_foreground.png
+│   │   │   │   │   │   │   └── 🖼️ splash.png
+│   │   │   │   │   │   ├── 📁 mipmap-anydpi-v26/
+│   │   │   │   │   │   │   └── ⚙️ ic_launcher.xml
+│   │   │   │   │   │   ├── 📁 mipmap-hdpi/
+│   │   │   │   │   │   │   └── 🖼️ ic_launcher.png
+│   │   │   │   │   │   ├── 📁 mipmap-mdpi/
+│   │   │   │   │   │   │   └── 🖼️ ic_launcher.png
+│   │   │   │   │   │   ├── 📁 mipmap-xhdpi/
+│   │   │   │   │   │   │   └── 🖼️ ic_launcher.png
+│   │   │   │   │   │   ├── 📁 mipmap-xxhdpi/
+│   │   │   │   │   │   │   └── 🖼️ ic_launcher.png
+│   │   │   │   │   │   ├── 📁 mipmap-xxxhdpi/
+│   │   │   │   │   │   │   └── 🖼️ ic_launcher.png
+│   │   │   │   │   │   ├── 📁 values/
+│   │   │   │   │   │   │   ├── ⚙️ colors.xml
+│   │   │   │   │   │   │   └── ⚙️ styles.xml
+│   │   │   │   │   │   ├── 📁 values-night/
+│   │   │   │   │   │   │   └── ⚙️ styles.xml
+│   │   │   │   │   │   ├── 📁 values-night-v31/
+│   │   │   │   │   │   │   └── ⚙️ styles.xml
+│   │   │   │   │   │   ├── 📁 values-v31/
+│   │   │   │   │   │   │   └── ⚙️ styles.xml
+│   │   │   │   │   │   └── 📁 xml/
+│   │   │   │   │   │       ├── ⚙️ file_paths.xml
+│   │   │   │   │   │       └── ⚙️ network_security_config.xml
+│   │   │   │   │   └── ⚙️ AndroidManifest.xml
+│   │   │   │   └── 📁 profile/
+│   │   │   │       └── ⚙️ AndroidManifest.xml
+│   │   │   ├── 📄 build.gradle.kts
+│   │   │   ├── ⚙️ google-services.json
+│   │   │   ├── 📄 proguard-rules.pro
+│   │   │   └── 📄 release-key.jks
+│   │   ├── 📁 gradle/
+│   │   │   └── 📁 wrapper/
+│   │   │       ├── 📄 gradle-wrapper.jar
+│   │   │       └── 📄 gradle-wrapper.properties
+│   │   ├── ⚙️ .gitignore
+│   │   ├── 📄 build.gradle.kts
+│   │   ├── 📄 gradle.properties
+│   │   ├── 📄 gradlew
+│   │   ├── 📄 gradlew.bat
+│   │   ├── 📄 key.properties
+│   │   ├── 📄 local.properties
+│   │   ├── 📄 mobile_android.iml
+│   │   └── 📄 settings.gradle.kts
+│   ├── 📁 assets/
+│   │   ├── 📁 fonts/
+│   │   │   └── ⚙️ .gitkeep
+│   │   ├── 📁 icons/
+│   │   │   ├── ⚙️ .gitkeep
+│   │   │   ├── 🖼️ facebook.svg
+│   │   │   ├── 🖼️ gmail.svg
+│   │   │   ├── 🖼️ google.svg
+│   │   │   ├── 🖼️ instagram.svg
+│   │   │   ├── 🖼️ linkedin.svg
+│   │   │   ├── 🖼️ massage.svg
+│   │   │   ├── 🖼️ ofi-manos-elevadas.png
+│   │   │   ├── 🖼️ ofi-pensar.png
+│   │   │   ├── 🖼️ ofi-saluda.png
+│   │   │   ├── 🖼️ ofi.png
+│   │   │   ├── 🖼️ phone.svg
+│   │   │   ├── 🖼️ telegram.svg
+│   │   │   ├── 🖼️ tiktok.svg
+│   │   │   ├── 🖼️ twitterx.svg
+│   │   │   ├── 🖼️ website.svg
+│   │   │   └── 🖼️ whatsapp.svg
+│   │   └── 📁 images/
+│   │       ├── 📁 logo/
+│   │       │   ├── ⚙️ .gitkeep
+│   │       │   ├── 🖼️ servi.png
+│   │       │   └── 🖼️ servi_icon.png
+│   │       ├── 📁 onboarding/
+│   │       │   ├── ⚙️ .gitkeep
+│   │       │   ├── 🖼️ slide-1-presentación.webp
+│   │       │   ├── 🖼️ slide-2-proveedores.webp
+│   │       │   ├── 🖼️ slide-3-tarjeta-oficio.webp
+│   │       │   ├── 🖼️ slide-4-tarjeta-profesional.webp
+│   │       │   ├── 🖼️ slide-5-tarjeta-negocio.webp
+│   │       │   ├── 🖼️ slide-6-comentarios.webp
+│   │       │   └── 🖼️ slide-7-ofi.webp
+│   │       ├── 📁 promotional/
+│   │       │   └── ⚙️ .gitkeep
+│   │       └── 📁 yape/
+│   │           ├── 🖼️ qr.jpeg
+│   │           ├── 🖼️ yape logo.png
+│   │           └── 🖼️ yape.svg
+│   ├── 📁 ios/
+│   │   ├── 📁 Flutter/
+│   │   │   ├── 📁 ephemeral/
+│   │   │   │   ├── 🐍 flutter_lldb_helper.py
+│   │   │   │   └── 📄 flutter_lldbinit
+│   │   │   ├── 📄 AppFrameworkInfo.plist
+│   │   │   ├── 📄 Debug.xcconfig
+│   │   │   ├── 📄 Generated.xcconfig
+│   │   │   ├── 📄 Release.xcconfig
+│   │   │   └── 📄 flutter_export_environment.sh
+│   │   ├── 📁 Runner/
+│   │   │   ├── 📁 Assets.xcassets/
+│   │   │   │   ├── 📁 AppIcon.appiconset/
+│   │   │   │   │   ├── ⚙️ Contents.json
+│   │   │   │   │   ├── 🖼️ Icon-App-1024x1024@1x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-20x20@1x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-20x20@2x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-20x20@3x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-29x29@1x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-29x29@2x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-29x29@3x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-40x40@1x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-40x40@2x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-40x40@3x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-50x50@1x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-50x50@2x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-57x57@1x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-57x57@2x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-60x60@2x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-60x60@3x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-72x72@1x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-72x72@2x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-76x76@1x.png
+│   │   │   │   │   ├── 🖼️ Icon-App-76x76@2x.png
+│   │   │   │   │   └── 🖼️ Icon-App-83.5x83.5@2x.png
+│   │   │   │   ├── 📁 LaunchBackground.imageset/
+│   │   │   │   │   ├── ⚙️ Contents.json
+│   │   │   │   │   ├── 🖼️ background.png
+│   │   │   │   │   └── 🖼️ darkbackground.png
+│   │   │   │   └── 📁 LaunchImage.imageset/
+│   │   │   │       ├── ⚙️ Contents.json
+│   │   │   │       ├── 🖼️ LaunchImage.png
+│   │   │   │       ├── 🖼️ LaunchImage@2x.png
+│   │   │   │       ├── 🖼️ LaunchImage@3x.png
+│   │   │   │       ├── 🖼️ LaunchImageDark.png
+│   │   │   │       ├── 🖼️ LaunchImageDark@2x.png
+│   │   │   │       ├── 🖼️ LaunchImageDark@3x.png
+│   │   │   │       └── 📝 README.md
+│   │   │   ├── 📁 Base.lproj/
+│   │   │   │   ├── 📄 LaunchScreen.storyboard
+│   │   │   │   └── 📄 Main.storyboard
+│   │   │   ├── 🍎 AppDelegate.swift
+│   │   │   ├── ⚡ GeneratedPluginRegistrant.h
+│   │   │   ├── 📄 GeneratedPluginRegistrant.m
+│   │   │   ├── 📄 GoogleService-Info.plist
+│   │   │   ├── 📄 Info.plist
+│   │   │   ├── ⚡ Runner-Bridging-Header.h
+│   │   │   └── 🍎 SceneDelegate.swift
+│   │   ├── 📁 Runner.xcodeproj/
+│   │   │   ├── 📁 project.xcworkspace/
+│   │   │   │   ├── 📁 xcshareddata/
+│   │   │   │   │   ├── 📄 IDEWorkspaceChecks.plist
+│   │   │   │   │   └── 📄 WorkspaceSettings.xcsettings
+│   │   │   │   └── 📄 contents.xcworkspacedata
+│   │   │   ├── 📁 xcshareddata/
+│   │   │   │   └── 📁 xcschemes/
+│   │   │   │       └── 📄 Runner.xcscheme
+│   │   │   └── 📄 project.pbxproj
+│   │   ├── 📁 Runner.xcworkspace/
+│   │   │   ├── 📁 xcshareddata/
+│   │   │   │   ├── 📄 IDEWorkspaceChecks.plist
+│   │   │   │   └── 📄 WorkspaceSettings.xcsettings
+│   │   │   └── 📄 contents.xcworkspacedata
+│   │   ├── 📁 RunnerTests/
+│   │   │   └── 🍎 RunnerTests.swift
+│   │   └── ⚙️ .gitignore
+│   ├── 📁 lib/
+│   │   ├── 📁 core/
+│   │   │   ├── 📁 constants/
+│   │   │   │   ├── 📄 app_colors.dart
+│   │   │   │   ├── 📄 app_strings.dart
+│   │   │   │   ├── 📄 feature_flags.dart
+│   │   │   │   └── 📄 peru_locations.dart
+│   │   │   ├── 📁 errors/
+│   │   │   │   ├── 📄 app_exception.dart
+│   │   │   │   └── 📄 failures.dart
+│   │   │   ├── 📁 network/
+│   │   │   │   ├── 📄 api_interceptor.dart
+│   │   │   │   ├── 📄 dio_client.dart
+│   │   │   │   └── 📄 socket_service.dart
+│   │   │   ├── 📁 router/
+│   │   │   │   ├── 📄 app_router.dart
+│   │   │   │   ├── 📄 app_shell.dart
+│   │   │   │   └── 📄 router_notifier.dart
+│   │   │   ├── 📁 services/
+│   │   │   │   ├── 📄 fcm_service.dart
+│   │   │   │   ├── 📄 geocoding_service.dart
+│   │   │   │   ├── 📄 local_cache_service.dart
+│   │   │   │   └── 📄 notification_handler.dart
+│   │   │   ├── 📁 theme/
+│   │   │   │   ├── 📄 app_theme_colors.dart
+│   │   │   │   └── 📄 theme_provider.dart
+│   │   │   ├── 📁 utils/
+│   │   │   │   ├── 📄 geocoding_helper.dart
+│   │   │   │   ├── 📄 logger.dart
+│   │   │   │   ├── 📄 permission_service.dart
+│   │   │   │   ├── 📄 peru_time.dart
+│   │   │   │   ├── 📄 plan_limits.dart
+│   │   │   │   └── 📄 provider_type.dart
+│   │   │   ├── 📁 widgets/
+│   │   │   │   └── 📄 auth_side_effect_dialogs.dart
+│   │   │   └── 📄 social_auth_service.dart
+│   │   ├── 📁 features/
+│   │   │   ├── 📁 agenda/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   └── 📄 appointments_repository.dart
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   └── 📁 models/
+│   │   │   │   │       └── 📄 appointment_model.dart
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📁 screens/
+│   │   │   │       │   ├── 📄 booking_screen.dart
+│   │   │   │       │   ├── 📄 manage_appointments_screen.dart
+│   │   │   │       │   ├── 📄 my_appointments_screen.dart
+│   │   │   │       │   └── 📄 schedule_editor_screen.dart
+│   │   │   │       └── 📁 widgets/
+│   │   │   │           ├── 📄 appointment_status_chip.dart
+│   │   │   │           └── 📄 provider_appointment_card.dart
+│   │   │   ├── 📁 ai_assistant/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   └── 📄 ai_assistant_repository.dart
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   └── 📄 ai_message_model.dart
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📄 ai_assistant_fab.dart
+│   │   │   │       ├── 📄 ai_assistant_provider.dart
+│   │   │   │       ├── 📄 ai_assistant_screen.dart
+│   │   │   │       ├── 📄 guest_chat_screen.dart
+│   │   │   │       ├── 📄 ofi_avatar.dart
+│   │   │   │       ├── 📄 ofi_chat_avatar.dart
+│   │   │   │       ├── 📄 ofi_messages.dart
+│   │   │   │       └── 📄 ofi_speech_bubble.dart
+│   │   │   ├── 📁 auth/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   ├── 📄 auth_local_storage.dart
+│   │   │   │   │   ├── 📄 auth_repository.dart
+│   │   │   │   │   └── 📄 saved_accounts_storage.dart
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   └── 📁 models/
+│   │   │   │   │       └── 📄 user_model.dart
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📁 providers/
+│   │   │   │       │   ├── 📁 auth/
+│   │   │   │       │   │   ├── 📄 auth_models.dart
+│   │   │   │       │   │   ├── 📄 auth_provider_logic_mixin.dart
+│   │   │   │       │   │   ├── 📄 auth_recovery_mixin.dart
+│   │   │   │       │   │   └── 📄 auth_socket_mixin.dart
+│   │   │   │       │   ├── 📄 auth_provider.dart
+│   │   │   │       │   └── 📄 registration_provider.dart
+│   │   │   │       ├── 📁 screens/
+│   │   │   │       │   ├── 📁 onboarding/
+│   │   │   │       │   │   ├── 📁 widgets/
+│   │   │   │       │   │   │   ├── 📄 onboarding_accordion_section.dart
+│   │   │   │       │   │   │   ├── 📄 onboarding_address_section.dart
+│   │   │   │       │   │   │   ├── 📄 onboarding_basic_info_section.dart
+│   │   │   │       │   │   │   ├── 📄 onboarding_category_section.dart
+│   │   │   │       │   │   │   ├── 📄 onboarding_continue_button.dart
+│   │   │   │       │   │   │   ├── 📄 onboarding_delivery_section.dart
+│   │   │   │       │   │   │   ├── 📄 onboarding_form_components.dart
+│   │   │   │       │   │   │   ├── 📄 onboarding_location_section.dart
+│   │   │   │       │   │   │   ├── 📄 onboarding_photo_section.dart
+│   │   │   │       │   │   │   ├── 📄 onboarding_plan_section.dart
+│   │   │   │       │   │   │   ├── 📄 onboarding_professional_profile_section.dart
+│   │   │   │       │   │   │   ├── 📄 onboarding_service_details_section.dart
+│   │   │   │       │   │   │   ├── 📄 onboarding_social_section.dart
+│   │   │   │       │   │   │   ├── 📄 plan_choice_sheet.dart
+│   │   │   │       │   │   │   └── 📄 registration_success_dialog.dart
+│   │   │   │       │   │   ├── 📄 onboarding_plans_sheet.dart
+│   │   │   │       │   │   ├── 📄 onboarding_screen.dart
+│   │   │   │       │   │   └── 📄 provider_onboarding_form.dart
+│   │   │   │       │   ├── 📄 change_password_screen.dart
+│   │   │   │       │   ├── 📄 edit_profile_screen.dart
+│   │   │   │       │   ├── 📄 forgot_password_screen.dart
+│   │   │   │       │   ├── 📄 login_screen.dart
+│   │   │   │       │   ├── 📄 otp_verification_screen.dart
+│   │   │   │       │   ├── 📄 professional_migration_screen.dart
+│   │   │   │       │   ├── 📄 profile_screen.dart
+│   │   │   │       │   ├── 📄 reset_password_screen.dart
+│   │   │   │       │   ├── 📄 saved_accounts_screen.dart
+│   │   │   │       │   ├── 📄 setup_password_screen.dart
+│   │   │   │       │   ├── 📄 splash_screen.dart
+│   │   │   │       │   ├── 📄 welcome_onboarding_modal.dart
+│   │   │   │       │   └── 📄 welcome_screen.dart
+│   │   │   │       └── 📁 widgets/
+│   │   │   │           ├── 📁 join_us/
+│   │   │   │           │   ├── 📄 join_us_components.dart
+│   │   │   │           │   ├── 📄 join_us_initial_view.dart
+│   │   │   │           │   ├── 📄 join_us_modal.dart
+│   │   │   │           │   ├── 📄 join_us_plans.dart
+│   │   │   │           │   ├── 📄 join_us_status_banners.dart
+│   │   │   │           │   ├── 📄 join_us_type_detail.dart
+│   │   │   │           │   └── 📄 profile_preview_mock.dart
+│   │   │   │           ├── 📁 profile/
+│   │   │   │           │   ├── 📄 contact_us_section.dart
+│   │   │   │           │   ├── 📄 guest_profile_view.dart
+│   │   │   │           │   ├── 📄 profile_avatar_picker.dart
+│   │   │   │           │   ├── 📄 profile_badges.dart
+│   │   │   │           │   ├── 📄 profile_dialogs.dart
+│   │   │   │           │   ├── 📄 profile_helpers.dart
+│   │   │   │           │   ├── 📄 profile_sections.dart
+│   │   │   │           │   └── 📄 profile_toggles.dart
+│   │   │   │           ├── 📁 welcome/
+│   │   │   │           │   ├── 📄 slide_data.dart
+│   │   │   │           │   ├── 📄 slide_ofi_assistant.dart
+│   │   │   │           │   ├── 📄 slide_provider_card.dart
+│   │   │   │           │   ├── 📄 slide_testimonials.dart
+│   │   │   │           │   ├── 📄 slide_types_grid.dart
+│   │   │   │           │   ├── 📄 slide_welcome_intro.dart
+│   │   │   │           │   ├── 📄 stagger_fade.dart
+│   │   │   │           │   ├── 📄 welcome_action_buttons.dart
+│   │   │   │           │   ├── 📄 welcome_carousel.dart
+│   │   │   │           │   ├── 📄 welcome_page_indicators.dart
+│   │   │   │           │   ├── 📄 welcome_slide_text.dart
+│   │   │   │           │   └── 📄 welcome_top_bar.dart
+│   │   │   │           └── 📄 social_login_button.dart
+│   │   │   ├── 📁 catalog/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   └── 📄 catalog_repository.dart
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   └── 📁 models/
+│   │   │   │   │       └── 📄 catalog_product_model.dart
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📁 providers/
+│   │   │   │       │   └── 📄 catalog_manager_provider.dart
+│   │   │   │       ├── 📁 screens/
+│   │   │   │       │   ├── 📄 catalog_screen.dart
+│   │   │   │       │   └── 📄 manage_catalog_screen.dart
+│   │   │   │       └── 📁 widgets/
+│   │   │   │           ├── 📄 catalog_product_card.dart
+│   │   │   │           └── 📄 catalog_product_form_sheet.dart
+│   │   │   ├── 📁 chat/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   └── 📄 chat_repository.dart
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   └── 📁 models/
+│   │   │   │   │       ├── 📄 chat_message_model.dart
+│   │   │   │   │       └── 📄 chat_room_model.dart
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📁 providers/
+│   │   │   │       │   └── 📄 chat_provider.dart
+│   │   │   │       └── 📁 screens/
+│   │   │   │           ├── 📄 chat_list_screen.dart
+│   │   │   │           └── 📄 chat_screen.dart
+│   │   │   ├── 📁 favorites/
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📁 providers/
+│   │   │   │       │   └── 📄 favorites_provider.dart
+│   │   │   │       └── 📁 screens/
+│   │   │   │           └── 📄 favorites_screen.dart
+│   │   │   ├── 📁 localities/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   ├── 📄 dynamic_locations.dart
+│   │   │   │   │   └── 📄 localities_repository.dart
+│   │   │   │   └── 📁 domain/
+│   │   │   │       └── 📄 locality_extra.dart
+│   │   │   ├── 📁 menu/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   └── 📄 menu_repository.dart
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   ├── 📁 models/
+│   │   │   │   │   │   └── 📄 menu_item_model.dart
+│   │   │   │   │   └── 📄 menu_order.dart
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📁 providers/
+│   │   │   │       │   └── 📄 menu_manager_provider.dart
+│   │   │   │       ├── 📁 screens/
+│   │   │   │       │   ├── 📄 manage_menu_screen.dart
+│   │   │   │       │   └── 📄 menu_screen.dart
+│   │   │   │       └── 📁 widgets/
+│   │   │   │           ├── 📄 menu_item_card.dart
+│   │   │   │           └── 📄 menu_item_form_sheet.dart
+│   │   │   ├── 📁 notifications/
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   └── 📁 models/
+│   │   │   │   │       └── 📄 notification_model.dart
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📁 providers/
+│   │   │   │       │   └── 📄 notifications_provider.dart
+│   │   │   │       └── 📁 screens/
+│   │   │   │           └── 📄 notifications_screen.dart
+│   │   │   ├── 📁 offer_posts/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   └── 📄 offers_repository.dart
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   └── 📁 models/
+│   │   │   │   │       └── 📄 public_offer_model.dart
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📁 providers/
+│   │   │   │       │   └── 📄 offers_provider.dart
+│   │   │   │       ├── 📁 screens/
+│   │   │   │       │   ├── 📄 offers_screen.cards.dart
+│   │   │   │       │   ├── 📄 offers_screen.dart
+│   │   │   │       │   └── 📄 offers_screen.filters.dart
+│   │   │   │       └── 📁 sheets/
+│   │   │   │           ├── 📄 offer_detail_sheet.dart
+│   │   │   │           └── 📄 offers_filter_sheet.dart
+│   │   │   ├── 📁 payments/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   └── 📄 payments_repository.dart
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   └── 📁 models/
+│   │   │   │   │       └── 📄 yape_payment_model.dart
+│   │   │   │   ├── 📁 presentation/
+│   │   │   │   │   ├── 📁 providers/
+│   │   │   │   │   │   └── 📄 payments_provider.dart
+│   │   │   │   │   └── 📁 screens/
+│   │   │   │   │       ├── 📄 payment_history_screen.dart
+│   │   │   │   │       ├── 📄 plan_selector_sheet.dart
+│   │   │   │   │       └── 📄 yape_payment_screen.dart
+│   │   │   │   └── 📁 utils/
+│   │   │   │       └── 📄 qr_download.dart
+│   │   │   ├── 📁 provider_dashboard/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   ├── 📄 dashboard_repository.dart
+│   │   │   │   │   └── 📄 offer_posts_repository.dart
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   └── 📁 models/
+│   │   │   │   │       ├── 📄 coverage_model.dart
+│   │   │   │   │       ├── 📄 dashboard_profile_model.dart
+│   │   │   │   │       ├── 📄 offer_post_model.dart
+│   │   │   │   │       └── 📄 service_item_model.dart
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📁 providers/
+│   │   │   │       │   ├── 📄 dashboard_provider.dart
+│   │   │   │       │   └── 📄 offer_posts_provider.dart
+│   │   │   │       ├── 📁 screens/
+│   │   │   │       │   ├── 📄 panel_home_tab.dart
+│   │   │   │       │   ├── 📄 panel_profile_tab.dart
+│   │   │   │       │   ├── 📄 panel_services_tab.dart
+│   │   │   │       │   ├── 📄 panel_settings_tab.dart
+│   │   │   │       │   ├── 📄 panel_stats_tab.dart
+│   │   │   │       │   └── 📄 provider_panel.dart
+│   │   │   │       └── 📁 widgets/
+│   │   │   │           ├── 📁 home/
+│   │   │   │           │   ├── 📄 home_contact_preview.dart
+│   │   │   │           │   ├── 📄 home_header.dart
+│   │   │   │           │   ├── 📄 home_notifications_section.dart
+│   │   │   │           │   ├── 📄 home_recent_chats.dart
+│   │   │   │           │   ├── 📄 home_reviews_section.dart
+│   │   │   │           │   ├── 📄 home_services_preview.dart
+│   │   │   │           │   ├── 📄 home_stat_cards.dart
+│   │   │   │           │   └── 📄 home_weekly_chart.dart
+│   │   │   │           ├── 📁 profile/
+│   │   │   │           │   ├── 📄 profile_availability_section.dart
+│   │   │   │           │   ├── 📄 profile_components.dart
+│   │   │   │           │   ├── 📄 profile_info_section.dart
+│   │   │   │           │   ├── 📄 profile_photos_section.dart
+│   │   │   │           │   ├── 📄 profile_plan_section.dart
+│   │   │   │           │   ├── 📄 profile_reach_section.dart
+│   │   │   │           │   ├── 📄 profile_social_section.dart
+│   │   │   │           │   └── 📄 profile_trust_section.dart
+│   │   │   │           ├── 📁 services/
+│   │   │   │           │   ├── 📄 offer_form_sheet.dart
+│   │   │   │           │   ├── 📄 offers_section.dart
+│   │   │   │           │   ├── 📄 service_card.dart
+│   │   │   │           │   ├── 📄 service_components.dart
+│   │   │   │           │   └── 📄 service_form_sheet.dart
+│   │   │   │           ├── 📁 settings/
+│   │   │   │           │   ├── 📄 home_service_toggle.dart
+│   │   │   │           │   ├── 📄 legal_content.dart
+│   │   │   │           │   ├── 📄 legal_sheet.dart
+│   │   │   │           │   ├── 📄 logout_button.dart
+│   │   │   │           │   ├── 📄 plan_data.dart
+│   │   │   │           │   ├── 📄 privacy_section.dart
+│   │   │   │           │   ├── 📄 profile_header.dart
+│   │   │   │           │   ├── 📄 settings_components.dart
+│   │   │   │           │   ├── 📄 settings_dialogs.dart
+│   │   │   │           │   └── 📄 subscription_section.dart
+│   │   │   │           ├── 📄 panel_feature_entry.dart
+│   │   │   │           └── 📄 welcome_provider_plan_modal.dart
+│   │   │   ├── 📁 providers_list/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   ├── 📄 providers_repository.dart
+│   │   │   │   │   └── 📄 reviews_repository.dart
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   └── 📁 models/
+│   │   │   │   │       ├── 📄 provider_model.dart
+│   │   │   │   │       └── 📄 review_model.dart
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📁 providers/
+│   │   │   │       │   └── 📄 providers_provider.dart
+│   │   │   │       ├── 📁 screens/
+│   │   │   │       │   ├── 📄 provider_detail_screen.dart
+│   │   │   │       │   └── 📄 providers_screen.dart
+│   │   │   │       ├── 📁 sheets/
+│   │   │   │       │   ├── 📁 filter/
+│   │   │   │       │   │   ├── 📄 filter_availability_section.dart
+│   │   │   │       │   │   ├── 📄 filter_bottom_buttons.dart
+│   │   │   │       │   │   ├── 📄 filter_category_section.dart
+│   │   │   │       │   │   ├── 📄 filter_chip.dart
+│   │   │   │       │   │   ├── 📄 filter_gps_button.dart
+│   │   │   │       │   │   ├── 📄 filter_location_dropdown.dart
+│   │   │   │       │   │   ├── 📄 filter_location_section.dart
+│   │   │   │       │   │   ├── 📄 filter_radar_map.dart
+│   │   │   │       │   │   ├── 📄 filter_section_label.dart
+│   │   │   │       │   │   ├── 📄 filter_sort_options.dart
+│   │   │   │       │   │   ├── 📄 filter_sort_section.dart
+│   │   │   │       │   │   └── 📄 filter_verification_section.dart
+│   │   │   │       │   ├── 📄 filter_sheet.dart
+│   │   │   │       │   ├── 📄 recommend_modal.dart
+│   │   │   │       │   ├── 📄 report_sheet.dart
+│   │   │   │       │   ├── 📄 review_detail_sheet.dart
+│   │   │   │       │   └── 📄 review_image_fullscreen.dart
+│   │   │   │       └── 📁 widgets/
+│   │   │   │           ├── 📁 service_cards/
+│   │   │   │           │   ├── 📄 card_action_buttons.dart
+│   │   │   │           │   ├── 📄 card_badges.dart
+│   │   │   │           │   ├── 📄 card_contact_actions.dart
+│   │   │   │           │   ├── 📄 card_cover_image.dart
+│   │   │   │           │   ├── 📄 card_helpers.dart
+│   │   │   │           │   ├── 📄 card_image_carousel.dart
+│   │   │   │           │   ├── 📄 card_location_text.dart
+│   │   │   │           │   ├── 📄 card_provider_info.dart
+│   │   │   │           │   ├── 📄 card_service_chips.dart
+│   │   │   │           │   ├── 📄 service_card_content.dart
+│   │   │   │           │   ├── 📄 service_card_default.dart
+│   │   │   │           │   ├── 📄 service_card_list.dart
+│   │   │   │           │   ├── 📄 service_card_mosaic.dart
+│   │   │   │           │   └── 📄 service_detail_dialog.dart
+│   │   │   │           ├── 📄 create_review_sheet.dart
+│   │   │   │           ├── 📄 expand_search_banner.dart
+│   │   │   │           ├── 📄 feature_chips.dart
+│   │   │   │           ├── 📄 featured_carousels.dart
+│   │   │   │           ├── 📄 filter_bar.dart
+│   │   │   │           ├── 📄 greeting_header.dart
+│   │   │   │           ├── 📄 join_us_fab.dart
+│   │   │   │           ├── 📄 location_chip_bar.dart
+│   │   │   │           ├── 📄 login_required_dialog.dart
+│   │   │   │           ├── 📄 offers_banner.dart
+│   │   │   │           ├── 📄 parent_category_icons.dart
+│   │   │   │           ├── 📄 photo_evidence_picker.dart
+│   │   │   │           ├── 📄 photo_source_sheet.dart
+│   │   │   │           ├── 📄 provider_contact_bar.dart
+│   │   │   │           ├── 📄 provider_feature_ctas.dart
+│   │   │   │           ├── 📄 provider_gallery.dart
+│   │   │   │           ├── 📄 provider_info_section.dart
+│   │   │   │           ├── 📄 providers_list_view.dart
+│   │   │   │           ├── 📄 review_card.dart
+│   │   │   │           ├── 📄 search_bar.dart
+│   │   │   │           ├── 📄 service_card.dart
+│   │   │   │           ├── 📄 service_schedule_section.dart
+│   │   │   │           ├── 📄 subasta_banner.dart
+│   │   │   │           └── 📄 upsell_sheet.dart
+│   │   │   ├── 📁 quotation/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   └── 📄 quotation_repository.dart
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   └── 📁 models/
+│   │   │   │   │       └── 📄 quotation_model.dart
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📁 screens/
+│   │   │   │       │   ├── 📄 manage_quotations_screen.dart
+│   │   │   │       │   ├── 📄 my_quotations_screen.dart
+│   │   │   │       │   └── 📄 request_quotation_screen.dart
+│   │   │   │       └── 📁 widgets/
+│   │   │   │           └── 📄 quotation_status_chip.dart
+│   │   │   ├── 📁 referrals/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   └── 📄 referrals_repository.dart
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   └── 📁 models/
+│   │   │   │   │       └── 📄 referral_models.dart
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📁 providers/
+│   │   │   │       │   └── 📄 referrals_provider.dart
+│   │   │   │       ├── 📁 screens/
+│   │   │   │       │   └── 📄 referral_screen.dart
+│   │   │   │       └── 📁 widgets/
+│   │   │   │           └── 📁 referral/
+│   │   │   │               ├── 📄 referral_dialogs.dart
+│   │   │   │               ├── 📄 referral_earn_coins_tab.dart
+│   │   │   │               ├── 📄 referral_helpers.dart
+│   │   │   │               ├── 📄 referral_history_tab.dart
+│   │   │   │               └── 📄 referral_my_code_tab.dart
+│   │   │   ├── 📁 showcase/
+│   │   │   │   ├── 📝 README.md
+│   │   │   │   ├── 📄 showcase_data.dart
+│   │   │   │   ├── 📄 showcase_manager.dart
+│   │   │   │   └── 📄 showcase_overlay.dart
+│   │   │   ├── 📁 subastas/
+│   │   │   │   ├── 📁 data/
+│   │   │   │   │   └── 📄 subastas_repository.dart
+│   │   │   │   ├── 📁 domain/
+│   │   │   │   │   └── 📁 models/
+│   │   │   │   │       └── 📄 service_request_model.dart
+│   │   │   │   └── 📁 presentation/
+│   │   │   │       ├── 📁 providers/
+│   │   │   │       │   └── 📄 subastas_provider.dart
+│   │   │   │       ├── 📁 screens/
+│   │   │   │       │   ├── 📄 my_requests_screen.dart
+│   │   │   │       │   ├── 📄 oportunidades_tab.dart
+│   │   │   │       │   └── 📄 publish_request_sheet.dart
+│   │   │   │       └── 📁 widgets/
+│   │   │   │           ├── 📄 offer_comparison_sheet.dart
+│   │   │   │           ├── 📄 request_detail_sheet.dart
+│   │   │   │           ├── 📄 submit_offer_sheet.dart
+│   │   │   │           └── 📄 trust_badge.dart
+│   │   │   └── 📁 trust_validation/
+│   │   │       ├── 📁 data/
+│   │   │       │   └── 📄 trust_validation_repository.dart
+│   │   │       └── 📁 presentation/
+│   │   │           └── 📁 screens/
+│   │   │               └── 📄 trust_validation_form_screen.dart
+│   │   ├── 📁 shared/
+│   │   │   ├── 📁 cart/
+│   │   │   │   └── 📄 cart_order.dart
+│   │   │   └── 📁 widgets/
+│   │   │       ├── 📄 app_network_image.dart
+│   │   │       ├── 📄 app_snack_bar.dart
+│   │   │       ├── 📄 collapsible_schedule.dart
+│   │   │       ├── 📄 location_picker_sheet.dart
+│   │   │       ├── 📄 notification_modal.dart
+│   │   │       ├── 📄 phone_input_section.dart
+│   │   │       ├── 📄 provider_type_selector.dart
+│   │   │       ├── 📄 schedule_editor.dart
+│   │   │       ├── 📄 skeleton_loaders.dart
+│   │   │       ├── 📄 social_media_row.dart
+│   │   │       ├── 📄 user_profile_sheet.dart
+│   │   │       └── 📄 user_report_sheet.dart
+│   │   └── 📄 main.dart
+│   ├── 📁 test/
+│   │   ├── 📁 core/
+│   │   │   ├── 📄 app_network_image_test.dart
+│   │   │   ├── 📄 peru_time_test.dart
+│   │   │   └── 📄 plan_limits_test.dart
+│   │   ├── 📁 data/
+│   │   │   ├── 📄 auth_repository_test.dart
+│   │   │   └── 📄 offer_posts_repository_test.dart
+│   │   ├── 📁 features/
+│   │   │   └── 📄 ai_assistant_provider_test.dart
+│   │   ├── 📁 helpers/
+│   │   │   ├── 📄 mock_dio_adapter.dart
+│   │   │   └── 📄 test_setup.dart
+│   │   ├── 📁 models/
+│   │   │   ├── 📄 app_notification_test.dart
+│   │   │   ├── 📄 appointment_model_test.dart
+│   │   │   ├── 📄 catalog_product_model_test.dart
+│   │   │   ├── 📄 coverage_model_test.dart
+│   │   │   ├── 📄 menu_item_model_test.dart
+│   │   │   ├── 📄 menu_order_test.dart
+│   │   │   ├── 📄 models_test.dart
+│   │   │   └── 📄 quotation_model_test.dart
+│   │   ├── 📁 providers/
+│   │   │   ├── 📄 auth_guest_failure_test.dart
+│   │   │   ├── 📄 auth_overlays_test.dart
+│   │   │   ├── 📄 auth_provider_test.dart
+│   │   │   ├── 📄 chat_provider_test.dart
+│   │   │   ├── 📄 dashboard_provider_test.dart
+│   │   │   ├── 📄 notifications_retention_test.dart
+│   │   │   ├── 📄 offers_provider_test.dart
+│   │   │   ├── 📄 providers_filter_test.dart
+│   │   │   ├── 📄 providers_ofi_fab_test.dart
+│   │   │   ├── 📄 referrals_provider_test.dart
+│   │   │   └── 📄 subastas_provider_test.dart
+│   │   ├── 📁 widgets/
+│   │   │   ├── 📄 ai_assistant_fab_ofi_toggle_test.dart
+│   │   │   ├── 📄 catalog_product_card_test.dart
+│   │   │   ├── 📄 chat_screen_test.dart
+│   │   │   ├── 📄 feature_chips_test.dart
+│   │   │   ├── 📄 login_screen_test.dart
+│   │   │   ├── 📄 menu_item_card_test.dart
+│   │   │   ├── 📄 offer_card_test.dart
+│   │   │   ├── 📄 profile_preferences_rows_test.dart
+│   │   │   ├── 📄 provider_appointment_card_test.dart
+│   │   │   ├── 📄 provider_onboarding_form_sections_test.dart
+│   │   │   ├── 📄 referral_my_code_tab_test.dart
+│   │   │   ├── 📄 skeleton_loaders_test.dart
+│   │   │   ├── 📄 welcome_carousel_background_test.dart
+│   │   │   └── 📄 welcome_provider_plan_modal_test.dart
+│   │   └── 📄 app_smoke_test.dart
+│   ├── ⚙️ .flutter-plugins-dependencies
+│   ├── ⚙️ .gitignore
+│   ├── ⚙️ .metadata
+│   ├── 📝 README.md
+│   ├── ⚙️ analysis_options.yaml
+│   ├── ⚙️ devtools_options.yaml
+│   ├── 📄 mobile.iml
+│   ├── 📄 pubspec.lock
+│   └── ⚙️ pubspec.yaml
+├── 📁 supabase/
+│   └── 📁 .temp/
+│       └── ⚙️ linked-project.json
+├── 📁 web/
+│   ├── 📁 app/
+│   │   ├── 📁 [slug]/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 buscar/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 cliente/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 login/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 panel/
+│   │   │   ├── 📁 estadisticas/
+│   │   │   │   └── 📄 page.tsx
+│   │   │   ├── 📁 mensajes/
+│   │   │   │   ├── 📁 [roomId]/
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   └── 📄 page.tsx
+│   │   │   ├── 📁 ofertas/
+│   │   │   │   └── 📄 page.tsx
+│   │   │   ├── 📁 perfil/
+│   │   │   │   └── 📄 page.tsx
+│   │   │   ├── 📁 referidos/
+│   │   │   │   └── 📄 page.tsx
+│   │   │   ├── 📁 servicios/
+│   │   │   │   └── 📄 page.tsx
+│   │   │   ├── 📄 layout.tsx
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 payments/
+│   │   │   ├── 📁 failure/
+│   │   │   │   ├── 📄 FailureContent.tsx
+│   │   │   │   └── 📄 page.tsx
+│   │   │   ├── 📁 pending/
+│   │   │   │   ├── 📄 PendingContent.tsx
+│   │   │   │   └── 📄 page.tsx
+│   │   │   └── 📁 success/
+│   │   │       ├── 📄 SuccessContent.tsx
+│   │   │       └── 📄 page.tsx
+│   │   ├── 📁 privacidad/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📁 registrar-proveedor/
+│   │   │   └── 📄 page.tsx
+│   │   ├── 🎨 globals.css
+│   │   ├── 📄 layout.tsx
+│   │   └── 📄 page.tsx
+│   ├── 📁 components/
+│   │   ├── 📁 chat/
+│   │   │   └── 📄 chat-rooms-list.tsx
+│   │   ├── 📁 manual/
+│   │   │   ├── 📄 GuideCard.tsx
+│   │   │   ├── 📄 GuideModal.tsx
+│   │   │   └── 📄 index.tsx
+│   │   ├── 📁 modals/
+│   │   │   ├── 📄 about-modal.tsx
+│   │   │   ├── 📄 faq-modal.tsx
+│   │   │   ├── 📄 first-visit-modal.tsx
+│   │   │   ├── 📄 legal-content.ts
+│   │   │   ├── 📄 legal-modal.tsx
+│   │   │   ├── 📄 onboarding-plans-modal.tsx
+│   │   │   ├── 📄 user-profile-modal.tsx
+│   │   │   └── 📄 yape-payment-modal.tsx
+│   │   ├── 📁 motion/
+│   │   │   ├── 📄 floating.tsx
+│   │   │   ├── 📄 reveal-section.tsx
+│   │   │   ├── 📄 scroll-progress.tsx
+│   │   │   └── 📄 section-divider.tsx
+│   │   ├── 📁 onboarding/
+│   │   │   └── 📄 provider-onboarding-form.tsx
+│   │   ├── 📁 search/
+│   │   │   ├── 📄 search-bar.tsx
+│   │   │   └── 📄 search-radar-map.tsx
+│   │   ├── 📁 theme/
+│   │   │   ├── 📄 theme-provider.tsx
+│   │   │   └── 📄 theme-toggle.tsx
+│   │   ├── 📄 account-menu.tsx
+│   │   ├── 📄 ai-chat-widget.tsx
+│   │   ├── 📄 benefits-section.tsx
+│   │   ├── 📄 floating-faq-button.tsx
+│   │   ├── 📄 footer.tsx
+│   │   ├── 📄 hero-section.tsx
+│   │   ├── 📄 layout-shell.tsx
+│   │   ├── 📄 login-form.tsx
+│   │   ├── 📄 navbar.tsx
+│   │   ├── 📄 panel-tip-banner.tsx
+│   │   ├── 📄 profile-form.tsx
+│   │   ├── 📄 providers-section.tsx
+│   │   ├── 📄 referral-banner.tsx
+│   │   ├── 📄 referral-panel.tsx
+│   │   ├── 📄 reveal-provider.tsx
+│   │   ├── 📄 services-list.tsx
+│   │   ├── 📄 sidebar.tsx
+│   │   ├── 📄 solutions-section.tsx
+│   │   ├── 📄 stats-charts.tsx
+│   │   ├── 📄 testimonials-section.tsx
+│   │   ├── 📄 user-manual.tsx
+│   │   └── 📄 whatsapp-button.tsx
+│   ├── 📁 lib/
+│   │   ├── 📄 api.ts
+│   │   ├── 📄 auth.ts
+│   │   ├── 📄 constants.ts
+│   │   ├── 📄 firebase.ts
+│   │   ├── 📄 hooks.ts
+│   │   ├── 📄 peru-locations.ts
+│   │   ├── 📄 plans.ts
+│   │   ├── 📄 profile-type-context.tsx
+│   │   ├── 📄 route-utils.ts
+│   │   ├── 📄 social-utils.ts
+│   │   ├── 📄 socket.ts
+│   │   ├── 📄 types.ts
+│   │   └── 📄 validators.ts
+│   ├── 📁 public/
+│   │   ├── 📁 images/
+│   │   │   ├── 📁 logo/
+│   │   │   │   └── 🖼️ servi.png
+│   │   │   ├── 📁 social/
+│   │   │   │   ├── 🖼️ facebook.svg
+│   │   │   │   ├── 🖼️ gmail.svg
+│   │   │   │   ├── 🖼️ instagram.svg
+│   │   │   │   ├── 🖼️ linkedin.svg
+│   │   │   │   ├── 🖼️ telegram.svg
+│   │   │   │   ├── 🖼️ tiktok.svg
+│   │   │   │   ├── 🖼️ twitterx.svg
+│   │   │   │   ├── 🖼️ website.svg
+│   │   │   │   └── 🖼️ whatsapp.svg
+│   │   │   ├── 📁 yape/
+│   │   │   │   ├── 🖼️ qr.jpeg
+│   │   │   │   └── 🖼️ yape.svg
+│   │   │   ├── 🖼️ coin.png
+│   │   │   ├── 🖼️ coins-banner.png
+│   │   │   └── 🖼️ ofi.png
+│   │   ├── 🖼️ Serviproveedores.png
+│   │   ├── 🖼️ apple-touch-icon.png
+│   │   ├── 🖼️ favicon-16x16.png
+│   │   ├── 🖼️ favicon-32x32.png
+│   │   ├── 🖼️ favicon-96x96.png
+│   │   ├── 📄 favicon.ico
+│   │   ├── 🖼️ favicon.svg
+│   │   ├── 🌐 google8eac07fec2fa4fd0.html
+│   │   ├── 🖼️ parque-constitucion.jpg
+│   │   ├── 📄 site.webmanifest
+│   │   ├── 🖼️ tan-facil.png
+│   │   ├── 📄 tiktok1rPOq9Eruh5YMdwl8fdP6K0zrIdopQ76.txt
+│   │   └── 📄 tiktokaHca0e0JJqzYjKnsDy3pqM7FL0zoKyLd.txt
+│   ├── ⚙️ .gitignore
+│   ├── 📝 AGENTS.md
+│   ├── 📄 next-env.d.ts
+│   ├── 📄 next.config.ts
+│   ├── ⚙️ package-lock.json
+│   ├── ⚙️ package.json
+│   ├── 📄 postcss.config.mjs
+│   ├── 📄 proxy.ts
+│   ├── 📄 tailwind.config.ts
+│   ├── ⚙️ tsconfig.json
+│   └── 📄 tsconfig.tsbuildinfo
+├── ⚙️ .gitignore
+├── ⚙️ .nvmrc
+├── 📝 AGENTS.md
+├── ⚙️ docker-compose.yml
+├── 📄 git
+├── 📄 lint-staged.config.mjs
+├── ⚙️ package-lock.json
+├── ⚙️ package.json
+├── ⚙️ skills-lock.json

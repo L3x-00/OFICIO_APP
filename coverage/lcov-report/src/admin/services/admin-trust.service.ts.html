@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">13.25% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/81</span>
+                <span class='fraction'>11/83</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">11.84% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/74</span>
+                <span class='fraction'>9/76</span>
             </div>
         
             
@@ -404,23 +404,28 @@
 <a name='L339'></a><a href='#L339'>339</a>
 <a name='L340'></a><a href='#L340'>340</a>
 <a name='L341'></a><a href='#L341'>341</a>
-<a name='L342'></a><a href='#L342'>342</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L342'></a><a href='#L342'>342</a>
+<a name='L343'></a><a href='#L343'>343</a>
+<a name='L344'></a><a href='#L344'>344</a>
+<a name='L345'></a><a href='#L345'>345</a>
+<a name='L346'></a><a href='#L346'>346</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -431,7 +436,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -553,6 +558,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -745,23 +753,24 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import {</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import {
   Injectable,
   Logger,
   Inject,
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-<span class="cstat-no" title="statement not covered" >import { CACHE_MANAGER } from '@nestjs/cache-manager';</span>
-<span class="cstat-no" title="statement not covered" >import { PrismaService } from '../../../prisma/prisma.service.js';</span>
-<span class="cstat-no" title="statement not covered" >import { EventsGateway } from '../../events/events.gateway.js';</span>
-<span class="cstat-no" title="statement not covered" >import { PushNotificationsService } from '../../firebase/push-notifications.service.js';</span>
-<span class="cstat-no" title="statement not covered" >import { ReferralsService } from '../../referrals/referrals.service.js';</span>
-<span class="cstat-no" title="statement not covered" >import {</span>
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { PrismaService } from '../../../prisma/prisma.service.js';
+import { EventsGateway } from '../../events/events.gateway.js';
+import { PushNotificationsService } from '../../firebase/push-notifications.service.js';
+import { ReferralsService } from '../../referrals/referrals.service.js';
+import {
   withCategoryAlias,
   planToPriority,
   clearProvidersCache,
 } from './admin-shared.js';
+import { syncCoverageToPlan } from '../../coverage/coverage.service.js';
 &nbsp;
 /**
  * Validación de confianza / verificación documental de proveedores.
@@ -772,7 +781,7 @@
  * y emite eventos en tiempo real + push al dueño del perfil.
  */
 @Injectable()
-export class <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >AdminTrustService<span class="cstat-no" title="statement not covered" > </span>{</span></span>
+export class AdminTrustService {
   private readonly logger = <span class="cstat-no" title="statement not covered" >new Logger(AdminTrustService.name);</span>
 &nbsp;
 <span class="fstat-no" title="function not covered" >  constructor(</span>
@@ -894,6 +903,9 @@ export class <span class="cstat-no" title="statement not covered" ><span class="
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      return [updatedProvider];</span>
     });
+&nbsp;
+    // Alcance por distritos: default para la cortesía ESTANDAR (no-op si GRATIS).
+<span class="cstat-no" title="statement not covered" >    await syncCoverageToPlan(this.prisma, id, trialPlan);</span>
 &nbsp;
     // Invalidar caché para que la app móvil vea al proveedor de inmediato
 <span class="cstat-no" title="statement not covered" >    await clearProvidersCache(this.cacheManager);</span>
@@ -1093,7 +1105,7 @@ export class <span class="cstat-no" title="statement not covered" ><span class="
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-21T14:24:01.290Z
+                at 2026-07-22T20:07:11.356Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

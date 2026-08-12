@@ -286,7 +286,8 @@ export type AiKnowledgeEntry = Prisma.AiKnowledgeEntryModel
  * Conversación con el asistente IA "Ofi" (Fase 4). `userId` es Int plano
  * (sin FK a User) para mantener el módulo IA desacoplado. Guarda la
  * versión de prompt activa al crearse (regla 8) y sus mensajes en
- * cascada. Política de retención: se purga > 90 días (AiRetentionService).
+ * cascada. Mensajes > 12 horas se purgan; conversaciones vacías antiguas se
+ * eliminan por AiRetentionService.
  */
 export type AiConversation = Prisma.AiConversationModel
 /**
@@ -309,3 +310,9 @@ export type AiUserMemory = Prisma.AiUserMemoryModel
  * Memoria persistente del PROVEEDOR para "Ofi". 1 fila por proveedor.
  */
 export type AiProviderMemory = Prisma.AiProviderMemoryModel
+/**
+ * Model AiLearningCandidate
+ * Candidato agregado del cerebro global de Ofi. No guarda texto de chats,
+ * usuarios ni historial. Solo prioriza temas para futura revisión de la KB.
+ */
+export type AiLearningCandidate = Prisma.AiLearningCandidateModel

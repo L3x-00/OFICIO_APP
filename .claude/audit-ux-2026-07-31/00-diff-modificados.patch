@@ -1,0 +1,2746 @@
+diff --git a/mobile/lib/core/constants/app_colors.dart b/mobile/lib/core/constants/app_colors.dart
+index bc02903..20c97c4 100644
+--- a/mobile/lib/core/constants/app_colors.dart
++++ b/mobile/lib/core/constants/app_colors.dart
+@@ -28,6 +28,14 @@ abstract class AppColors {
+   static const Color amberDark = Color(0xFFA88944);
+   static const Color amberDeep = Color(0xFF2A2418); // fondo oscuro cálido
+ 
++  // Categorías del carrusel de bienvenida — terracota/violeta/teal, elegidos
++  // para combinar con las ilustraciones de fondo de cada tipo de proveedor
++  // (distintos de primary/available/business, que son tonos funcionales
++  // usados en badges y tarjetas de proveedor reales).
++  static const Color oficioAccent = Color(0xFFD0886A);
++  static const Color profesionalAccent = Color(0xFF8B7EC8);
++  static const Color negocioAccent = Color(0xFF5A9E9F);
++
+   // Estado de disponibilidad — con algo más de brillo para que los chips
+   // de estado (abierto/cerrado) y los botones de acción RESALTEN sobre el
+   // resto apagado, sin volverse neón.
+diff --git a/mobile/lib/core/router/app_shell.dart b/mobile/lib/core/router/app_shell.dart
+index 448c757..ed0250f 100644
+--- a/mobile/lib/core/router/app_shell.dart
++++ b/mobile/lib/core/router/app_shell.dart
+@@ -1,14 +1,11 @@
+ import 'package:flutter/material.dart';
+ import 'package:flutter/services.dart';
+ import 'package:go_router/go_router.dart';
+-import 'package:provider/provider.dart';
+ import '../constants/app_colors.dart';
+-import '../constants/feature_flags.dart';
+ import '../theme/app_theme_colors.dart';
+-import '../../features/notifications/presentation/providers/notifications_provider.dart';
+ import '../../features/showcase/showcase_data.dart';
+ import '../../features/showcase/showcase_overlay.dart';
+-import 'app_router.dart' show kProfileBranchNavKey;
++import 'app_router.dart' show kProfileBranchNavKey, AppRoutes;
+ import '../../features/providers_list/presentation/widgets/service_cards/service_detail_dialog.dart';
+ 
+ /// Shell del [StatefulShellRoute] — Scaffold con bottom navigation que
+@@ -34,9 +31,7 @@ class _AppShellState extends State<AppShell> {
+     // del branch para que las sub-páginas (Mis mensajes, etc.)
+     // NO queden abiertas al volver. UX solicitada por el user.
+     final current = widget.navigationShell.currentIndex;
+-    // El índice de Perfil depende de si el tab Ofertas existe (flag).
+-    const profileIdx = kOfertasEnabled ? 4 : 3;
+-    if (current == profileIdx && index != profileIdx) {
++    if (current == AppRoutes.tabPerfil && index != AppRoutes.tabPerfil) {
+       kProfileBranchNavKey.currentState?.popUntil((r) => r.isFirst);
+     }
+     // Cierra el dialog flotante del detalle de servicio si está abierto
+@@ -104,6 +99,7 @@ class _BottomNav extends StatelessWidget {
+   Widget build(BuildContext context) {
+     final c = context.colors;
+     return Container(
++      height: 68,
+       decoration: BoxDecoration(
+         color: c.bgCard,
+         border: Border(top: BorderSide(color: c.border)),
+@@ -117,117 +113,243 @@ class _BottomNav extends StatelessWidget {
+                 ),
+               ],
+       ),
+-      // C-2: las GlobalKeys del showcase (kShowcaseFavTab, etc.)
+-      // viven en `item.icon`. Cuando un tab está activo,
+-      // BottomNavigationBar renderiza `activeIcon` y el `icon`
+-      // queda desmontado (sin RenderBox). Por eso el tutorial del
+-      // cliente arranca SIEMPRE desde tab 0 (Explorar): los tabs
+-      // 1-4 están inactivos, sus `icon` están montados, las keys
+-      // resuelven. Defensa adicional: _AutoStart filtra keys cuyo
+-      // currentContext sea null antes de startShowCase (C-1).
+-      child: BottomNavigationBar(
+-        currentIndex: currentIndex,
+-        onTap: onTap,
+-        backgroundColor: Colors.transparent,
+-        elevation: 0,
+-        selectedItemColor: AppColors.primary,
+-        unselectedItemColor: c.textMuted,
+-        type: BottomNavigationBarType.fixed,
+-        selectedLabelStyle: const TextStyle(
+-          fontSize: 11,
+-          fontWeight: FontWeight.w600,
+-        ),
+-        unselectedLabelStyle: const TextStyle(fontSize: 11),
+-        items: [
+-          const BottomNavigationBarItem(
+-            icon: Icon(Icons.search_rounded),
+-            label: 'Explorar',
+-          ),
+-          BottomNavigationBarItem(
+-            label: 'Favoritos',
+-            icon: ShowcaseTarget(
+-              step: kShowcaseStepsRegistered.firstWhere(
+-                (s) => s.key == kShowcaseFavTab,
++      // C-2: las GlobalKeys del showcase (kShowcaseFavTab, etc.) viven en
++      // el icono de cada tab. Alertas se movió al AppBar (ver
++      // providers_screen.dart) y Ofertas quedó fuera del bottom nav — este
++      // widget ahora solo resuelve Favoritos/Perfil, siempre montados
++      // (nunca desmontados por activeIcon) porque acá no existe ese
++      // concepto: el color/ícono activo se decide con un solo widget.
++      child: SafeArea(
++        top: false,
++        child: Row(
++          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
++          crossAxisAlignment: CrossAxisAlignment.end,
++          children: [
++            _PyramidSideTab(
++              active: currentIndex == AppRoutes.tabFavoritos,
++              activeIcon: Icons.favorite_rounded,
++              inactiveIcon: Icons.favorite_border_rounded,
++              // Color custom — mismo rojo que tenía el corazón activo antes.
++              activeColor: const Color(0xFFE53935),
++              label: 'Favoritos',
++              onTap: () => onTap(AppRoutes.tabFavoritos),
++              showcaseWrap: (icon) => ShowcaseTarget(
++                step: kShowcaseStepsRegistered.firstWhere(
++                  (s) => s.key == kShowcaseFavTab,
++                ),
++                isLast: isLastShowcaseStep(kShowcaseFavTab, isGuest: false),
++                targetHeight: 32,
++                targetWidth: 32,
++                child: icon,
+               ),
+-              isLast: isLastShowcaseStep(kShowcaseFavTab, isGuest: false),
+-              targetHeight: 32,
+-              targetWidth: 32,
+-              child: const Icon(Icons.favorite_border_rounded),
+             ),
+-            // Color custom al activarse — color explícito sobrescribe
+-            // el `selectedItemColor` global del BottomNavigationBar
+-            // solo para el icono. El label sigue siendo primary.
+-            activeIcon: const Icon(
+-              Icons.favorite_rounded,
+-              color: Color(0xFFE53935),
++            _PyramidCenterTab(
++              active: currentIndex == AppRoutes.tabExplorar,
++              onTap: () => onTap(AppRoutes.tabExplorar),
+             ),
+-          ),
+-          // Feature OCULTA (kOfertasEnabled) — el mismo flag quita el branch
+-          // '/offers' del router y el paso kShowcaseOffersTab del deck, así
+-          // los índices y el firstWhere del showcase quedan sincronizados.
+-          if (kOfertasEnabled)
+-            BottomNavigationBarItem(
+-              label: 'Ofertas',
+-              icon: ShowcaseTarget(
+-                step: kShowcaseStepsRegistered.firstWhere(
+-                  (s) => s.key == kShowcaseOffersTab,
++            _PyramidSideTab(
++              active: currentIndex == AppRoutes.tabPerfil,
++              activeIcon: Icons.person_rounded,
++              inactiveIcon: Icons.person_outline_rounded,
++              label: 'Perfil',
++              onTap: () => onTap(AppRoutes.tabPerfil),
++              showcaseWrap: (icon) => ShowcaseTarget(
++                step: kShowcaseStepsGuest.firstWhere(
++                  (s) => s.key == kShowcaseProfileTab,
+                 ),
+-                isLast: isLastShowcaseStep(kShowcaseOffersTab, isGuest: false),
++                isLast: isLastShowcaseStep(kShowcaseProfileTab, isGuest: true),
+                 targetHeight: 32,
+                 targetWidth: 32,
+-                child: const Icon(Icons.local_offer_outlined),
+-              ),
+-              activeIcon: const Icon(
+-                Icons.local_offer_rounded,
+-                color: Color(0xFFFF9800),
++                child: icon,
+               ),
+             ),
+-          BottomNavigationBarItem(
+-            label: 'Alertas',
+-            icon: ShowcaseTarget(
+-              step: kShowcaseStepsRegistered.firstWhere(
+-                (s) => s.key == kShowcaseAlertsTab,
+-              ),
+-              isLast: isLastShowcaseStep(kShowcaseAlertsTab, isGuest: false),
+-              targetHeight: 32,
+-              targetWidth: 32,
+-              child: Consumer<NotificationsProvider>(
+-                builder: (_, notifs, _) => Badge(
+-                  isLabelVisible: notifs.unreadCount > 0,
+-                  label: Text(
+-                    notifs.unreadCount > 9 ? '9+' : '${notifs.unreadCount}',
+-                    style: const TextStyle(fontSize: 10),
+-                  ),
+-                  child: const Icon(Icons.notifications_none_rounded),
++          ],
++        ),
++      ),
++    );
++  }
++}
++
++/// Tab lateral del bottom nav piramidal (Favoritos / Perfil): ícono que
++/// cruza-desvanece entre variante activa/inactiva + label que solo se
++/// muestra (10px) cuando el tab está activo.
++class _PyramidSideTab extends StatelessWidget {
++  final bool active;
++  final IconData activeIcon;
++  final IconData inactiveIcon;
++  final String label;
++  final VoidCallback onTap;
++  final Color activeColor;
++  final Widget Function(Widget icon) showcaseWrap;
++
++  const _PyramidSideTab({
++    required this.active,
++    required this.activeIcon,
++    required this.inactiveIcon,
++    required this.label,
++    required this.onTap,
++    required this.showcaseWrap,
++    this.activeColor = AppColors.primary,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    final c = context.colors;
++    final icon = AnimatedSwitcher(
++      duration: const Duration(milliseconds: 200),
++      child: Icon(
++        active ? activeIcon : inactiveIcon,
++        key: ValueKey(active),
++        color: active ? activeColor : c.textMuted,
++        size: 24,
++      ),
++    );
++    return GestureDetector(
++      behavior: HitTestBehavior.opaque,
++      onTap: onTap,
++      child: Padding(
++        padding: const EdgeInsets.only(bottom: 12),
++        child: Column(
++          mainAxisSize: MainAxisSize.min,
++          children: [
++            showcaseWrap(icon),
++            const SizedBox(height: 3),
++            AnimatedOpacity(
++              duration: const Duration(milliseconds: 200),
++              opacity: active ? 1 : 0,
++              child: Text(
++                label,
++                style: TextStyle(
++                  fontSize: 10,
++                  fontWeight: FontWeight.w600,
++                  color: activeColor,
+                 ),
+               ),
+             ),
+-            activeIcon: Consumer<NotificationsProvider>(
+-              builder: (_, notifs, _) => Badge(
+-                isLabelVisible: notifs.unreadCount > 0,
+-                label: Text(
+-                  notifs.unreadCount > 9 ? '9+' : '${notifs.unreadCount}',
+-                  style: const TextStyle(fontSize: 10),
++          ],
++        ),
++      ),
++    );
++  }
++}
++
++/// Tab central del bottom nav piramidal (Explorar): elevado, más grande,
++/// con fondo circular suave cuando está activo y un "bump" de escala
++/// (1.0 → 1.15 → 1.0) al convertirse en el tab activo.
++class _PyramidCenterTab extends StatefulWidget {
++  final bool active;
++  final VoidCallback onTap;
++
++  const _PyramidCenterTab({required this.active, required this.onTap});
++
++  @override
++  State<_PyramidCenterTab> createState() => _PyramidCenterTabState();
++}
++
++class _PyramidCenterTabState extends State<_PyramidCenterTab>
++    with SingleTickerProviderStateMixin {
++  late final AnimationController _bumpController;
++  late final Animation<double> _bump;
++
++  @override
++  void initState() {
++    super.initState();
++    _bumpController = AnimationController(
++      vsync: this,
++      duration: const Duration(milliseconds: 300),
++    );
++    _bump = TweenSequence<double>([
++      TweenSequenceItem(
++        tween: Tween(
++          begin: 1.0,
++          end: 1.15,
++        ).chain(CurveTween(curve: Curves.easeOut)),
++        weight: 50,
++      ),
++      TweenSequenceItem(
++        tween: Tween(
++          begin: 1.15,
++          end: 1.0,
++        ).chain(CurveTween(curve: Curves.easeIn)),
++        weight: 50,
++      ),
++    ]).animate(_bumpController);
++    if (widget.active) _bumpController.value = 1;
++  }
++
++  @override
++  void didUpdateWidget(covariant _PyramidCenterTab oldWidget) {
++    super.didUpdateWidget(oldWidget);
++    if (widget.active && !oldWidget.active) {
++      _bumpController.forward(from: 0);
++    }
++  }
++
++  @override
++  void dispose() {
++    _bumpController.dispose();
++    super.dispose();
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final c = context.colors;
++    return GestureDetector(
++      behavior: HitTestBehavior.opaque,
++      onTap: widget.onTap,
++      child: Column(
++        mainAxisSize: MainAxisSize.min,
++        children: [
++          Transform.translate(
++            offset: const Offset(0, -9),
++            child: AnimatedBuilder(
++              animation: _bump,
++              builder: (_, child) =>
++                  Transform.scale(scale: _bump.value, child: child),
++              child: AnimatedContainer(
++                duration: const Duration(milliseconds: 200),
++                width: 54,
++                height: 54,
++                decoration: BoxDecoration(
++                  shape: BoxShape.circle,
++                  color: widget.active
++                      ? AppColors.primary.withValues(alpha: 0.12)
++                      : Colors.transparent,
++                  boxShadow: widget.active
++                      ? [
++                          BoxShadow(
++                            color: AppColors.primary.withValues(alpha: 0.18),
++                            blurRadius: 16,
++                            offset: const Offset(0, 4),
++                          ),
++                        ]
++                      : null,
+                 ),
+-                child: const Icon(
+-                  Icons.notifications_rounded,
+-                  color: Color(0xFFFBC02D),
++                child: Center(
++                  child: TweenAnimationBuilder<Color?>(
++                    tween: ColorTween(
++                      end: widget.active ? AppColors.primary : c.textMuted,
++                    ),
++                    duration: const Duration(milliseconds: 200),
++                    builder: (_, color, _) =>
++                        Icon(Icons.explore_rounded, size: 29, color: color),
++                  ),
+                 ),
+               ),
+             ),
+           ),
+-          BottomNavigationBarItem(
+-            label: 'Perfil',
+-            icon: ShowcaseTarget(
+-              step: kShowcaseStepsGuest.firstWhere(
+-                (s) => s.key == kShowcaseProfileTab,
++          const SizedBox(height: 3),
++          AnimatedOpacity(
++            duration: const Duration(milliseconds: 200),
++            opacity: widget.active ? 1 : 0,
++            child: const Text(
++              'Explorar',
++              style: TextStyle(
++                fontSize: 10,
++                fontWeight: FontWeight.w600,
++                color: AppColors.primary,
+               ),
+-              isLast: isLastShowcaseStep(kShowcaseProfileTab, isGuest: true),
+-              targetHeight: 32,
+-              targetWidth: 32,
+-              child: const Icon(Icons.person_outline_rounded),
+             ),
+-            activeIcon: const Icon(Icons.person_rounded),
+           ),
+         ],
+       ),
+diff --git a/mobile/lib/features/auth/presentation/screens/onboarding/provider_onboarding_form.dart b/mobile/lib/features/auth/presentation/screens/onboarding/provider_onboarding_form.dart
+index 7373b04..f42623d 100644
+--- a/mobile/lib/features/auth/presentation/screens/onboarding/provider_onboarding_form.dart
++++ b/mobile/lib/features/auth/presentation/screens/onboarding/provider_onboarding_form.dart
+@@ -11,7 +11,6 @@ import 'package:mobile/shared/widgets/app_snack_bar.dart';
+ import 'package:mobile/core/services/geocoding_service.dart';
+ import 'package:mobile/core/utils/geocoding_helper.dart';
+ import 'package:mobile/core/utils/permission_service.dart';
+-import 'package:mobile/core/utils/plan_limits.dart';
+ import 'package:mobile/features/payments/presentation/screens/yape_payment_screen.dart';
+ import 'package:mobile/features/payments/presentation/providers/payments_provider.dart';
+ import 'package:url_launcher/url_launcher.dart';
+@@ -21,21 +20,21 @@ import '../../providers/auth_provider.dart';
+ import '../../../../provider_dashboard/data/dashboard_repository.dart';
+ import '../../../../providers_list/data/providers_repository.dart';
+ import '../../../../../core/errors/failures.dart';
+-import '../../../../../shared/widgets/collapsible_schedule.dart';
+-import '../../../../../shared/widgets/phone_input_section.dart';
+-import 'widgets/onboarding_photo_section.dart';
+-import 'widgets/onboarding_address_section.dart';
+-import 'widgets/onboarding_social_section.dart';
+-
+-// Nuevos imports factorizados
+ import 'widgets/onboarding_form_components.dart';
+ import 'widgets/onboarding_category_section.dart';
+-import 'widgets/onboarding_location_section.dart';
+-import 'widgets/onboarding_delivery_section.dart';
+ import 'widgets/onboarding_plan_section.dart';
+ import 'widgets/plan_choice_sheet.dart';
+ import 'widgets/registration_success_dialog.dart';
+ 
++// Secciones de acordeón factorizadas — cada una separa el diseño (widget
++// sin estado propio, recibe controllers/valores/callbacks) de la lógica
++// (que vive en _ProviderOnboardingFormState, sin cambios de comportamiento).
++import 'widgets/onboarding_accordion_section.dart';
++import 'widgets/onboarding_continue_button.dart';
++import 'widgets/onboarding_basic_info_section.dart';
++import 'widgets/onboarding_professional_profile_section.dart';
++import 'widgets/onboarding_service_details_section.dart';
++
+ class ProviderOnboardingForm extends StatefulWidget {
+   final String? providerType;
+   final bool isStandalone;
+@@ -103,6 +102,11 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
+   bool _isSection1Expanded = true;
+   bool _isSection2Expanded = false;
+ 
++  // Sección 3 — SOLO existe (se renderiza y se lee) cuando
++  // `_isProfesional`. Para Oficio/Negocio queda siempre en `false` y sin
++  // efecto, porque esa sección nunca se construye para esos tipos.
++  bool _isSection3Expanded = false;
++
+   Position? _gpsPosition;
+   String? _department;
+   String? _province;
+@@ -207,11 +211,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
+       _phoneSeed = _phone;
+       _whatsappSeed = _whatsapp;
+ 
+-      // 👇 LÓGICA DE RESTAURACIÓN: Si la sección 1 ya está completa al precargar, abrimos la 2.
+-      if (_isSection1Complete()) {
+-        _isSection1Expanded = false;
+-        _isSection2Expanded = true;
+-      }
++      // 👇 LÓGICA DE RESTAURACIÓN: abre la siguiente sección pendiente si
++      // lo ya cargado la deja completa (ver _restoreSectionExpansion).
++      _restoreSectionExpansion();
+     } else {
+       _restoreDraft();
+     }
+@@ -371,13 +373,9 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
+         _selectedCategories = restoredCats;
+       });
+ 
+-      // 👇 LÓGICA DE RESTAURACIÓN: Abre la Sección 2 si la 1 ya estaba completa.
+-      if (_isSection1Complete()) {
+-        setState(() {
+-          _isSection1Expanded = false;
+-          _isSection2Expanded = true;
+-        });
+-      }
++      // 👇 LÓGICA DE RESTAURACIÓN: abre la siguiente sección pendiente si
++      // lo recuperado del borrador la deja completa.
++      setState(_restoreSectionExpansion);
+ 
+       _showSnack('Recuperamos los datos que habías ingresado.');
+     } catch (_) {}
+@@ -519,13 +517,16 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
+     if (!_isOficio && ruc.isNotEmpty && !RegExp(r'^\d{11}$').hasMatch(ruc)) {
+       return false;
+     }
+-    if (_isProfesional && _professionalSpecialtyCtrl.text.trim().length < 2) {
+-      return false;
+-    }
+     return true;
+   }
+ 
+-  bool _isSection2Complete() {
++  /// Completitud de la sección "Perfil Profesional" (solo PROFESIONAL).
++  /// Antes vivía dentro de `_isSection1Complete`; se separó junto con los
++  /// campos que valida al dividir esa sección en dos.
++  bool _isProfessionalProfileComplete() =>
++      _professionalSpecialtyCtrl.text.trim().length >= 2;
++
++  bool _isServiceDetailsComplete() {
+     if (_selectedCategories.isEmpty) return false;
+     if (_descriptionController.text.trim().length < 10) return false;
+     if (_photos.isEmpty) return false;
+@@ -533,6 +534,23 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
+     return true;
+   }
+ 
++  /// Abre la sección pendiente cuando datos precargados (initialData o
++  /// borrador) ya la dejan completa — mismo criterio para los 2 orígenes.
++  /// NO envuelve en `setState`: cada llamador decide (initState muta
++  /// directo antes del primer build; `_restoreDraft` lo envuelve porque
++  /// corre después del primer build).
++  void _restoreSectionExpansion() {
++    if (!_isSection1Complete()) return;
++    _isSection1Expanded = false;
++    if (_isProfesional && !_isProfessionalProfileComplete()) {
++      _isSection2Expanded = true;
++    } else if (_isProfesional) {
++      _isSection3Expanded = true;
++    } else {
++      _isSection2Expanded = true;
++    }
++  }
++
+   // ── Submit Logic ─────────────────────────────────
+ 
+   String get _planChoice => _acquirePremium ? 'PREMIUM' : 'ESTANDAR';
+@@ -892,86 +910,6 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
+     );
+   }
+ 
+-  // ── Widget Acordeón Reutilizable ─────────────────────────
+-  Widget _buildSection({
+-    required String title,
+-    required bool isExpanded,
+-    required bool isComplete,
+-    required VoidCallback onToggle,
+-    required List<Widget> children,
+-  }) {
+-    final c = context.colors;
+-    return Container(
+-      margin: const EdgeInsets.only(bottom: 16),
+-      decoration: BoxDecoration(
+-        color: c.bgCard,
+-        borderRadius: BorderRadius.circular(16),
+-        border: Border.all(
+-          width: 0.5,
+-          color: isComplete
+-              ? AppColors.available.withValues(alpha: 0.4)
+-              : c.border,
+-        ),
+-      ),
+-      child: Column(
+-        children: [
+-          InkWell(
+-            onTap: onToggle,
+-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+-            child: Padding(
+-              padding: const EdgeInsets.all(16.0),
+-              child: Row(
+-                children: [
+-                  Expanded(
+-                    child: Text(
+-                      title,
+-                      style: TextStyle(
+-                        color: c.textPrimary,
+-                        fontSize: 15,
+-                        fontWeight: FontWeight.w700,
+-                      ),
+-                    ),
+-                  ),
+-                  if (isComplete)
+-                    Padding(
+-                      padding: const EdgeInsets.only(right: 8.0),
+-                      child: Icon(
+-                        Icons.check_circle,
+-                        size: 18,
+-                        color: AppColors.available,
+-                      ),
+-                    ),
+-                  AnimatedRotation(
+-                    turns: isExpanded ? 0.5 : 0,
+-                    duration: const Duration(milliseconds: 300),
+-                    child: Icon(
+-                      Icons.keyboard_arrow_down_rounded,
+-                      color: c.textSecondary,
+-                    ),
+-                  ),
+-                ],
+-              ),
+-            ),
+-          ),
+-          AnimatedSize(
+-            duration: const Duration(milliseconds: 300),
+-            curve: Curves.easeInOut,
+-            alignment: Alignment.topCenter,
+-            child: isExpanded
+-                ? Padding(
+-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+-                    child: Column(
+-                      crossAxisAlignment: CrossAxisAlignment.start,
+-                      children: children,
+-                    ),
+-                  )
+-                : const SizedBox.shrink(),
+-          ),
+-        ],
+-      ),
+-    );
+-  }
+-
+   // ── Build Orchestator ────────────────────────────
+   @override
+   Widget build(BuildContext context) {
+@@ -1016,250 +954,167 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
+               const SizedBox(height: 24),
+ 
+               // ── SECCIÓN 1: INFORMACIÓN BÁSICA ───────────────────
+-              _buildSection(
++              OnboardingAccordionSection(
+                 title: 'Información Básica',
+                 isExpanded: _isSection1Expanded,
+                 isComplete: _isSection1Complete(),
+                 onToggle: () => setState(() {
+                   _isSection1Expanded = !_isSection1Expanded;
+-                  if (_isSection1Expanded) _isSection2Expanded = false;
++                  if (_isSection1Expanded) {
++                    _isSection2Expanded = false;
++                    _isSection3Expanded = false;
++                  }
+                 }),
+                 children: [
+-                  FormFieldTile(
+-                    controller: _businessNameController,
+-                    label: _isOficio
++                  OnboardingBasicInfoSection(
++                    businessNameController: _businessNameController,
++                    dniController: _dniController,
++                    rucController: _rucController,
++                    isOficio: _isOficio,
++                    nameLabel: _isOficio
+                         ? 'Nombre del profesional *'
+                         : 'Nombre del negocio *',
+-                    hint: _nameFieldHint,
+-                    icon: _nameFieldIcon,
+-                  ),
+-                  const SizedBox(height: 14),
+-                  if (_isOficio) ...[
+-                    FormFieldTile(
+-                      controller: _dniController,
+-                      label: 'DNI del titular (opcional)',
+-                      hint: '12345678',
+-                      icon: Icons.badge_outlined,
+-                      keyboardType: TextInputType.number,
+-                      maxLength: 8,
+-                    ),
+-                    const SizedBox(height: 14),
+-                  ],
+-                  if (_isProfesional) ...[
+-                    FormFieldTile(
+-                      controller: _professionalSpecialtyCtrl,
+-                      label: 'Especialidad *',
+-                      hint: 'Ej: Abogado corporativo, Contador tributario…',
+-                      icon: Icons.school_outlined,
+-                      maxLength: 120,
+-                    ),
+-                    const SizedBox(height: 14),
+-                    FormFieldTile(
+-                      controller: _professionalTitleCtrl,
+-                      label: 'Título o certificado (opcional)',
+-                      hint: 'Ej: Abogado colegiado, CPC N° 12345',
+-                      icon: Icons.workspace_premium_outlined,
+-                      maxLength: 160,
+-                    ),
+-                    const SizedBox(height: 14),
+-                    FormFieldTile(
+-                      controller: _professionalInstitutionCtrl,
+-                      label: 'Universidad o institución (opcional)',
+-                      hint: 'Ej: Universidad Nacional del Centro',
+-                      icon: Icons.account_balance_outlined,
+-                      maxLength: 160,
+-                    ),
+-                    const SizedBox(height: 14),
+-                    FormFieldTile(
+-                      controller: _professionalYearsExperienceCtrl,
+-                      label: 'Años de experiencia (opcional)',
+-                      hint: 'Ej: 5',
+-                      icon: Icons.timelapse_outlined,
+-                      keyboardType: TextInputType.number,
+-                      maxLength: 2,
+-                    ),
+-                    const SizedBox(height: 14),
+-                    FormFieldTile(
+-                      controller: _professionalRegistrationNumberCtrl,
+-                      label: 'N° de colegiatura o registro (opcional)',
+-                      hint: 'Ej: CAL 12345',
+-                      icon: Icons.confirmation_number_outlined,
+-                      maxLength: 100,
+-                    ),
+-                    const SizedBox(height: 14),
+-                    FormFieldTile(
+-                      controller: _professionalRegistrationIssuerCtrl,
+-                      label: 'Entidad que lo emite (opcional)',
+-                      hint: 'Ej: Colegio de Abogados de Lima',
+-                      icon: Icons.apartment_outlined,
+-                      maxLength: 160,
+-                    ),
+-                    Padding(
+-                      padding: const EdgeInsets.only(top: 6, left: 4),
+-                      child: Text(
+-                        'El título, la institución y la colegiatura son '
+-                        'opcionales, pero generan más confianza con tus '
+-                        'clientes.',
+-                        style: TextStyle(color: c.textMuted, fontSize: 11),
+-                      ),
+-                    ),
+-                    const SizedBox(height: 14),
+-                  ],
+-                  if (!_isOficio) ...[
+-                    FormFieldTile(
+-                      controller: _rucController,
+-                      label: 'RUC (opcional)',
+-                      hint: '20123456789',
+-                      icon: Icons.receipt_long_outlined,
+-                      keyboardType: TextInputType.number,
+-                      maxLength: 11,
+-                    ),
+-                    const SizedBox(height: 14),
+-                  ],
+-                  PhoneInputSection(
+-                    key: ValueKey('phone-$_phoneSeed-$_whatsappSeed'),
+-                    initialPhone: _phoneSeed.isEmpty ? null : _phoneSeed,
+-                    initialWhatsapp: _whatsappSeed.isEmpty
+-                        ? null
+-                        : _whatsappSeed,
+-                    onChange: (phone, wap) => setState(() {
++                    nameHint: _nameFieldHint,
++                    nameIcon: _nameFieldIcon,
++                    phoneSeed: _phoneSeed,
++                    whatsappSeed: _whatsappSeed,
++                    onPhoneChanged: (phone, wap) => setState(() {
+                       _phone = phone;
+                       _whatsapp = wap ?? '';
+                     }),
+                   ),
+                   const SizedBox(height: 16),
+-                  Align(
+-                    alignment: Alignment.centerRight,
+-                    child: TextButton(
++                  OnboardingContinueButton(
++                    onPressed: () {
++                      if (_isSection1Complete()) {
++                        setState(() {
++                          _isSection1Expanded = false;
++                          _isSection2Expanded = true;
++                        });
++                      } else {
++                        _showSnack(
++                          'Completa los campos obligatorios para continuar.',
++                          isError: true,
++                        );
++                      }
++                    },
++                  ),
++                ],
++              ),
++
++              // ── SECCIÓN 2 (solo PROFESIONAL): PERFIL PROFESIONAL ──
++              // Antes estos campos vivían dentro de "Información Básica"
++              // (la hacían enorme). Oficio/Negocio no muestran esta
++              // sección — su flujo de 2 secciones queda intacto.
++              if (_isProfesional)
++                OnboardingAccordionSection(
++                  title: 'Perfil Profesional',
++                  isExpanded: _isSection2Expanded,
++                  isComplete: _isProfessionalProfileComplete(),
++                  onToggle: () => setState(() {
++                    _isSection2Expanded = !_isSection2Expanded;
++                    if (_isSection2Expanded) {
++                      _isSection1Expanded = false;
++                      _isSection3Expanded = false;
++                    }
++                  }),
++                  children: [
++                    OnboardingProfessionalProfileSection(
++                      specialtyController: _professionalSpecialtyCtrl,
++                      titleController: _professionalTitleCtrl,
++                      institutionController: _professionalInstitutionCtrl,
++                      yearsExperienceController:
++                          _professionalYearsExperienceCtrl,
++                      registrationNumberController:
++                          _professionalRegistrationNumberCtrl,
++                      registrationIssuerController:
++                          _professionalRegistrationIssuerCtrl,
++                    ),
++                    const SizedBox(height: 16),
++                    OnboardingContinueButton(
+                       onPressed: () {
+-                        if (_isSection1Complete()) {
++                        if (_isProfessionalProfileComplete()) {
+                           setState(() {
+-                            _isSection1Expanded = false;
+-                            _isSection2Expanded = true;
++                            _isSection2Expanded = false;
++                            _isSection3Expanded = true;
+                           });
+                         } else {
+                           _showSnack(
+-                            'Completa los campos obligatorios para continuar.',
++                            'Completa tu especialidad para continuar.',
+                             isError: true,
+                           );
+                         }
+                       },
+-                      child: Row(
+-                        mainAxisSize: MainAxisSize.min,
+-                        children: [
+-                          Text(
+-                            'Continuar',
+-                            style: TextStyle(
+-                              color: AppColors.primary,
+-                              fontWeight: FontWeight.bold,
+-                            ),
+-                          ),
+-                          const SizedBox(width: 4),
+-                          Icon(
+-                            Icons.arrow_forward_rounded,
+-                            size: 18,
+-                            color: AppColors.primary,
+-                          ),
+-                        ],
+-                      ),
+                     ),
+-                  ),
+-                ],
+-              ),
++                  ],
++                ),
+ 
+-              // ── SECCIÓN 2: DETALLES DEL SERVICIO ────────────────
+-              _buildSection(
++              // ── SECCIÓN FINAL: DETALLES DEL SERVICIO ────────────
++              // Oficio/Negocio: sección 2 (igual que siempre). Profesional:
++              // sección 3, sin botón "Continuar" (es la última).
++              OnboardingAccordionSection(
+                 title: 'Detalles del Servicio',
+-                isExpanded: _isSection2Expanded,
+-                isComplete: _isSection2Complete(),
++                isExpanded: _isProfesional
++                    ? _isSection3Expanded
++                    : _isSection2Expanded,
++                isComplete: _isServiceDetailsComplete(),
+                 onToggle: () => setState(() {
+-                  _isSection2Expanded = !_isSection2Expanded;
+-                  if (_isSection2Expanded) _isSection1Expanded = false;
++                  if (_isProfesional) {
++                    _isSection3Expanded = !_isSection3Expanded;
++                    if (_isSection3Expanded) {
++                      _isSection1Expanded = false;
++                      _isSection2Expanded = false;
++                    }
++                  } else {
++                    _isSection2Expanded = !_isSection2Expanded;
++                    if (_isSection2Expanded) _isSection1Expanded = false;
++                  }
+                 }),
+                 children: [
+-                  if (!_isOficio) ...[
+-                    OnboardingAddressSection(
+-                      addressController: _addressController,
+-                      mapsUrlController: _mapsUrlController,
+-                      showAddressSection: _showAddressSection,
+-                      gpsLoading: _gpsLoading,
+-                      gpsPosition: _gpsPosition,
+-                      onToggleSection: () => setState(
+-                        () => _showAddressSection = !_showAddressSection,
+-                      ),
+-                      onFetchGps: _fetchGpsLocation,
+-                      onClearGps: () => setState(() {
+-                        _gpsPosition = null;
+-                        _addressController.clear();
+-                      }),
+-                      onParseMapsUrl: _parseMapsUrl,
+-                    ),
+-                    const SizedBox(height: 14),
+-                  ],
+-                  OnboardingCategorySection(
++                  OnboardingServiceDetailsSection(
+                     providerType: widget.providerType,
++                    isOficio: _isOficio,
++                    planChoice: _planChoice,
++                    addressController: _addressController,
++                    mapsUrlController: _mapsUrlController,
++                    showAddressSection: _showAddressSection,
++                    gpsLoading: _gpsLoading,
++                    gpsPosition: _gpsPosition,
++                    onToggleAddressSection: () => setState(
++                      () => _showAddressSection = !_showAddressSection,
++                    ),
++                    onFetchGps: _fetchGpsLocation,
++                    onClearGps: () => setState(() {
++                      _gpsPosition = null;
++                      _addressController.clear();
++                    }),
++                    onParseMapsUrl: _parseMapsUrl,
+                     categories: _categories,
+-                    selected: _selectedCategories,
++                    selectedCategories: _selectedCategories,
+                     primaryCategoryId: _primaryCategoryId,
+-                    maxCategories: PlanLimits.specialties(_planChoice),
+-                    onChanged: (sel, primary) => setState(() {
++                    onCategoriesChanged: (sel, primary) => setState(() {
+                       _selectedCategories = sel;
+                       _primaryCategoryId = primary;
+                     }),
+-                  ),
+-                  const SizedBox(height: 14),
+-                  FormFieldTile(
+-                    controller: _descriptionController,
+-                    label: _isOficio
+-                        ? 'Describe tu servicio'
+-                        : 'Describe tu negocio',
+-                    hint: _isOficio
+-                        ? 'Experiencia, especialidades, horario de trabajo...'
+-                        : 'Qué ofreces, horarios, especialidades...',
+-                    icon: Icons.description_outlined,
+-                    maxLines: 4,
+-                  ),
+-                  const SizedBox(height: 14),
+-                  OnboardingDeliverySection(
+-                    isOficio: _isOficio,
++                    descriptionController: _descriptionController,
+                     hasDelivery: _hasDelivery,
+                     plenaCoordinacion: _plenaCoordinacion,
+                     onDeliveryChanged: (v) => setState(() => _hasDelivery = v),
+                     onPlenaChanged: (v) =>
+                         setState(() => _plenaCoordinacion = v),
+-                  ),
+-                  const SizedBox(height: 14),
+-                  if (!_isOficio) ...[
+-                    CollapsibleSchedule(
+-                      scheduleJson: _scheduleJson,
+-                      onSave: (s) => setState(() => _scheduleJson = s),
+-                    ),
+-                    const SizedBox(height: 14),
+-                  ],
+-                  GestureDetector(
+-                    onTap: () async {
+-                      final locSection = OnboardingLocationSection(
+-                        department: _department,
+-                        province: _province,
+-                        district: _district,
+-                      );
+-                      final result = await locSection.showPicker(context);
+-                      if (result != null && mounted) {
+-                        setState(() {
+-                          _department = result.department;
+-                          _province = result.province;
+-                          _district = result.district;
+-                        });
+-                      }
++                    scheduleJson: _scheduleJson,
++                    onScheduleSaved: (s) => setState(() => _scheduleJson = s),
++                    department: _department,
++                    province: _province,
++                    district: _district,
++                    onLocationChanged: (dept, prov, dist) {
++                      if (!mounted) return;
++                      setState(() {
++                        _department = dept;
++                        _province = prov;
++                        _district = dist;
++                      });
+                     },
+-                    child: OnboardingLocationSection(
+-                      department: _department,
+-                      province: _province,
+-                      district: _district,
+-                    ),
+-                  ),
+-                  const SizedBox(height: 14),
+-                  OnboardingSocialSection(
+                     websiteCtrl: _websiteCtrl,
+                     instagramCtrl: _instagramCtrl,
+                     tiktokCtrl: _tiktokCtrl,
+@@ -1268,10 +1123,6 @@ class _ProviderOnboardingFormState extends State<ProviderOnboardingForm>
+                     twitterCtrl: _twitterCtrl,
+                     telegramCtrl: _telegramCtrl,
+                     whatsappBizCtrl: _whatsappBizCtrl,
+-                    isNegocio: !_isOficio,
+-                  ),
+-                  const SizedBox(height: 14),
+-                  OnboardingPhotoSection(
+                     photos: _photos,
+                     maxPhotos: _maxPhotos,
+                     onPickPhoto: _pickPhoto,
+diff --git a/mobile/lib/features/auth/presentation/screens/profile_screen.dart b/mobile/lib/features/auth/presentation/screens/profile_screen.dart
+index 68fd2be..86b6d10 100644
+--- a/mobile/lib/features/auth/presentation/screens/profile_screen.dart
++++ b/mobile/lib/features/auth/presentation/screens/profile_screen.dart
+@@ -419,17 +419,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
+             title: 'Preferencias',
+             children: [
+               ThemeToggleRow(theme: theme),
+-              const SizedBox(height: 8),
+               CategoryFilterToggleRow(prov: prov),
+               // Toggle visibilidad del asistente Ofi.
+               // Solo para clientes puros (sin perfil de proveedor).
+               if (!auth.hasOficioProfile &&
+                   !auth.hasProfessionalProfile &&
+-                  !auth.hasNegocioProfile) ...[
+-                const SizedBox(height: 8),
++                  !auth.hasNegocioProfile)
+                 OfiVisibilityToggleRow(prov: prov),
+-              ],
+-              const SizedBox(height: 8),
+               SectionItem(
+                 icon: Icons.devices_rounded,
+                 label: 'Cuentas guardadas en este dispositivo',
+diff --git a/mobile/lib/features/auth/presentation/screens/welcome_screen.dart b/mobile/lib/features/auth/presentation/screens/welcome_screen.dart
+index 3f65221..25c281e 100644
+--- a/mobile/lib/features/auth/presentation/screens/welcome_screen.dart
++++ b/mobile/lib/features/auth/presentation/screens/welcome_screen.dart
+@@ -3,16 +3,18 @@ import 'package:flutter/material.dart';
+ import 'package:mobile/core/constants/app_colors.dart';
+ import 'package:mobile/core/theme/app_theme_colors.dart';
+ import '../widgets/welcome/slide_data.dart';
+-import '../widgets/welcome/slide_service_grid.dart';
++import '../widgets/welcome/slide_welcome_intro.dart';
++import '../widgets/welcome/slide_types_grid.dart';
+ import '../widgets/welcome/slide_provider_card.dart';
+-import '../widgets/welcome/slide_community_visual.dart';
++import '../widgets/welcome/slide_testimonials.dart';
++import '../widgets/welcome/slide_ofi_assistant.dart';
+ import '../widgets/welcome/welcome_top_bar.dart';
+ import '../widgets/welcome/welcome_carousel.dart';
+ import '../widgets/welcome/welcome_slide_text.dart';
+ import '../widgets/welcome/welcome_page_indicators.dart';
+ import '../widgets/welcome/welcome_action_buttons.dart';
+ 
+-/// Pantalla de bienvenida con carrusel onboarding (3 slides).
++/// Pantalla de bienvenida con carrusel onboarding (7 slides).
+ class WelcomeScreen extends StatefulWidget {
+   const WelcomeScreen({super.key});
+ 
+@@ -32,7 +34,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
+   late final PageController _pageController;
+   Timer? _autoAdvanceTimer;
+ 
+-  static const int _totalSlides = 3;
++  static const int _totalSlides = 7;
+ 
+   @override
+   void initState() {
+@@ -49,13 +51,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
+       curve: Curves.easeOut,
+     );
+ 
+-    _entrySlide = Tween<Offset>(
+-      begin: const Offset(0, 0.06),
+-      end: Offset.zero,
+-    ).animate(CurvedAnimation(
+-      parent: _entryController,
+-      curve: Curves.easeOutCubic,
+-    ));
++    _entrySlide = Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
++        .animate(
++          CurvedAnimation(parent: _entryController, curve: Curves.easeOutCubic),
++        );
+ 
+     _entryController.forward();
+     _startAutoAdvance();
+@@ -80,6 +79,11 @@ class _WelcomeScreenState extends State<WelcomeScreen>
+     _startAutoAdvance();
+   }
+ 
++  // Pausa el auto-avance mientras el usuario toca el carrusel; se reanuda
++  // (con timer fresco) al soltar.
++  void _pauseAutoAdvance([Object? _]) => _autoAdvanceTimer?.cancel();
++  void _resumeAutoAdvance([Object? _]) => _startAutoAdvance();
++
+   @override
+   void dispose() {
+     _autoAdvanceTimer?.cancel();
+@@ -90,81 +94,91 @@ class _WelcomeScreenState extends State<WelcomeScreen>
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final c      = context.colors;
+-    final size   = MediaQuery.of(context).size;
++    final c = context.colors;
++    final size = MediaQuery.of(context).size;
+     final isLast = _currentPage == _totalSlides - 1;
+ 
+-    final slides = _buildSlides(c);
++    final slides = _buildSlides();
+     final accent = slides[_currentPage].accentColor;
+ 
+-    return Scaffold(
+-      backgroundColor: c.bg,
+-      body: SafeArea(
+-        child: FadeTransition(
+-          opacity: _entryFade,
+-          child: SlideTransition(
+-            position: _entrySlide,
+-            child: Column(
+-              children: [
+-                // ── Barra superior ────────────────────────
+-                WelcomeTopBar(isDark: c.isDark, isLastPage: isLast),
+-
+-                // ── Carrusel visual ───────────────────────
+-                Expanded(
+-                  flex: 58,
+-                  child: Padding(
+-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+-                    child: VisualCarousel(
+-                      pageController: _pageController,
+-                      slides: slides,
+-                      currentPage: _currentPage,
+-                      onPageChanged: _onPageChanged,
++    // Fuentes grandes del sistema no deben romper el layout fijo del welcome.
++    return MediaQuery.withClampedTextScaling(
++      maxScaleFactor: 1.25,
++      child: Scaffold(
++        backgroundColor: c.bg,
++        body: SafeArea(
++          child: FadeTransition(
++            opacity: _entryFade,
++            child: SlideTransition(
++              position: _entrySlide,
++              child: Column(
++                children: [
++                  // ── Barra superior ────────────────────────
++                  WelcomeTopBar(isDark: c.isDark, isLastPage: isLast),
++
++                  // ── Carrusel visual ───────────────────────
++                  Expanded(
++                    flex: 58,
++                    child: Padding(
++                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
++                      child: GestureDetector(
++                        behavior: HitTestBehavior.translucent,
++                        onTapDown: _pauseAutoAdvance,
++                        onTapUp: _resumeAutoAdvance,
++                        onTapCancel: _resumeAutoAdvance,
++                        child: VisualCarousel(
++                          pageController: _pageController,
++                          slides: slides,
++                          currentPage: _currentPage,
++                          onPageChanged: _onPageChanged,
++                        ),
++                      ),
+                     ),
+                   ),
+-                ),
+-
+-                // ── Texto del slide ───────────────────────
+-                AnimatedSwitcher(
+-                  duration: const Duration(milliseconds: 400),
+-                  switchInCurve: Curves.easeOut,
+-                  switchOutCurve: Curves.easeIn,
+-                  transitionBuilder: (child, anim) => FadeTransition(
+-                    opacity: anim,
+-                    child: SlideTransition(
+-                      position: Tween<Offset>(
+-                        begin: const Offset(0, 0.08),
+-                        end: Offset.zero,
+-                      ).animate(anim),
+-                      child: child,
++
++                  // ── Texto del slide ───────────────────────
++                  AnimatedSwitcher(
++                    duration: const Duration(milliseconds: 400),
++                    switchInCurve: Curves.easeOut,
++                    switchOutCurve: Curves.easeIn,
++                    transitionBuilder: (child, anim) => FadeTransition(
++                      opacity: anim,
++                      child: SlideTransition(
++                        position: Tween<Offset>(
++                          begin: const Offset(0, 0.08),
++                          end: Offset.zero,
++                        ).animate(anim),
++                        child: child,
++                      ),
++                    ),
++                    child: SlideText(
++                      key: ValueKey(_currentPage),
++                      title: slides[_currentPage].title,
++                      subtitle: slides[_currentPage].subtitle,
+                     ),
+                   ),
+-                  child: SlideText(
+-                    key: ValueKey(_currentPage),
+-                    title:    slides[_currentPage].title,
+-                    subtitle: slides[_currentPage].subtitle,
++
++                  // ── Indicadores ───────────────────────────
++                  const SizedBox(height: 16),
++                  PageIndicators(
++                    total: _totalSlides,
++                    current: _currentPage,
++                    accentColor: accent,
++                  ),
++
++                  const SizedBox(height: 12),
++
++                  // ── Acciones ──────────────────────────────
++                  WelcomeActionButtons(
++                    size: size,
++                    isLastPage: isLast,
++                    accentColor: accent,
++                    pageController: _pageController,
+                   ),
+-                ),
+-
+-                // ── Indicadores ───────────────────────────
+-                const SizedBox(height: 16),
+-                PageIndicators(
+-                  total:       _totalSlides,
+-                  current:     _currentPage,
+-                  accentColor: accent,
+-                ),
+-
+-                const SizedBox(height: 12),
+-
+-                // ── Acciones ──────────────────────────────
+-                WelcomeActionButtons(
+-                  size:        size,
+-                  isLastPage:  isLast,
+-                  accentColor: accent,
+-                  pageController: _pageController,
+-                ),
+-
+-                const SizedBox(height: 8),
+-              ],
++
++                  const SizedBox(height: 8),
++                ],
++              ),
+             ),
+           ),
+         ),
+@@ -172,24 +186,101 @@ class _WelcomeScreenState extends State<WelcomeScreen>
+     );
+   }
+ 
+-  List<SlideData> _buildSlides(AppThemeColors c) => [
++  List<SlideData> _buildSlides() => const [
+     SlideData(
+-      title:       'El experto que buscas,\nen quien puedes confiar.',
+-      subtitle:    'Profesionales verificados por tu comunidad — electricistas, gasfiteros, pintores y más.',
++      title: 'Bienvenido a Servi',
++      subtitle:
++          'Conecta con profesionales, oficios y negocios reales cerca de ti — sin comisiones ni intermediarios.',
+       accentColor: AppColors.primary,
+-      visual:      SlideServiceGrid(isDark: c.isDark),
++      backgroundImage: 'assets/images/onboarding/slide-1-presentación.webp',
++      visual: SlideWelcomeIntro(),
++    ),
++    SlideData(
++      title: 'Todo en un solo lugar',
++      subtitle:
++          'Oficios, profesionales y negocios cerca de ti. Encuentra lo que buscas en segundos.',
++      accentColor: AppColors.amber,
++      backgroundImage: 'assets/images/onboarding/slide-2-proveedores.webp',
++      visual: SlideTypesGrid(),
++    ),
++    SlideData(
++      title: 'Tu oficio, tu libertad',
++      subtitle:
++          'Gasfiteros, electricistas, carpinteros y más. Recibe clientes directo, sin pagar comisiones.',
++      accentColor: AppColors.oficioAccent,
++      backgroundImage: 'assets/images/onboarding/slide-3-tarjeta-oficio.webp',
++      visual: SlideProviderCard(
++        name: 'Carlos Mendoza',
++        category: 'Gasfitero',
++        avatarInitials: 'CM',
++        rating: 4.8,
++        reviews: 31,
++        badgeLabel: 'Disponible',
++        badgeIcon: Icons.circle,
++        badgeColor: AppColors.available,
++        accent: AppColors.oficioAccent,
++        tags: [
++          'Instalación de tuberías',
++          'Reparación de fugas',
++          'Mantenimiento',
++        ],
++      ),
++    ),
++    SlideData(
++      title: 'Confianza con respaldo',
++      subtitle:
++          'Abogados, doctores e ingenieros verificados, con reseñas reales de tu comunidad.',
++      accentColor: AppColors.profesionalAccent,
++      backgroundImage:
++          'assets/images/onboarding/slide-4-tarjeta-profesional.webp',
++      visual: SlideProviderCard(
++        name: 'Dra. María Fernández',
++        category: 'Abogada',
++        avatarInitials: 'MF',
++        rating: 4.9,
++        reviews: 47,
++        badgeLabel: 'Verificado',
++        badgeIcon: Icons.verified_rounded,
++        badgeColor: AppColors.verified,
++        accent: AppColors.profesionalAccent,
++        tags: ['Derecho civil', 'Derecho laboral', 'Asesoría legal'],
++        miniTags: [(icon: Icons.shield_rounded, label: 'Confiable')],
++      ),
+     ),
+     SlideData(
+-      title:       'Confianza que se ve,\nservicios que se sienten.',
+-      subtitle:    'Lee reseñas reales de tus vecinos y contacta directo, sin intermediarios.',
+-      accentColor: AppColors.verified,
+-      visual:      const SlideProviderCard(),
++      title: 'Tu vitrina digital',
++      subtitle:
++          'Restaurantes, ferreterías y tiendas locales. Muestra tu catálogo a miles de clientes.',
++      accentColor: AppColors.negocioAccent,
++      backgroundImage: 'assets/images/onboarding/slide-5-tarjeta-negocio.webp',
++      visual: SlideProviderCard(
++        name: 'Ferretería El Constructor',
++        category: 'Ferretería',
++        avatarInitials: 'FC',
++        rating: 4.7,
++        reviews: 58,
++        badgeLabel: 'Abierto',
++        badgeIcon: Icons.circle,
++        badgeColor: AppColors.available,
++        accent: AppColors.negocioAccent,
++        tags: ['Cemento', 'Ladrillos', 'Herramientas'],
++      ),
+     ),
+     SlideData(
+-      title:       'Juntos hacemos\ncrecer la comunidad.',
+-      subtitle:    'Cada servicio contratado impulsa la economía local. Tú eliges en quién confiar.',
++      title: 'Lo que dicen de Servi',
++      subtitle:
++          'Historias reales de clientes, oficios y negocios que ya confían en la plataforma.',
+       accentColor: AppColors.amber,
+-      visual:      const SlideCommunityVisual(),
++      backgroundImage: 'assets/images/onboarding/slide-6-comentarios.webp',
++      visual: SlideTestimonials(),
++    ),
++    SlideData(
++      title: 'Conoce a Ofi',
++      subtitle:
++          'Tu asistente inteligente. Pregúntale lo que buscas y encuentra al proveedor ideal al instante.',
++      accentColor: AppColors.primary,
++      backgroundImage: 'assets/images/onboarding/slide-7-ofi.webp',
++      visual: SlideOfiAssistant(),
+     ),
+   ];
+-}
+\ No newline at end of file
++}
+diff --git a/mobile/lib/features/auth/presentation/widgets/profile/profile_sections.dart b/mobile/lib/features/auth/presentation/widgets/profile/profile_sections.dart
+index c1a0909..a9c8106 100644
+--- a/mobile/lib/features/auth/presentation/widgets/profile/profile_sections.dart
++++ b/mobile/lib/features/auth/presentation/widgets/profile/profile_sections.dart
+@@ -33,8 +33,10 @@ class _ExpandableSectionState extends State<ExpandableSection>
+       vsync: this,
+       duration: const Duration(milliseconds: 220),
+     );
+-    _rotation = Tween<double>(begin: 0.0, end: 0.5)
+-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
++    _rotation = Tween<double>(
++      begin: 0.0,
++      end: 0.5,
++    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+   }
+ 
+   @override
+@@ -118,12 +120,15 @@ class _ExpandableSectionState extends State<ExpandableSection>
+ }
+ 
+ /// Ítem dentro de una [ExpandableSection]. Si [onTap] es null, no muestra
+-/// chevron. Si [isLast] es false, añade un divisor debajo.
++/// chevron. Si [isLast] es false, añade un divisor debajo. [trailing]
++/// reemplaza el chevron por otro control (p. ej. el [Switch] de los toggles
++/// de Preferencias) manteniendo el mismo layout que el resto de ítems.
+ class SectionItem extends StatelessWidget {
+   final IconData icon;
+   final String label;
+   final VoidCallback? onTap;
+   final bool isLast;
++  final Widget? trailing;
+ 
+   const SectionItem({
+     super.key,
+@@ -131,6 +136,7 @@ class SectionItem extends StatelessWidget {
+     required this.label,
+     this.onTap,
+     this.isLast = false,
++    this.trailing,
+   });
+ 
+   @override
+@@ -155,7 +161,9 @@ class SectionItem extends StatelessWidget {
+                 ),
+               ),
+             ),
+-            if (onTap != null)
++            if (trailing != null)
++              trailing!
++            else if (onTap != null)
+               Icon(Icons.chevron_right_rounded, color: c.textMuted, size: 18),
+           ],
+         ),
+diff --git a/mobile/lib/features/auth/presentation/widgets/profile/profile_toggles.dart b/mobile/lib/features/auth/presentation/widgets/profile/profile_toggles.dart
+index 0c1f929..bad09b8 100644
+--- a/mobile/lib/features/auth/presentation/widgets/profile/profile_toggles.dart
++++ b/mobile/lib/features/auth/presentation/widgets/profile/profile_toggles.dart
+@@ -1,8 +1,27 @@
+ import 'package:flutter/material.dart';
+ import 'package:mobile/core/constants/app_colors.dart';
+-import 'package:mobile/core/theme/app_theme_colors.dart';
+ import 'package:mobile/core/theme/theme_provider.dart';
+ import '../../../../providers_list/presentation/providers/providers_provider.dart';
++import 'profile_sections.dart';
++
++/// Switch de los toggles de Preferencias — mismo look en las 3 filas.
++/// `shrinkWrap` evita que el tap target de 48px infle la altura de la fila
++/// respecto a los [SectionItem] sin switch.
++class _ToggleSwitch extends StatelessWidget {
++  final bool value;
++  final ValueChanged<bool> onChanged;
++  const _ToggleSwitch({required this.value, required this.onChanged});
++
++  @override
++  Widget build(BuildContext context) {
++    return Switch(
++      value: value,
++      onChanged: onChanged,
++      activeThumbColor: AppColors.amber,
++      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
++    );
++  }
++}
+ 
+ /// Toggle tema claro/oscuro — switch sincronizado con [ThemeProvider].
+ class ThemeToggleRow extends StatelessWidget {
+@@ -11,41 +30,13 @@ class ThemeToggleRow extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final c = context.colors;
+-    return GestureDetector(
++    return SectionItem(
++      icon: theme.isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
++      label: theme.isDark ? 'Tema oscuro' : 'Tema claro',
+       onTap: theme.toggle,
+-      child: Container(
+-        padding: const EdgeInsets.all(14),
+-        decoration: BoxDecoration(
+-          color: c.bgCard,
+-          borderRadius: BorderRadius.circular(14),
+-          border: Border.all(color: c.border),
+-        ),
+-        child: Row(
+-          children: [
+-            Icon(
+-              theme.isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+-              color: AppColors.amber,
+-              size: 20,
+-            ),
+-            const SizedBox(width: 12),
+-            Expanded(
+-              child: Text(
+-                theme.isDark ? 'Tema oscuro' : 'Tema claro',
+-                style: TextStyle(
+-                  color: c.textPrimary,
+-                  fontSize: 15,
+-                  fontWeight: FontWeight.w500,
+-                ),
+-              ),
+-            ),
+-            Switch(
+-              value: !theme.isDark,
+-              onChanged: (_) => theme.toggle(),
+-              activeThumbColor: AppColors.amber,
+-            ),
+-          ],
+-        ),
++      trailing: _ToggleSwitch(
++        value: !theme.isDark,
++        onChanged: (_) => theme.toggle(),
+       ),
+     );
+   }
+@@ -59,37 +50,13 @@ class CategoryFilterToggleRow extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final c = context.colors;
+-    return GestureDetector(
++    return SectionItem(
++      icon: Icons.category_rounded,
++      label: 'Mostrar categorías en la pantalla principal',
+       onTap: prov.toggleCategoryFilter,
+-      child: Container(
+-        padding: const EdgeInsets.all(14),
+-        decoration: BoxDecoration(
+-          color: c.bgCard,
+-          borderRadius: BorderRadius.circular(14),
+-          border: Border.all(color: c.border),
+-        ),
+-        child: Row(
+-          children: [
+-            Icon(Icons.category_rounded, color: AppColors.primary, size: 20),
+-            const SizedBox(width: 12),
+-            Expanded(
+-              child: Text(
+-                'Mostrar categorías en la pantalla principal',
+-                style: TextStyle(
+-                  color: c.textPrimary,
+-                  fontSize: 15,
+-                  fontWeight: FontWeight.w500,
+-                ),
+-              ),
+-            ),
+-            Switch(
+-              value: prov.showCategoryFilter,
+-              onChanged: (_) => prov.toggleCategoryFilter(),
+-              activeThumbColor: AppColors.primary,
+-            ),
+-          ],
+-        ),
++      trailing: _ToggleSwitch(
++        value: prov.showCategoryFilter,
++        onChanged: (_) => prov.toggleCategoryFilter(),
+       ),
+     );
+   }
+@@ -104,37 +71,13 @@ class OfiVisibilityToggleRow extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final c = context.colors;
+-    return GestureDetector(
++    return SectionItem(
++      icon: Icons.smart_toy_rounded,
++      label: 'Mostrar asistente Ofi',
+       onTap: () => prov.setOfiFabVisible(!prov.ofiFabVisible),
+-      child: Container(
+-        padding: const EdgeInsets.all(14),
+-        decoration: BoxDecoration(
+-          color: c.bgCard,
+-          borderRadius: BorderRadius.circular(14),
+-          border: Border.all(color: c.border),
+-        ),
+-        child: Row(
+-          children: [
+-            Icon(Icons.smart_toy_rounded, color: AppColors.primary, size: 20),
+-            const SizedBox(width: 12),
+-            Expanded(
+-              child: Text(
+-                'Mostrar asistente Ofi',
+-                style: TextStyle(
+-                  color: c.textPrimary,
+-                  fontSize: 15,
+-                  fontWeight: FontWeight.w500,
+-                ),
+-              ),
+-            ),
+-            Switch(
+-              value: prov.ofiFabVisible,
+-              onChanged: (v) => prov.setOfiFabVisible(v),
+-              activeThumbColor: AppColors.primary,
+-            ),
+-          ],
+-        ),
++      trailing: _ToggleSwitch(
++        value: prov.ofiFabVisible,
++        onChanged: (v) => prov.setOfiFabVisible(v),
+       ),
+     );
+   }
+diff --git a/mobile/lib/features/auth/presentation/widgets/welcome/slide_community_visual.dart b/mobile/lib/features/auth/presentation/widgets/welcome/slide_community_visual.dart
+deleted file mode 100644
+index 68b96c7..0000000
+--- a/mobile/lib/features/auth/presentation/widgets/welcome/slide_community_visual.dart
++++ /dev/null
+@@ -1,176 +0,0 @@
+-import 'package:flutter/material.dart';
+-import 'package:mobile/core/constants/app_colors.dart';
+-import 'package:mobile/core/theme/app_theme_colors.dart';
+-
+-/// Visual del Slide 3: Testimonio comunitario + estadísticas.
+-class SlideCommunityVisual extends StatelessWidget {
+-  const SlideCommunityVisual({super.key});
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final c = context.colors;
+-    return Padding(
+-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+-      child: Column(
+-        mainAxisAlignment: MainAxisAlignment.center,
+-        children: [
+-          // Testimonio
+-          Container(
+-            padding: const EdgeInsets.all(16),
+-            decoration: BoxDecoration(
+-              color: c.warmDeep,
+-              borderRadius: BorderRadius.circular(20),
+-              border: Border.all(color: AppColors.amber.withValues(alpha: 0.3)),
+-              boxShadow: [
+-                BoxShadow(
+-                  color: AppColors.amber.withValues(alpha: 0.1),
+-                  blurRadius: 20,
+-                  spreadRadius: 2,
+-                ),
+-              ],
+-            ),
+-            child: Column(
+-              children: [
+-                Icon(
+-                  Icons.format_quote_rounded,
+-                  color: AppColors.amber.withValues(alpha: 0.7),
+-                  size: 26,
+-                ),
+-                const SizedBox(height: 6),
+-                Text(
+-                  '"Gracias a Servi, mi panadería duplicó sus clientes. La gente confía porque ve las reseñas reales."',
+-                  textAlign: TextAlign.center,
+-                  style: TextStyle(
+-                    color: c.textPrimary,
+-                    fontSize: 13,
+-                    height: 1.55,
+-                    fontStyle: FontStyle.italic,
+-                  ),
+-                ),
+-                const SizedBox(height: 12),
+-                Row(
+-                  mainAxisAlignment: MainAxisAlignment.center,
+-                  children: [
+-                    Container(
+-                      width: 32,
+-                      height: 32,
+-                      decoration: BoxDecoration(
+-                        color: AppColors.amber.withValues(alpha: 0.2),
+-                        shape: BoxShape.circle,
+-                        border: Border.all(
+-                            color: AppColors.amber.withValues(alpha: 0.4)),
+-                      ),
+-                      child: const Icon(
+-                        Icons.storefront_rounded,
+-                        color: AppColors.amber,
+-                        size: 16,
+-                      ),
+-                    ),
+-                    const SizedBox(width: 8),
+-                    Column(
+-                      crossAxisAlignment: CrossAxisAlignment.start,
+-                      children: [
+-                        const Text(
+-                          'Carlos Ríos',
+-                          style: TextStyle(
+-                            color: AppColors.amber,
+-                            fontWeight: FontWeight.bold,
+-                            fontSize: 12,
+-                          ),
+-                        ),
+-                        Text(
+-                          "Panadería 'El Trigo Dorado'",
+-                          style: TextStyle(
+-                              color: c.textSecondary, fontSize: 10),
+-                        ),
+-                      ],
+-                    ),
+-                  ],
+-                ),
+-              ],
+-            ),
+-          ),
+-          const SizedBox(height: 14),
+-          // Estadísticas
+-          Row(
+-            children: [
+-              Expanded(
+-                child: StatCard(
+-                  icon: Icons.people_rounded,
+-                  value: '+2,000',
+-                  label: 'usuarios',
+-                  color: AppColors.primary,
+-                ),
+-              ),
+-              const SizedBox(width: 10),
+-              Expanded(
+-                child: StatCard(
+-                  icon: Icons.star_rounded,
+-                  value: '4.8★',
+-                  label: 'promedio',
+-                  color: AppColors.star,
+-                ),
+-              ),
+-              const SizedBox(width: 10),
+-              Expanded(
+-                child: StatCard(
+-                  icon: Icons.handshake_rounded,
+-                  value: '+500',
+-                  label: 'servicios',
+-                  color: AppColors.available,
+-                ),
+-              ),
+-            ],
+-          ),
+-        ],
+-      ),
+-    );
+-  }
+-}
+-
+-/// Tarjeta de estadística individual (usuarios, promedio, servicios).
+-class StatCard extends StatelessWidget {
+-  final IconData icon;
+-  final String value;
+-  final String label;
+-  final Color color;
+-
+-  const StatCard({
+-    super.key,
+-    required this.icon,
+-    required this.value,
+-    required this.label,
+-    required this.color,
+-  });
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final c = context.colors;
+-    return Container(
+-      padding: const EdgeInsets.symmetric(vertical: 12),
+-      decoration: BoxDecoration(
+-        color: color.withValues(alpha: 0.08),
+-        borderRadius: BorderRadius.circular(14),
+-        border: Border.all(color: color.withValues(alpha: 0.2)),
+-      ),
+-      child: Column(
+-        children: [
+-          Icon(icon, color: color, size: 20),
+-          const SizedBox(height: 4),
+-          Text(
+-            value,
+-            style: TextStyle(
+-              color: c.textPrimary,
+-              fontSize: 14,
+-              fontWeight: FontWeight.bold,
+-            ),
+-          ),
+-          Text(
+-            label,
+-            style: TextStyle(color: c.textMuted, fontSize: 10),
+-          ),
+-        ],
+-      ),
+-    );
+-  }
+-}
+\ No newline at end of file
+diff --git a/mobile/lib/features/auth/presentation/widgets/welcome/slide_data.dart b/mobile/lib/features/auth/presentation/widgets/welcome/slide_data.dart
+index 31f27bb..03e2df8 100644
+--- a/mobile/lib/features/auth/presentation/widgets/welcome/slide_data.dart
++++ b/mobile/lib/features/auth/presentation/widgets/welcome/slide_data.dart
+@@ -6,11 +6,13 @@ class SlideData {
+   final String subtitle;
+   final Widget visual;
+   final Color accentColor;
++  final String backgroundImage;
+ 
+   const SlideData({
+     required this.title,
+     required this.subtitle,
+     required this.visual,
+     required this.accentColor,
++    required this.backgroundImage,
+   });
+-}
+\ No newline at end of file
++}
+diff --git a/mobile/lib/features/auth/presentation/widgets/welcome/slide_provider_card.dart b/mobile/lib/features/auth/presentation/widgets/welcome/slide_provider_card.dart
+index 27e20f1..e8748ae 100644
+--- a/mobile/lib/features/auth/presentation/widgets/welcome/slide_provider_card.dart
++++ b/mobile/lib/features/auth/presentation/widgets/welcome/slide_provider_card.dart
+@@ -1,239 +1,266 @@
+ import 'package:flutter/material.dart';
+-import 'package:flutter_svg/flutter_svg.dart';
+ import 'package:mobile/core/constants/app_colors.dart';
+ import 'package:mobile/core/theme/app_theme_colors.dart';
+ 
+-/// Visual del Slide 2: Tarjeta mock de proveedor con rating y acciones.
++/// Visual reusado en los slides 3-5: tarjeta mock de un proveedor
++/// (oficio / profesional / negocio) con rating, badge y chips de servicios.
+ class SlideProviderCard extends StatelessWidget {
+-  const SlideProviderCard({super.key});
++  final String name;
++  final String category;
++  final String avatarInitials;
++  final double rating;
++  final int reviews;
++  final String badgeLabel;
++  final IconData badgeIcon;
++  final Color badgeColor;
++  final List<String> tags;
++  final Color accent;
++  final List<({IconData icon, String label})> miniTags;
++
++  const SlideProviderCard({
++    super.key,
++    required this.name,
++    required this.category,
++    required this.avatarInitials,
++    required this.rating,
++    required this.reviews,
++    required this.badgeLabel,
++    required this.badgeIcon,
++    required this.badgeColor,
++    required this.tags,
++    required this.accent,
++    this.miniTags = const [],
++  });
+ 
+   @override
+   Widget build(BuildContext context) {
+     final c = context.colors;
+     return Padding(
+-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+-      child: Column(
+-        mainAxisAlignment: MainAxisAlignment.center,
+-        children: [
+-          // Header: foto + badges
+-          Row(
++      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
++      child: TweenAnimationBuilder<double>(
++        tween: Tween(begin: 0.9, end: 1.0),
++        duration: const Duration(milliseconds: 500),
++        curve: Curves.easeOutBack,
++        builder: (_, scale, child) =>
++            Transform.scale(scale: scale, child: child),
++        child: Container(
++          padding: const EdgeInsets.all(16),
++          decoration: BoxDecoration(
++            color: c.bgCard.withValues(alpha: 0.92),
++            borderRadius: BorderRadius.circular(22),
++            border: Border.all(color: accent.withValues(alpha: 0.25)),
++            boxShadow: [
++              BoxShadow(
++                color: accent.withValues(alpha: 0.16),
++                blurRadius: 24,
++                spreadRadius: 1,
++                offset: const Offset(0, 8),
++              ),
++            ],
++          ),
++          child: Column(
++            mainAxisSize: MainAxisSize.min,
+             children: [
+-              // Foto avatar con iniciales
+-              Container(
+-                width: 56,
+-                height: 56,
+-                decoration: const BoxDecoration(
+-                  gradient: LinearGradient(
+-                    colors: [AppColors.primary, AppColors.primaryDark],
+-                    begin: Alignment.topLeft,
+-                    end: Alignment.bottomRight,
++              // Header: avatar + nombre + categoría
++              Row(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [
++                  Container(
++                    width: 52,
++                    height: 52,
++                    decoration: BoxDecoration(
++                      gradient: LinearGradient(
++                        colors: [
++                          accent,
++                          Color.alphaBlend(
++                            Colors.black.withValues(alpha: 0.18),
++                            accent,
++                          ),
++                        ],
++                        begin: Alignment.topLeft,
++                        end: Alignment.bottomRight,
++                      ),
++                      shape: BoxShape.circle,
++                    ),
++                    child: Center(
++                      child: Text(
++                        avatarInitials,
++                        style: TextStyle(
++                          color: AppColors.onSolid(accent),
++                          fontWeight: FontWeight.bold,
++                          fontSize: 17,
++                        ),
++                      ),
++                    ),
+                   ),
+-                  shape: BoxShape.circle,
+-                ),
+-                child: const Center(
+-                  child: Text(
+-                    'JS',
+-                    style: TextStyle(
+-                      color: Colors.white,
+-                      fontWeight: FontWeight.bold,
+-                      fontSize: 18,
++                  const SizedBox(width: 12),
++                  Expanded(
++                    child: Column(
++                      crossAxisAlignment: CrossAxisAlignment.start,
++                      children: [
++                        Text(
++                          name,
++                          maxLines: 1,
++                          overflow: TextOverflow.ellipsis,
++                          style: TextStyle(
++                            color: c.textPrimary,
++                            fontWeight: FontWeight.bold,
++                            fontSize: 15.5,
++                          ),
++                        ),
++                        const SizedBox(height: 2),
++                        Text(
++                          category,
++                          style: TextStyle(
++                            color: AppColors.tintOn(accent, c.isDark),
++                            fontSize: 12,
++                            fontWeight: FontWeight.w600,
++                          ),
++                        ),
++                        if (miniTags.isNotEmpty) ...[
++                          const SizedBox(height: 6),
++                          Wrap(
++                            spacing: 6,
++                            runSpacing: 4,
++                            children: [
++                              for (final t in miniTags)
++                                _MiniTag(
++                                  icon: t.icon,
++                                  label: t.label,
++                                  color: accent,
++                                ),
++                            ],
++                          ),
++                        ],
++                      ],
+                     ),
+                   ),
+-                ),
++                ],
+               ),
+-              const SizedBox(width: 12),
+-              Expanded(
+-                child: Column(
+-                  crossAxisAlignment: CrossAxisAlignment.start,
++              const SizedBox(height: 12),
++              // Estrellas y estado
++              Container(
++                padding: const EdgeInsets.symmetric(
++                  horizontal: 12,
++                  vertical: 9,
++                ),
++                decoration: BoxDecoration(
++                  color: c.bgInput,
++                  borderRadius: BorderRadius.circular(14),
++                ),
++                child: Row(
+                   children: [
++                    ...List.generate(
++                      5,
++                      (i) => Icon(
++                        i < rating.floor()
++                            ? Icons.star_rounded
++                            : (rating - i >= 0.5
++                                  ? Icons.star_half_rounded
++                                  : Icons.star_outline_rounded),
++                        color: AppColors.star,
++                        size: 15,
++                      ),
++                    ),
++                    const SizedBox(width: 6),
+                     Text(
+-                      'Juan Sosa',
++                      rating.toStringAsFixed(1),
+                       style: TextStyle(
+                         color: c.textPrimary,
++                        fontSize: 12.5,
+                         fontWeight: FontWeight.bold,
+-                        fontSize: 16,
+                       ),
+                     ),
+-                    const SizedBox(height: 3),
+                     Text(
+-                      'Electricista Certificado',
+-                      style: TextStyle(color: c.textSecondary, fontSize: 12),
++                      ' ($reviews)',
++                      style: TextStyle(color: c.textSecondary, fontSize: 11),
+                     ),
+-                    const SizedBox(height: 5),
+-                    // Etiquetas
+-                    Row(
+-                      children: [
+-                        MiniTag(
+-                          label: 'Verificado',
+-                          icon: Icons.verified_rounded,
+-                          color: AppColors.verified,
+-                        ),
+-                        const SizedBox(width: 6),
+-                        MiniTag(
+-                          label: 'Premium',
+-                          icon: Icons.star_rounded,
+-                          color: AppColors.premium,
+-                          textColor: const Color(0xFF3D2B00),
++                    const Spacer(),
++                    Icon(badgeIcon, color: badgeColor, size: 13),
++                    const SizedBox(width: 4),
++                    Flexible(
++                      child: Text(
++                        badgeLabel,
++                        overflow: TextOverflow.ellipsis,
++                        style: TextStyle(
++                          color: badgeColor,
++                          fontSize: 11,
++                          fontWeight: FontWeight.w700,
+                         ),
+-                      ],
++                      ),
+                     ),
+                   ],
+                 ),
+               ),
+-            ],
+-          ),
+-          const SizedBox(height: 14),
+-          // Estrellas y disponibilidad
+-          Container(
+-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+-            decoration: BoxDecoration(
+-              color: c.bgInput,
+-              borderRadius: BorderRadius.circular(14),
+-            ),
+-            child: Row(
+-              children: [
+-                ...List.generate(5, (i) => Icon(
+-                  i < 4 ? Icons.star_rounded : Icons.star_half_rounded,
+-                  color: AppColors.star,
+-                  size: 16,
+-                )),
+-                const SizedBox(width: 6),
+-                Text(
+-                  '4.8',
+-                  style: TextStyle(
+-                    color: c.textPrimary,
+-                    fontSize: 13,
+-                    fontWeight: FontWeight.bold,
+-                  ),
+-                ),
+-                Text(
+-                  ' (23 reseñas)',
+-                  style: TextStyle(color: c.textSecondary, fontSize: 11),
+-                ),
+-                const Spacer(),
+-                Container(
+-                  width: 8,
+-                  height: 8,
+-                  decoration: const BoxDecoration(
+-                    color: AppColors.available,
+-                    shape: BoxShape.circle,
+-                  ),
+-                ),
+-                const SizedBox(width: 4),
+-                const Text(
+-                  'Disponible',
+-                  style: TextStyle(
+-                    color: AppColors.available,
+-                    fontSize: 11,
+-                    fontWeight: FontWeight.w600,
+-                  ),
+-                ),
+-              ],
+-            ),
+-          ),
+-          const SizedBox(height: 12),
+-          // Botones de acción mock
+-          Row(
+-            children: [
+-              Expanded(
+-                child: Container(
+-                  padding: const EdgeInsets.symmetric(vertical: 10),
+-                  decoration: BoxDecoration(
+-                    color: AppColors.whatsapp.withValues(alpha: 0.12),
+-                    borderRadius: BorderRadius.circular(12),
+-                    border: Border.all(
+-                        color: AppColors.whatsapp.withValues(alpha: 0.3)),
+-                  ),
+-                  child: Row(
+-                    mainAxisAlignment: MainAxisAlignment.center,
+-                    children: [
+-                      SvgPicture.asset('assets/icons/whatsapp.svg',
+-                          width: 15, height: 15),
+-                      const SizedBox(width: 5),
+-                      const Text(
+-                        'WhatsApp',
+-                        style: TextStyle(
+-                          color: AppColors.whatsapp,
+-                          fontSize: 12,
+-                          fontWeight: FontWeight.w700,
++              const SizedBox(height: 12),
++              // Chips de servicios / especialidades / productos
++              Wrap(
++                spacing: 6,
++                runSpacing: 6,
++                children: [
++                  for (final tag in tags)
++                    Container(
++                      padding: const EdgeInsets.symmetric(
++                        horizontal: 10,
++                        vertical: 6,
++                      ),
++                      decoration: BoxDecoration(
++                        color: accent.withValues(alpha: 0.1),
++                        borderRadius: BorderRadius.circular(10),
++                        border: Border.all(
++                          color: accent.withValues(alpha: 0.25),
+                         ),
+                       ),
+-                    ],
+-                  ),
+-                ),
+-              ),
+-              const SizedBox(width: 8),
+-              Expanded(
+-                child: Container(
+-                  padding: const EdgeInsets.symmetric(vertical: 10),
+-                  decoration: BoxDecoration(
+-                    color: AppColors.call.withValues(alpha: 0.12),
+-                    borderRadius: BorderRadius.circular(12),
+-                    border: Border.all(
+-                        color: AppColors.call.withValues(alpha: 0.3)),
+-                  ),
+-                  child: const Row(
+-                    mainAxisAlignment: MainAxisAlignment.center,
+-                    children: [
+-                      Icon(Icons.call_rounded, color: AppColors.call, size: 15),
+-                      SizedBox(width: 5),
+-                      Text(
+-                        'Llamar',
++                      child: Text(
++                        tag,
+                         style: TextStyle(
+-                          color: AppColors.call,
+-                          fontSize: 12,
+-                          fontWeight: FontWeight.w700,
++                          color: AppColors.tintOn(accent, c.isDark),
++                          fontSize: 10.5,
++                          fontWeight: FontWeight.w600,
+                         ),
+                       ),
+-                    ],
+-                  ),
+-                ),
++                    ),
++                ],
+               ),
+             ],
+           ),
+-        ],
++        ),
+       ),
+     );
+   }
+ }
+ 
+-/// Mini etiqueta tipo badge usada en la tarjeta de proveedor.
+-class MiniTag extends StatelessWidget {
++class _MiniTag extends StatelessWidget {
+   final String label;
+   final IconData icon;
+   final Color color;
+-  final Color? textColor;
+ 
+-  const MiniTag({
+-    super.key,
++  const _MiniTag({
+     required this.label,
+     required this.icon,
+     required this.color,
+-    this.textColor,
+   });
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final tc = textColor ?? color;
++    final c = context.colors;
+     return Container(
+-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
++      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+       decoration: BoxDecoration(
+-        color: color.withValues(alpha: textColor != null ? 1.0 : 0.12),
++        color: color.withValues(alpha: 0.12),
+         borderRadius: BorderRadius.circular(8),
+-        border: textColor != null
+-            ? null
+-            : Border.all(color: color.withValues(alpha: 0.35)),
++        border: Border.all(color: color.withValues(alpha: 0.3)),
+       ),
+       child: Row(
+         mainAxisSize: MainAxisSize.min,
+         children: [
+-          Icon(icon, color: tc, size: 10),
++          Icon(icon, color: AppColors.tintOn(color, c.isDark), size: 9),
+           const SizedBox(width: 3),
+           Text(
+             label,
+             style: TextStyle(
+-              color: tc,
+-              fontSize: 10,
++              color: AppColors.tintOn(color, c.isDark),
++              fontSize: 9.5,
+               fontWeight: FontWeight.bold,
+             ),
+           ),
+@@ -241,4 +268,4 @@ class MiniTag extends StatelessWidget {
+       ),
+     );
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/mobile/lib/features/auth/presentation/widgets/welcome/slide_service_grid.dart b/mobile/lib/features/auth/presentation/widgets/welcome/slide_service_grid.dart
+deleted file mode 100644
+index 88d0aba..0000000
+--- a/mobile/lib/features/auth/presentation/widgets/welcome/slide_service_grid.dart
++++ /dev/null
+@@ -1,121 +0,0 @@
+-import 'package:flutter/material.dart';
+-import 'package:mobile/core/constants/app_colors.dart';
+-import 'package:mobile/core/theme/app_theme_colors.dart';
+-
+-/// Visual del Slide 1: Grid de servicios con categorías.
+-class SlideServiceGrid extends StatelessWidget {
+-  final bool isDark;
+-  const SlideServiceGrid({super.key, required this.isDark});
+-
+-  static const _services = [
+-    (Icons.bolt_rounded,          'Electricistas', AppColors.primary),
+-    (Icons.plumbing_rounded,      'Gasfiteros',    Color(0xFF26C6DA)),
+-    (Icons.format_paint_rounded,  'Pintores',      Color(0xFF7E57C2)),
+-    (Icons.restaurant_rounded,    'Restaurantes',  AppColors.amber),
+-    (Icons.content_cut_rounded,   'Peluquerías',   Color(0xFFEC407A)),
+-    (Icons.build_rounded,         'Carpinteros',   Color(0xFF66BB6A)),
+-  ];
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return Padding(
+-      padding: const EdgeInsets.all(20),
+-      child: Column(
+-        mainAxisAlignment: MainAxisAlignment.center,
+-        children: [
+-          // Título flotante
+-          Container(
+-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+-            decoration: BoxDecoration(
+-              color: AppColors.primary.withValues(alpha: 0.12),
+-              borderRadius: BorderRadius.circular(20),
+-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+-            ),
+-            child: const Row(
+-              mainAxisSize: MainAxisSize.min,
+-              children: [
+-                Icon(Icons.location_on_rounded, color: AppColors.primary, size: 13),
+-                SizedBox(width: 5),
+-                Text(
+-                  'Servicios cerca de ti',
+-                  style: TextStyle(
+-                    color: AppColors.primary,
+-                    fontSize: 12,
+-                    fontWeight: FontWeight.w600,
+-                  ),
+-                ),
+-              ],
+-            ),
+-          ),
+-          const SizedBox(height: 18),
+-          // Grid de categorías 3x2
+-          GridView.builder(
+-            shrinkWrap: true,
+-            physics: const NeverScrollableScrollPhysics(),
+-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+-              crossAxisCount: 3,
+-              mainAxisSpacing: 10,
+-              crossAxisSpacing: 10,
+-              childAspectRatio: 1.05,
+-            ),
+-            itemCount: _services.length,
+-            itemBuilder: (_, i) {
+-              final s = _services[i];
+-              return ServiceTile(icon: s.$1, label: s.$2, color: s.$3);
+-            },
+-          ),
+-        ],
+-      ),
+-    );
+-  }
+-}
+-
+-/// Tile individual de servicio dentro del grid.
+-class ServiceTile extends StatelessWidget {
+-  final IconData icon;
+-  final String label;
+-  final Color color;
+-
+-  const ServiceTile({
+-    super.key,
+-    required this.icon,
+-    required this.label,
+-    required this.color,
+-  });
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final c = context.colors;
+-    return Container(
+-      decoration: BoxDecoration(
+-        color: c.bgInput,
+-        borderRadius: BorderRadius.circular(16),
+-        border: Border.all(color: color.withValues(alpha: 0.25)),
+-      ),
+-      child: Column(
+-        mainAxisAlignment: MainAxisAlignment.center,
+-        children: [
+-          Container(
+-            width: 38,
+-            height: 38,
+-            decoration: BoxDecoration(
+-              color: color.withValues(alpha: 0.15),
+-              shape: BoxShape.circle,
+-            ),
+-            child: Icon(icon, color: color, size: 20),
+-          ),
+-          const SizedBox(height: 6),
+-          Text(
+-            label,
+-            textAlign: TextAlign.center,
+-            style: TextStyle(
+-              color: c.textSecondary,
+-              fontSize: 10,
+-              fontWeight: FontWeight.w600,
+-            ),
+-          ),
+-        ],
+-      ),
+-    );
+-  }
+-}
+\ No newline at end of file
+diff --git a/mobile/lib/features/auth/presentation/widgets/welcome/welcome_action_buttons.dart b/mobile/lib/features/auth/presentation/widgets/welcome/welcome_action_buttons.dart
+index 31dd93b..1c53ced 100644
+--- a/mobile/lib/features/auth/presentation/widgets/welcome/welcome_action_buttons.dart
++++ b/mobile/lib/features/auth/presentation/widgets/welcome/welcome_action_buttons.dart
+@@ -79,7 +79,8 @@ class WelcomeActionButtons extends StatelessWidget {
+             child: TextButton(
+               onPressed: () => Navigator.of(context).push(
+                 MaterialPageRoute(
+-                  builder: (_) => const LoginScreen(initialMode: AuthMode.login),
++                  builder: (_) =>
++                      const LoginScreen(initialMode: AuthMode.login),
+                 ),
+               ),
+               style: TextButton.styleFrom(
+@@ -99,4 +100,4 @@ class WelcomeActionButtons extends StatelessWidget {
+       ),
+     );
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/mobile/lib/features/auth/presentation/widgets/welcome/welcome_carousel.dart b/mobile/lib/features/auth/presentation/widgets/welcome/welcome_carousel.dart
+index 974e495..53b8978 100644
+--- a/mobile/lib/features/auth/presentation/widgets/welcome/welcome_carousel.dart
++++ b/mobile/lib/features/auth/presentation/widgets/welcome/welcome_carousel.dart
+@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
+ import 'package:mobile/core/theme/app_theme_colors.dart';
+ import 'slide_data.dart';
+ 
+-/// Carrusel visual con fondo gradiente animado según el slide activo.
++/// Carrusel visual con imagen de fondo por slide + scrim adaptado al tema.
+ class VisualCarousel extends StatelessWidget {
+   final PageController pageController;
+   final List<SlideData> slides;
+@@ -27,10 +27,7 @@ class VisualCarousel extends StatelessWidget {
+       curve: Curves.easeInOut,
+       decoration: BoxDecoration(
+         borderRadius: BorderRadius.circular(28),
+-        border: Border.all(
+-          color: accent.withValues(alpha: 0.18),
+-          width: 1.5,
+-        ),
++        border: Border.all(color: accent.withValues(alpha: 0.18), width: 1.5),
+         boxShadow: [
+           BoxShadow(
+             color: accent.withValues(alpha: c.isDark ? 0.18 : 0.1),
+@@ -43,18 +40,35 @@ class VisualCarousel extends StatelessWidget {
+       child: ClipRRect(
+         borderRadius: BorderRadius.circular(28),
+         child: Stack(
++          fit: StackFit.expand,
+           children: [
+-            // Fondo con gradiente animado según slide
+-            AnimatedContainer(
+-              duration: const Duration(milliseconds: 500),
++            // Imagen de fondo representativa del slide (crossfade entre slides)
++            AnimatedSwitcher(
++              duration: const Duration(milliseconds: 450),
++              child: Image.asset(
++                slides[currentPage].backgroundImage,
++                key: ValueKey(slides[currentPage].backgroundImage),
++                fit: BoxFit.cover,
++              ),
++            ),
++            // Scrim para legibilidad del contenido encima de la imagen
++            DecoratedBox(
+               decoration: BoxDecoration(
+                 gradient: LinearGradient(
+-                  colors: [
+-                    accent.withValues(alpha: c.isDark ? 0.12 : 0.07),
+-                    c.bgCard,
+-                  ],
+-                  begin: Alignment.topLeft,
+-                  end: Alignment.bottomRight,
++                  begin: Alignment.topCenter,
++                  end: Alignment.bottomCenter,
++                  colors: c.isDark
++                      ? [
++                          Colors.black.withValues(alpha: 0.0),
++                          Colors.black.withValues(alpha: 0.35),
++                          Colors.black.withValues(alpha: 0.72),
++                        ]
++                      : [
++                          Colors.white.withValues(alpha: 0.05),
++                          Colors.white.withValues(alpha: 0.45),
++                          Colors.white.withValues(alpha: 0.78),
++                        ],
++                  stops: const [0.0, 0.55, 1.0],
+                 ),
+               ),
+             ),
+@@ -70,4 +84,4 @@ class VisualCarousel extends StatelessWidget {
+       ),
+     );
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/mobile/lib/features/auth/presentation/widgets/welcome/welcome_page_indicators.dart b/mobile/lib/features/auth/presentation/widgets/welcome/welcome_page_indicators.dart
+index 958c291..1ce8b79 100644
+--- a/mobile/lib/features/auth/presentation/widgets/welcome/welcome_page_indicators.dart
++++ b/mobile/lib/features/auth/presentation/widgets/welcome/welcome_page_indicators.dart
+@@ -25,14 +25,14 @@ class PageIndicators extends StatelessWidget {
+           duration: const Duration(milliseconds: 350),
+           curve: Curves.easeInOut,
+           margin: const EdgeInsets.symmetric(horizontal: 4),
+-          width:  active ? 28 : 8,
++          width: active ? 28 : 8,
+           height: 8,
+           decoration: BoxDecoration(
+-            color:  active ? accentColor : c.textMuted.withValues(alpha: 0.3),
++            color: active ? accentColor : c.textMuted.withValues(alpha: 0.3),
+             borderRadius: BorderRadius.circular(4),
+           ),
+         );
+       }),
+     );
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/mobile/lib/features/auth/presentation/widgets/welcome/welcome_slide_text.dart b/mobile/lib/features/auth/presentation/widgets/welcome/welcome_slide_text.dart
+index d8ca001..d51d222 100644
+--- a/mobile/lib/features/auth/presentation/widgets/welcome/welcome_slide_text.dart
++++ b/mobile/lib/features/auth/presentation/widgets/welcome/welcome_slide_text.dart
+@@ -6,11 +6,7 @@ class SlideText extends StatelessWidget {
+   final String title;
+   final String subtitle;
+ 
+-  const SlideText({
+-    super.key,
+-    required this.title,
+-    required this.subtitle,
+-  });
++  const SlideText({super.key, required this.title, required this.subtitle});
+ 
+   @override
+   Widget build(BuildContext context) {
+@@ -43,4 +39,4 @@ class SlideText extends StatelessWidget {
+       ),
+     );
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/mobile/lib/features/providers_list/presentation/screens/providers_screen.dart b/mobile/lib/features/providers_list/presentation/screens/providers_screen.dart
+index 50c065b..a0f4758 100644
+--- a/mobile/lib/features/providers_list/presentation/screens/providers_screen.dart
++++ b/mobile/lib/features/providers_list/presentation/screens/providers_screen.dart
+@@ -1,11 +1,14 @@
+ import 'package:flutter/material.dart';
++import 'package:go_router/go_router.dart';
+ import 'package:provider/provider.dart';
+ import '../../../../core/constants/app_colors.dart';
+ import '../../../../core/constants/feature_flags.dart';
++import '../../../../core/router/app_router.dart' show AppRoutes;
+ import '../../../../core/theme/app_theme_colors.dart';
+ import '../../../ai_assistant/presentation/ai_assistant_fab.dart';
+ import '../../../auth/presentation/providers/auth_provider.dart';
+ import '../../../localities/data/dynamic_locations.dart';
++import '../../../notifications/presentation/providers/notifications_provider.dart';
+ import '../../../referrals/presentation/screens/referral_screen.dart';
+ import '../../../showcase/showcase_data.dart';
+ import '../../../showcase/showcase_overlay.dart';
+@@ -222,6 +225,9 @@ class _ProvidersViewState extends State<_ProvidersView>
+             ],
+           ),
+           actions: [
++            // Campana de alertas — antes vivía como tab del bottom nav;
++            // ahora navega al mismo branch (/alerts) desde el AppBar.
++            const _AlertsBellButton(),
+             // Botón de filtros — el deck lo destaca como "Filtros
+             // avanzados". Mismo spec en registered y guest.
+             ShowcaseTarget(
+@@ -471,3 +477,102 @@ class _CompactLocationChip extends StatelessWidget {
+     );
+   }
+ }
++
++// ── Campana de alertas (AppBar) ───────────────────────────
++// Minimalista: sin bordes ni fondo, solo el ícono + un punto rojo cuando
++// hay no leídos. Oscila (swing) cuando unreadCount pasa de 0 a >0 —
++// mientras el widget está vivo, no en el mount con no-leídos preexistentes.
++class _AlertsBellButton extends StatefulWidget {
++  const _AlertsBellButton();
++
++  @override
++  State<_AlertsBellButton> createState() => _AlertsBellButtonState();
++}
++
++class _AlertsBellButtonState extends State<_AlertsBellButton>
++    with SingleTickerProviderStateMixin {
++  late final AnimationController _swingController;
++  late final Animation<double> _swing;
++  late int _lastUnread;
++
++  @override
++  void initState() {
++    super.initState();
++    // Semilla con el valor actual — evita que no-leídos preexistentes al
++    // abrir la pantalla disparen el swing como si fuera una notificación
++    // nueva (solo debe animar una transición 0 → >0 en vivo).
++    _lastUnread = context.read<NotificationsProvider>().unreadCount;
++    _swingController = AnimationController(
++      vsync: this,
++      duration: const Duration(milliseconds: 500),
++    );
++    _swing = TweenSequence<double>(
++      [
++        TweenSequenceItem(tween: Tween(begin: 0.0, end: -0.14), weight: 1),
++        TweenSequenceItem(tween: Tween(begin: -0.14, end: 0.11), weight: 1),
++        TweenSequenceItem(tween: Tween(begin: 0.11, end: -0.06), weight: 1),
++        TweenSequenceItem(tween: Tween(begin: -0.06, end: 0.0), weight: 1),
++      ],
++    ).animate(CurvedAnimation(parent: _swingController, curve: Curves.easeOut));
++  }
++
++  @override
++  void dispose() {
++    _swingController.dispose();
++    super.dispose();
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final c = context.colors;
++    final auth = context.watch<AuthProvider>();
++    final isGuest = auth.isGuest || auth.user == null;
++    final unread = context.watch<NotificationsProvider>().unreadCount;
++
++    if (unread > 0 && _lastUnread == 0) {
++      WidgetsBinding.instance.addPostFrameCallback((_) {
++        if (mounted) _swingController.forward(from: 0);
++      });
++    }
++    _lastUnread = unread;
++
++    return ShowcaseTarget(
++      step: kShowcaseStepsRegistered.firstWhere(
++        (s) => s.key == kShowcaseAlertsTab,
++      ),
++      isLast: isLastShowcaseStep(kShowcaseAlertsTab, isGuest: isGuest),
++      targetHeight: 40,
++      targetWidth: 40,
++      child: AnimatedBuilder(
++        animation: _swing,
++        builder: (_, child) =>
++            Transform.rotate(angle: _swing.value, child: child),
++        child: IconButton(
++          tooltip: 'Alertas',
++          onPressed: () => StatefulNavigationShell.of(
++            context,
++          ).goBranch(AppRoutes.tabAlertas),
++          icon: Stack(
++            clipBehavior: Clip.none,
++            children: [
++              Icon(Icons.notifications_none_rounded, color: c.textSecondary),
++              if (unread > 0)
++                Positioned(
++                  right: 0,
++                  top: 0,
++                  child: Container(
++                    width: 8,
++                    height: 8,
++                    decoration: const BoxDecoration(
++                      color: Color(0xFFE53935),
++                      shape: BoxShape.circle,
++                    ),
++                  ),
++                ),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++}
+diff --git a/mobile/lib/features/providers_list/presentation/widgets/greeting_header.dart b/mobile/lib/features/providers_list/presentation/widgets/greeting_header.dart
+index 64b6e82..b95e382 100644
+--- a/mobile/lib/features/providers_list/presentation/widgets/greeting_header.dart
++++ b/mobile/lib/features/providers_list/presentation/widgets/greeting_header.dart
+@@ -1,19 +1,57 @@
++import 'dart:async';
+ import 'package:flutter/material.dart';
+ import 'package:provider/provider.dart';
+ import '../../../../core/theme/app_theme_colors.dart';
+ import '../../../auth/presentation/providers/auth_provider.dart';
+ 
+-class GreetingHeader extends StatelessWidget {
++class GreetingHeader extends StatefulWidget {
+   final String? liveProvince;
+   final String? liveDistrict;
+   const GreetingHeader({super.key, this.liveProvince, this.liveDistrict});
+ 
++  @override
++  State<GreetingHeader> createState() => _GreetingHeaderState();
++}
++
++class _GreetingHeaderState extends State<GreetingHeader> {
++  int _messageIndex = 0;
++  Timer? _timer;
++
++  static const _guestMessages = [
++    'Contrata sin registro • Es gratis',
++    'Regístrate para chatear con proveedores',
++    'Crea tu cuenta y recibe ofertas personalizadas',
++  ];
++
++  @override
++  void initState() {
++    super.initState();
++    _startTimer();
++  }
++
++  void _startTimer() {
++    _timer?.cancel();
++    _timer = Timer.periodic(const Duration(seconds: 2), (_) {
++      if (!mounted) return;
++      setState(() {
++        _messageIndex = (_messageIndex + 1) % _guestMessages.length;
++      });
++    });
++  }
++
++  @override
++  void dispose() {
++    _timer?.cancel();
++    super.dispose();
++  }
++
+   @override
+   Widget build(BuildContext context) {
+     final c = context.colors;
+     final auth = context.watch<AuthProvider>();
+     final user = auth.user;
+     final firstName = user?.firstName ?? (auth.isGuest ? null : 'Usuario');
++    final isGuest = firstName == null;
+ 
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+@@ -30,19 +68,33 @@ class GreetingHeader extends StatelessWidget {
+           overflow: TextOverflow.ellipsis,
+         ),
+         const SizedBox(height: 4),
+-        Text(
+-          firstName != null
+-              ? '¿Qué servicios necesitas hoy?'
+-              : 'Contrata sin registro • Es gratis',
+-          style: TextStyle(
+-            color: c.textMuted,
+-            fontSize: 13,
+-            fontWeight: FontWeight.normal,
++        AnimatedSwitcher(
++          duration: const Duration(milliseconds: 400),
++          switchInCurve: Curves.easeOut,
++          switchOutCurve: Curves.easeIn,
++          transitionBuilder: (child, anim) => FadeTransition(
++            opacity: anim,
++            child: SlideTransition(
++              position: Tween<Offset>(
++                begin: const Offset(0, 0.3),
++                end: Offset.zero,
++              ).animate(anim),
++              child: child,
++            ),
++          ),
++          child: Text(
++            isGuest ? _guestMessages[_messageIndex] : '¿Qué servicios necesitas hoy?',
++            key: ValueKey(isGuest ? _messageIndex : 'logged'),
++            style: TextStyle(
++              color: c.textMuted,
++              fontSize: 13,
++              fontWeight: FontWeight.normal,
++            ),
++            maxLines: 1,
++            overflow: TextOverflow.ellipsis,
+           ),
+-          maxLines: 1,
+-          overflow: TextOverflow.ellipsis,
+         ),
+       ],
+     );
+   }
+-}
++}
+\ No newline at end of file

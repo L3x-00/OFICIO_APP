@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">58.98% </span>
+                <span class="strong">59.11% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>105/178</span>
+                <span class='fraction'>107/181</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">35.84% </span>
+                <span class="strong">35.18% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>38/106</span>
+                <span class='fraction'>38/108</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">59.06% </span>
+                <span class="strong">59.19% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>101/171</span>
+                <span class='fraction'>103/174</span>
             </div>
         
             
@@ -881,7 +881,12 @@
 <a name='L816'></a><a href='#L816'>816</a>
 <a name='L817'></a><a href='#L817'>817</a>
 <a name='L818'></a><a href='#L818'>818</a>
-<a name='L819'></a><a href='#L819'>819</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
+<a name='L819'></a><a href='#L819'>819</a>
+<a name='L820'></a><a href='#L820'>820</a>
+<a name='L821'></a><a href='#L821'>821</a>
+<a name='L822'></a><a href='#L822'>822</a>
+<a name='L823'></a><a href='#L823'>823</a>
+<a name='L824'></a><a href='#L824'>824</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -895,6 +900,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -929,6 +935,7 @@
 <span class="cline-any cline-yes">25x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25x</span>
 <span class="cline-any cline-yes">25x</span>
 <span class="cline-any cline-yes">25x</span>
 <span class="cline-any cline-yes">25x</span>
@@ -940,6 +947,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1713,6 +1723,7 @@ import { CreateServiceRequestDto } from './dto/create-service-request.dto.js';
 import { SubmitOfferDto } from './dto/submit-offer.dto.js';
 import { AcceptOfferDto } from './dto/accept-offer.dto.js';
 import { ArrivedDto } from './dto/arrived.dto.js';
+import { MinioService } from '../common/minio.service.js';
 &nbsp;
 // Prisma enum values — kept as string constants so the module compiles
 // before `prisma generate` is run after la nueva migration.
@@ -1750,6 +1761,7 @@ export class SubastasService {
     private prisma: PrismaService,
     private events: EventsGateway,
     private push: PushNotificationsService,
+    private minio: MinioService,
   ) {}
 &nbsp;
   // ── CREAR SOLICITUD ─────────────────────────────────────────
@@ -1758,13 +1770,16 @@ export class SubastasService {
 <span class="cstat-no" title="statement not covered" >    await this._checkPenalty(userId);</span>
 &nbsp;
     const expiresAt = <span class="cstat-no" title="statement not covered" >new Date(Date.now() + EXPIRY_HOURS * 60 * 60 * 1000);</span>
+    const photoUrl = <span class="cstat-no" title="statement not covered" >dto.photoUrl?.trim()</span>
+      ? this.minio.assertManagedImageUrl(dto.photoUrl, ['providers/gallery'])
+      : dto.photoUrl;
 &nbsp;
     const request = <span class="cstat-no" title="statement not covered" >await this.prisma.serviceRequest.create({</span>
       data: {
         userId,
         categoryId: dto.categoryId,
         description: dto.description,
-        photoUrl: dto.photoUrl,
+        photoUrl,
         budgetMin: dto.budgetMin,
         budgetMax: dto.budgetMax,
         desiredDate: dto.desiredDate ? new Date(dto.desiredDate) : undefined,
@@ -2524,7 +2539,7 @@ export class SubastasService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-21T14:24:01.290Z
+                at 2026-07-22T20:07:11.356Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

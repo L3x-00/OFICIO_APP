@@ -97,7 +97,8 @@ export const ModelName = {
   AiConversation: 'AiConversation',
   AiMessage: 'AiMessage',
   AiUserMemory: 'AiUserMemory',
-  AiProviderMemory: 'AiProviderMemory'
+  AiProviderMemory: 'AiProviderMemory',
+  AiLearningCandidate: 'AiLearningCandidate'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -804,6 +805,8 @@ export const AiUserMemoryScalarFieldEnum = {
   searchCategories: 'searchCategories',
   recentProviderIds: 'recentProviderIds',
   lastIntent: 'lastIntent',
+  consentGranted: 'consentGranted',
+  expiresAt: 'expiresAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -821,6 +824,20 @@ export const AiProviderMemoryScalarFieldEnum = {
 } as const
 
 export type AiProviderMemoryScalarFieldEnum = (typeof AiProviderMemoryScalarFieldEnum)[keyof typeof AiProviderMemoryScalarFieldEnum]
+
+
+export const AiLearningCandidateScalarFieldEnum = {
+  id: 'id',
+  topic: 'topic',
+  intent: 'intent',
+  occurrences: 'occurrences',
+  status: 'status',
+  lastSeenAt: 'lastSeenAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiLearningCandidateScalarFieldEnum = (typeof AiLearningCandidateScalarFieldEnum)[keyof typeof AiLearningCandidateScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/16</span>
+                <span class='fraction'>16/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/10</span>
+                <span class='fraction'>10/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/11</span>
+                <span class='fraction'>11/11</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -95,68 +95,68 @@
 <a name='L30'></a><a href='#L30'>30</a>
 <a name='L31'></a><a href='#L31'>31</a>
 <a name='L32'></a><a href='#L32'>32</a>
-<a name='L33'></a><a href='#L33'>33</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L33'></a><a href='#L33'>33</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import {</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import {
   Injectable,
   NestInterceptor,
   ExecutionContext,
   CallHandler,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-<span class="cstat-no" title="statement not covered" >import { map } from 'rxjs/operators';</span>
+import { map } from 'rxjs/operators';
 &nbsp;
-function <span class="fstat-no" title="function not covered" >serializeBigInt(</span>value: unknown): unknown {
-<span class="cstat-no" title="statement not covered" >  if (typeof value === 'bigint') <span class="cstat-no" title="statement not covered" >return value.toString();</span></span>
+function serializeBigInt(value: unknown): unknown {
+  if (typeof value === 'bigint') return value.toString();
   // Date objects have no enumerable own properties, so Object.entries() returns [].
   // Detect them explicitly and serialize to ISO string before the generic object branch.
-<span class="cstat-no" title="statement not covered" >  if (value instanceof Date) <span class="cstat-no" title="statement not covered" >return value.toISOString();</span></span>
-<span class="cstat-no" title="statement not covered" >  if (Array.isArray(value)) <span class="cstat-no" title="statement not covered" >return value.map(serializeBigInt);</span></span>
-<span class="cstat-no" title="statement not covered" >  if (value !== null &amp;&amp; typeof value === 'object') {</span>
-<span class="cstat-no" title="statement not covered" >    return Object.fromEntries(</span>
-      Object.entries(value as Record&lt;string, unknown&gt;).map(<span class="fstat-no" title="function not covered" >([</span>k, v]) =&gt; <span class="cstat-no" title="statement not covered" >[</span>
+  if (value instanceof Date) return value.toISOString();
+  if (Array.isArray(value)) return value.map(serializeBigInt);
+  if (value !== null &amp;&amp; typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record&lt;string, unknown&gt;).map(([k, v]) =&gt; [
         k,
         serializeBigInt(v),
       ]),
     );
   }
-<span class="cstat-no" title="statement not covered" >  return value;</span>
+  return value;
 }
 &nbsp;
 @Injectable()
-export <span class="cstat-no" title="statement not covered" >class <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >BigintInterceptor </span>implements NestInterceptor {</span></span>
-<span class="fstat-no" title="function not covered" >  intercept(</span>_ctx: ExecutionContext, next: CallHandler): Observable&lt;unknown&gt; {
-<span class="cstat-no" title="statement not covered" >    return next.handle().pipe(map(serializeBigInt));</span>
+export class BigintInterceptor implements NestInterceptor {
+  intercept(_ctx: ExecutionContext, next: CallHandler): Observable&lt;unknown&gt; {
+    return next.handle().pipe(map(serializeBigInt));
   }
 }
 &nbsp;</pre></td></tr></table></pre>
@@ -166,7 +166,7 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-21T14:24:01.290Z
+                at 2026-07-22T20:07:11.356Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

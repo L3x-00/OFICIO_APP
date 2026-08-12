@@ -17,7 +17,8 @@ import type * as Prisma from "../internal/prismaNamespace.js"
  * Conversación con el asistente IA "Ofi" (Fase 4). `userId` es Int plano
  * (sin FK a User) para mantener el módulo IA desacoplado. Guarda la
  * versión de prompt activa al crearse (regla 8) y sus mensajes en
- * cascada. Política de retención: se purga > 90 días (AiRetentionService).
+ * cascada. Mensajes > 12 horas se purgan; conversaciones vacías antiguas se
+ * eliminan por AiRetentionService.
  */
 export type AiConversationModel = runtime.Types.Result.DefaultSelection<Prisma.$AiConversationPayload>
 
