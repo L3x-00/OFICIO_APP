@@ -52,6 +52,10 @@ desplegar para no reutilizar durante cinco minutos un bloque anterior.
 7. **FAQ y enlaces incompletos.** Se agregaron saludo, descarga, registro,
    cobertura, confianza y URLs oficiales verificadas. Se evita prometer iOS,
    fechas, resultados de proveedores o funciones ocultas.
+8. **OTP F3 con índice aleatorio inválido.** El alfabeto evita caracteres
+   ambiguos y tiene 31 símbolos, pero el generador lo trataba como 32. Un valor
+   aleatorio podía crear un código con `undefined`; ahora usa muestreo sin sesgo
+   y garantiza diez caracteres válidos.
 
 ## Revisión independiente
 

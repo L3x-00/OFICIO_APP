@@ -283,12 +283,22 @@ export class WhatsappLinkService {
   }
 
   private generateCode(): string {
-    const bytes = randomBytes(LINK_CODE_LENGTH);
     let code = '';
-    for (const byte of bytes) {
-      // El alfabeto tiene 32 símbolos: máscara de 5 bits sin sesgo por módulo.
-      code += LINK_CODE_ALPHABET[byte & 31];
+
+    while (code.length < LINK_CODE_LENGTH) {
+      const bytes = randomBytes(LINK_CODE_LENGTH);
+      for (const byte of bytes) {
+        // El alfabeto tiene 31 símbolos. Rechazar los 8 valores finales evita
+        // sesgo por módulo y nunca indexa fuera del alfabeto.
+        const unbiasedLimit =
+          Math.floor(256 / LINK_CODE_ALPHABET.length) *
+          LINK_CODE_ALPHABET.length;
+        if (byte >= unbiasedLimit) continue;
+        code += LINK_CODE_ALPHABET[byte % LINK_CODE_ALPHABET.length];
+        if (code.length === LINK_CODE_LENGTH) break;
+      }
     }
+
     return code;
   }
 

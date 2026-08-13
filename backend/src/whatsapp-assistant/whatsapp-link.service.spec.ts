@@ -68,6 +68,8 @@ describe('WhatsappLinkService', () => {
     const out = await svc.createLinkCode(7);
 
     expect(out?.code).toMatch(/^[A-HJKMNP-Z2-9]{10}$/);
+    expect(out?.code).toHaveLength(10);
+    expect(out?.code).not.toContain('undefined');
     const data = db.whatsappLinkChallenge.create.mock.calls[0][0].data;
     expect(data.codeHash).toEqual(expect.any(String));
     expect(data).not.toHaveProperty('code');
