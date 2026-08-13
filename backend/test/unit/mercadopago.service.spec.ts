@@ -86,7 +86,9 @@ describe('MercadoPagoService (unit)', () => {
       });
       expect(prefCreate).toHaveBeenCalled();
       const body = prefCreate.mock.calls[0][0].body;
-      expect(body.external_reference).toBe('provider_5_user_7_plan_ESTANDAR');
+      expect(body.external_reference).toMatch(
+        /^provider_5_user_7_plan_ESTANDAR_attempt_[a-f0-9]{32}$/,
+      );
       // El detalle del item también refleja el tipo resuelto, no el pedido.
       expect(body.items[0].description).toContain('PROFESIONAL');
       expect(res.preferenceId).toBe('pref-1');
@@ -103,7 +105,9 @@ describe('MercadoPagoService (unit)', () => {
       expect(body.items[0].unit_price).toBe(19.9);
       expect(body.items[0].currency_id).toBe('PEN');
       expect(body.payer.email).toBe('a@b.com');
-      expect(body.external_reference).toBe('provider_5_user_7_plan_ESTANDAR');
+      expect(body.external_reference).toMatch(
+        /^provider_5_user_7_plan_ESTANDAR_attempt_[a-f0-9]{32}$/,
+      );
       // notification_url load-bearing: si apunta mal, MP nunca confirma el pago.
       expect(body.notification_url).toBe(
         'https://api/payments/mercadopago/webhook',
@@ -111,11 +115,16 @@ describe('MercadoPagoService (unit)', () => {
       expect(body.back_urls.success).toBe('https://web/payments/success');
       expect(body.auto_return).toBe('approved');
       // En entorno NO prod usa el sandbox_init_point.
-      expect(res).toEqual({
-        preferenceId: 'pref-1',
-        initPoint: 'https://mp/sandbox',
-        sandboxInitPoint: 'https://mp/sandbox',
-      });
+      expect(res).toEqual(
+        expect.objectContaining({
+          preferenceId: 'pref-1',
+          initPoint: 'https://mp/sandbox',
+          sandboxInitPoint: 'https://mp/sandbox',
+          externalReference: expect.stringMatching(
+            /^provider_5_user_7_plan_ESTANDAR_attempt_[a-f0-9]{32}$/,
+          ),
+        }),
+      );
     });
 
     it('B-04: en producción usa init_point real, NUNCA el sandbox', async () => {
@@ -156,6 +165,7 @@ describe('MercadoPagoService (unit)', () => {
           currency_id: 'PEN',
           external_reference: 'user_7_type_OFICIO_plan_ESTANDAR',
           payment_method_id: 'visa',
+          status_detail: 'accredited',
           date_approved: '2026-06-24T00:00:00Z',
         }),
       });
@@ -171,12 +181,60 @@ describe('MercadoPagoService (unit)', () => {
       expect(res).toEqual({
         id: 999,
         status: 'approved',
+        statusDetail: 'accredited',
         amount: 19.9,
         currency: 'PEN',
         externalReference: 'user_7_type_OFICIO_plan_ESTANDAR',
         paymentMethod: 'visa',
         dateApproved: '2026-06-24T00:00:00Z',
       });
+    });
+
+    it('consulta el intento propio y traduce un rechazo sin exponer detalles de tarjeta', async () => {
+      const reference =
+        'provider_5_user_7_plan_ESTANDAR_attempt_0123456789abcdef0123456789abcdef';
+      prisma.provider.findUnique.mockResolvedValue({ userId: 7 });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          results: [
+            {
+              id: 99,
+              status: 'rejected',
+              status_detail: 'cc_rejected_insufficient_amount',
+              transaction_amount: 19.9,
+              currency_id: 'PEN',
+              external_reference: reference,
+            },
+          ],
+        }),
+      }) as any;
+
+      await expect(
+        service.getPaymentStatusForUser({
+          userId: 7,
+          externalReference: reference,
+        }),
+      ).resolves.toEqual({
+        status: 'rejected',
+        message:
+          'Tu medio de pago no tiene fondos suficientes. Prueba otro medio de pago.',
+      });
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/v1/payments/search?'),
+        { headers: { Authorization: 'Bearer test-token' } },
+      );
+    });
+
+    it('rechaza consultar una referencia ajena antes de llamar a Mercado Pago', async () => {
+      await expect(
+        service.getPaymentStatusForUser({
+          userId: 8,
+          externalReference:
+            'provider_5_user_7_plan_ESTANDAR_attempt_0123456789abcdef0123456789abcdef',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(global.fetch).toBeUndefined();
     });
   });
 });

@@ -8,9 +8,9 @@ estos son los pasos OBLIGATORIOS antes de aceptar pagos reales.
 | Variable | Valor para PRODUCCIÓN |
 |---|---|
 | `NODE_ENV` | `production` |
-| `API_BASE_URL` | `https://servi-api.onrender.com` (o el dominio público real) |
+| `API_BASE_URL` | `https://oficio-backend.onrender.com` (o el dominio público real vigente) |
 | `WEB_BASE_URL` | `https://www.oficioapp.org.pe` |
-| `MERCADOPAGO_ACCESS_TOKEN` | `APP_USR-...` (NO `TEST-`) |
+| `MERCADOPAGO_ACCESS_TOKEN` | `APP_USR-...` de la misma cuenta colectora del Checkout (NO `TEST-`) |
 | `MERCADOPAGO_PUBLIC_KEY` | `APP_USR-...` |
 | `MERCADOPAGO_WEBHOOK_SECRET` | Secret real desde MP dashboard (ver paso 2) |
 
@@ -18,26 +18,30 @@ estos son los pasos OBLIGATORIOS antes de aceptar pagos reales.
 puede entregar webhooks**. Los pagos quedan huérfanos en MP y los
 usuarios pagan sin recibir el plan.
 
+No crear variables nuevas para el retorno de Checkout. El backend genera una
+referencia única por intento y el móvil consulta `GET
+/payments/mercadopago/status` con JWT. Esa consulta solo informa estado; un
+plan se activa únicamente por webhook firmado.
+
 ## 2. Webhook secret en MercadoPago
 
 1. https://www.mercadopago.com.pe/developers/panel/notifications/webhooks
-2. Crear webhook apuntando a `https://servi-api.onrender.com/payments/mercadopago/webhook`.
+2. Mantener un único webhook apuntando a
+   `https://oficio-backend.onrender.com/payments/mercadopago/webhook` (o al
+   dominio real vigente de `API_BASE_URL`).
 3. Activar eventos: **Pagos** (`payment.created`, `payment.updated`).
 4. **Configurar firma** → copiar el secret generado a `MERCADOPAGO_WEBHOOK_SECRET`.
 5. El backend rechaza con `200 OK` silencioso si la firma falla — verificar
-   logs de Render tras el primer pago de prueba para confirmar
-   `🛑 Webhook con firma inválida` no aparece.
+   logs de Render tras el primer pago de prueba. Una entrega válida confirma
+   que el secret funciona; entregas inválidas repetidas obligan a revisar y
+   eliminar webhooks antiguos, pruebas o secretos desalineados en el panel MP.
 
 ## 3. Migraciones aplicadas
 
-```bash
-cd backend && npx prisma migrate deploy
-```
-
-Migraciones relevantes a este flujo (orden):
-- `20260517140000_strings_to_enums` (incluye `PaymentMethod` enum).
-- `20260517160000_triggers_part4` (audit log de suscripciones).
-- `20260517180000_payment_reference_unique` (idempotencia de webhooks).
+No hay SQL ni migración nueva para el seguimiento de rechazos. En Servi, todo
+cambio futuro de esquema se entrega como SQL idempotente y lo aplica el
+propietario manualmente; nunca ejecutar `prisma migrate deploy` contra
+producción.
 
 ## 4. Test end-to-end pre-go-live
 
@@ -45,6 +49,9 @@ Migraciones relevantes a este flujo (orden):
    - Crear preferencia desde Flutter → debe abrir checkout MP.
    - Pagar con [tarjeta de prueba](https://www.mercadopago.com.pe/developers/es/docs/checkout-pro/additional-content/test-cards) APRO.
    - Verificar en logs: `✅ Pago aprobado` + `✅ Suscripción activada`.
+   - Probar también un rechazo: Render debe registrar `detail=<status_detail>`
+     sin datos de tarjeta y el proveedor debe recibir una guía breve para
+     reintentar con otro medio.
    - Confirmar en BD: `subscriptions.plan` cambió + nueva fila en `payments`
      con `reference` = paymentId.
 2. Test de idempotencia: re-enviar el mismo webhook desde MP dashboard
@@ -66,16 +73,9 @@ Error procesando webhook payment=XXXX: ...
 Procedimiento de recuperación:
 1. Buscar el `payment_id` en logs.
 2. Verificar en MP dashboard que el pago está aprobado.
-3. Endpoint admin para reconciliar manualmente (TODO — pendiente para
-   próxima pasada).
-4. Mientras tanto, ejecutar manualmente vía SQL:
-   ```sql
-   -- Confirmar que no hay row aún
-   SELECT * FROM payments WHERE reference = '<payment_id>';
-   -- Si vacío: activar manualmente desde admin panel (que llame al
-   -- PaymentsService.activateSubscriptionFromPayment con los datos
-   -- del pago obtenidos de la API de MP).
-   ```
+3. No activar la suscripción mediante SQL manual. Conservar el `payment_id`,
+   validar su estado en Mercado Pago y escalar la conciliación a un flujo
+   administrativo auditado.
 
 ## 6. Rate limits
 

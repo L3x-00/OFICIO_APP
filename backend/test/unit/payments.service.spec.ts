@@ -182,7 +182,9 @@ describe('PaymentsService (unit)', () => {
         }),
       );
       expect(prisma.yapePayment.create).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ providerId: 31 }) }),
+        expect.objectContaining({
+          data: expect.objectContaining({ providerId: 31 }),
+        }),
       );
     });
 
@@ -584,6 +586,59 @@ describe('PaymentsService (unit)', () => {
           data: expect.objectContaining({ type: 'MP_PAYMENT_UNRESOLVED' }),
         }),
       );
+    });
+  });
+
+  describe('notifyMercadoPagoRejected()', () => {
+    const rejectedPayment = {
+      paymentId: '173483733036',
+      providerId: 76,
+      userId: 75,
+      plan: 'ESTANDAR' as const,
+      statusDetail: 'cc_rejected_insufficient_amount',
+      paymentMethod: 'visa',
+    };
+
+    it('persiste un aviso seguro, emite socket y push sin modificar suscripción', async () => {
+      prisma.provider.findFirst.mockResolvedValue({ id: 76, type: 'OFICIO' });
+      prisma.adminNotification.findFirst.mockResolvedValue(null);
+
+      await service.notifyMercadoPagoRejected(rejectedPayment);
+
+      expect(prisma.adminNotification.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            type: 'MP_PAYMENT_REJECTED',
+            providerId: 76,
+            targetUserId: 75,
+          }),
+        }),
+      );
+      expect(events.emitNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'MP_PAYMENT_REJECTED',
+          targetUserId: 75,
+        }),
+      );
+      expect(push.sendToUser).toHaveBeenCalledWith(
+        75,
+        'Pago no aprobado',
+        expect.stringContaining('fondos suficientes'),
+        expect.objectContaining({ type: 'MP_PAYMENT_REJECTED' }),
+      );
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
+      expect(prisma.subscription.upsert).not.toHaveBeenCalled();
+    });
+
+    it('webhook repetido no vuelve a notificar el mismo rechazo', async () => {
+      prisma.provider.findFirst.mockResolvedValue({ id: 76, type: 'OFICIO' });
+      prisma.adminNotification.findFirst.mockResolvedValue({ id: 9 });
+
+      await service.notifyMercadoPagoRejected(rejectedPayment);
+
+      expect(prisma.adminNotification.create).not.toHaveBeenCalled();
+      expect(events.emitNotification).not.toHaveBeenCalled();
+      expect(push.sendToUser).not.toHaveBeenCalled();
     });
   });
 });

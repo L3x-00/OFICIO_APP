@@ -717,6 +717,86 @@ export class PaymentsService {
   }
 
   /**
+   * Un rechazo de Mercado Pago no cambia la suscripción. Sí debe quedar
+   * trazable y llegar al proveedor, para que no crea que Servi perdió el pago.
+   */
+  async notifyMercadoPagoRejected(params: {
+    paymentId: string;
+    providerId: number;
+    userId: number;
+    plan: PaidPlan;
+    statusDetail: string | null;
+    paymentMethod: string | null;
+  }): Promise<void> {
+    const provider = await this.prisma.provider.findFirst({
+      where: { id: params.providerId, userId: params.userId },
+      select: { id: true, type: true },
+    });
+    if (!provider) {
+      this.logger.warn(
+        `Rechazo MP ${params.paymentId} sin perfil válido para userId=${params.userId}`,
+      );
+      return;
+    }
+
+    const title = 'Pago no aprobado';
+    const body = MercadoPagoService.rejectionMessage(params.statusDetail);
+
+    try {
+      const previous = await this.prisma.adminNotification.findFirst({
+        where: {
+          type: 'MP_PAYMENT_REJECTED',
+          targetUserId: params.userId,
+          metadata: { path: ['paymentId'], equals: params.paymentId },
+        },
+        select: { id: true },
+      });
+      if (previous) return;
+
+      await this.prisma.adminNotification.create({
+        data: {
+          providerId: provider.id,
+          targetUserId: params.userId,
+          targetProfileType: provider.type,
+          type: 'MP_PAYMENT_REJECTED',
+          title,
+          message: body,
+          metadata: {
+            paymentId: params.paymentId,
+            plan: params.plan,
+            statusDetail: params.statusDetail,
+            paymentMethod: params.paymentMethod,
+          },
+        },
+      });
+    } catch (error) {
+      // Nunca convertir un problema de inbox en reintentos de un pago ya
+      // rechazado. El aviso en vivo y push siguen siendo útiles.
+      this.logger.error(
+        `No se pudo persistir rechazo MP ${params.paymentId}: ${error instanceof Error ? error.message : error}`,
+      );
+    }
+
+    this.events.emitNotification({
+      type: 'MP_PAYMENT_REJECTED',
+      title,
+      body,
+      targetUserId: params.userId,
+      targetProfileType: provider.type,
+    });
+    void this.push
+      .sendToUser(params.userId, title, body, {
+        type: 'MP_PAYMENT_REJECTED',
+        plan: params.plan,
+      })
+      .catch((error) =>
+        this.logger.error(
+          `No se pudo enviar push de rechazo MP ${params.paymentId}: ${error instanceof Error ? error.message : error}`,
+        ),
+      );
+  }
+
+  /**
    * Un pago MercadoPago ya cobrado que no pudo resolverse a un provider
    * (referencia legacy ambigua o sin perfil) antes solo dejaba un
    * `logger.error` — stdout de Render es efímero y el admin no tenía
