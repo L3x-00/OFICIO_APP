@@ -1,16 +1,16 @@
-# Graph Report - oficio_app  (2026-08-12)
+# Graph Report - oficio_app  (2026-08-13)
 
 ## Corpus Check
-- 1012 files · ~1,486,751 words
+- 1027 files · ~1,493,145 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 9850 nodes · 16018 edges · 480 communities (366 shown, 114 thin omitted)
+- 9934 nodes · 16168 edges · 474 communities (360 shown, 114 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 74 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `fb11bca3`
+- Built from commit: `667c5068`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -460,18 +460,14 @@
 - [[_COMMUNITY_Community 467|Community 467]]
 - [[_COMMUNITY_Community 468|Community 468]]
 - [[_COMMUNITY_Community 469|Community 469]]
-- [[_COMMUNITY_Community 470|Community 470]]
-- [[_COMMUNITY_Community 471|Community 471]]
 - [[_COMMUNITY_Community 472|Community 472]]
-- [[_COMMUNITY_Community 473|Community 473]]
 - [[_COMMUNITY_Community 475|Community 475]]
 - [[_COMMUNITY_Community 476|Community 476]]
-- [[_COMMUNITY_Community 478|Community 478]]
 - [[_COMMUNITY_Community 479|Community 479]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `AuthProvider` - 204 edges
-2. `PrismaService` - 121 edges
+2. `PrismaService` - 124 edges
 3. `AuthenticatedRequest` - 120 edges
 4. `DashboardProvider` - 72 edges
 5. `fetchApi()` - 65 edges
@@ -484,55 +480,55 @@
 ## Surprising Connections (you probably didn't know these)
 - `Topbar()` --calls--> `useAdminSocket()`  [INFERRED]
   admin/components/layout-shell.tsx → admin/hooks/useAdminSocket.ts
+- `uploadBroadcastImage()` --calls--> `getAdminToken()`  [INFERRED]
+  admin/lib/api.ts → admin/lib/api-client.ts
 - `approvePlanRequest()` --calls--> `fetchApi()`  [INFERRED]
   admin/lib/api.ts → admin/lib/api-client.ts
 - `approveVerification()` --calls--> `fetchApi()`  [INFERRED]
   admin/lib/api.ts → admin/lib/api-client.ts
 - `approveYapePayment()` --calls--> `fetchApi()`  [INFERRED]
   admin/lib/api.ts → admin/lib/api-client.ts
-- `askAssistant()` --calls--> `fetchApi()`  [INFERRED]
-  admin/lib/api.ts → admin/lib/api-client.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (480 total, 114 thin omitted)
+## Communities (474 total, 114 thin omitted)
 
 ### Community 0 - "backend/appointments · appointments.controller.ts"
 Cohesion: 0.04
-Nodes (15): AppointmentsController, FeatureFlag(), CreateAppointmentDto, CreatePreferenceDto, RejectAppointmentDto, SetScheduleDto, SubmitYapeDto, SetProviderAvailabilityDto (+7 more)
+Nodes (14): AppointmentsController, ChatController, FeatureFlag(), CreateAppointmentDto, CreateChatMessageDto, RejectAppointmentDto, SetScheduleDto, SetProviderAvailabilityDto (+6 more)
 
 ### Community 1 - "app/quotation · my_quotations_screen.dart"
-Cohesion: 0.05
-Nodes (41): dart:convert, ../../domain/models/quotation_model.dart, Future, Quotation, build, createState, _future, initState (+33 more)
+Cohesion: 0.12
+Nodes (16): Quotation, build, createState, _future, initState, ManageQuotationsScreen, _ManageQuotationsScreenState, onReject (+8 more)
 
 ### Community 2 - "app/agenda · booking_screen.dart"
-Cohesion: 0.04
-Nodes (46): AppointmentSlot, appointmentStatusLabel, clientName, clientPhone, date, description, fromJson, id (+38 more)
+Cohesion: 0.08
+Nodes (24): my_appointments_screen.dart, BookingScreen, _BookingScreenState, build, businessName, _confirm, _confirmBar, createState (+16 more)
 
 ### Community 3 - "app/provider_dashboard · profile_reach_section.dart"
-Cohesion: 0.06
-Nodes (41): _ActiveCard, build, coverage, createState, _DistrictChip, _DistrictPickerSheet, _DistrictPickerSheetState, icon (+33 more)
+Cohesion: 0.03
+Nodes (74): _showPlanActivationCarousel, _ActiveCard, build, coverage, createState, _DistrictPickerSheet, _DistrictPickerSheetState, icon (+66 more)
 
 ### Community 4 - "app/providers_list · service_detail_dialog.dart"
-Cohesion: 0.18
-Nodes (3): ChatController, CreateChatMessageDto, CreateChatRoomDto
+Cohesion: 0.05
+Nodes (26): OpenWaClient, OpenWaSendError, WhatsappAssistantConfig, WhatsappAssistantController, WhatsappAssistantModule, NO_EFFECT, OK, ValidInbound (+18 more)
 
 ### Community 5 - "app/catalog · catalog_product_card.dart"
-Cohesion: 0.05
-Nodes (41): OrderableItem, CatalogProductModel, MenuItemModel, ../providers/menu_manager_provider.dart, MenuManagerProvider, build, _confirmDelete, _EmptyManage (+33 more)
+Cohesion: 0.14
+Nodes (15): ../providers/menu_manager_provider.dart, MenuManagerProvider, build, _confirmDelete, _EmptyManage, item, _ManageItemTile, ManageMenuScreen (+7 more)
 
 ### Community 6 - "app/auth · auth_provider.dart"
 Cohesion: 0.01
 Nodes (145): auth/auth_models.dart, AuthRepository get, class AuthProvider extends, core/services/fcm_service.dart, ../../data/auth_local_storage.dart, _activeProfileType, _enqueueProviderWelcomeIfNeeded, _error (+137 more)
 
 ### Community 7 - "backend/auth · auth.controller.ts"
-Cohesion: 0.09
-Nodes (13): AuthController, JwtAuthGuard, Roles(), RolesGuard, LoginDto, RegisterProviderDto, RegisterUserDto, SendOtpDto (+5 more)
+Cohesion: 0.06
+Nodes (24): AuthController, JwtAuthGuard, Roles(), RolesGuard, ALLOWED_IMAGE_EXTENSIONS, imageFilter(), memOpts, providerImagesOpts (+16 more)
 
 ### Community 8 - "app/provider_dashboard · privacy_section.dart"
-Cohesion: 0.07
-Nodes (31): ../../../domain/models/dashboard_profile_model.dart, DashboardProfileModel, ../../../../payments/presentation/providers/payments_provider.dart, ../../../../payments/presentation/screens/payment_history_screen.dart, ../../../payments/presentation/screens/plan_selector_sheet.dart, build, profile, ProfilePlanSection (+23 more)
+Cohesion: 0.02
+Nodes (112): ../../../../auth/presentation/screens/onboarding/widgets/onboarding_category_section.dart, ../../../domain/models/dashboard_profile_model.dart, DashboardProfileModel, package:mobile/shared/widgets/app_snack_bar.dart, ../../../../payments/presentation/providers/payments_provider.dart, ../../../../payments/presentation/screens/payment_history_screen.dart, ../../../payments/presentation/screens/plan_selector_sheet.dart, AvailabilityChip (+104 more)
 
 ### Community 9 - "backend/catalog · catalog.service.ts"
 Cohesion: 0.06
@@ -543,8 +539,8 @@ Cohesion: 0.11
 Nodes (18): A1 · [Arquitectura/Infra] `CacheModule` mal cableado → `CACHE_MANAGER` corre EN MEMORIA, no en Redis, A2 · [Seguridad/Escalabilidad] Throttler con storage en memoria, A3 · [Seguridad] `/uploads/*` servido estáticamente sin autenticación, A4 · [Base de Datos] Historial de migraciones Prisma roto — `migrate deploy` desde cero falla, A5 · [Seguridad] `firebase-admin@12.7.0` con vulnerabilidades transitivas, A6 · [Arquitectura] Drift de contrato Front↔DTO (`forbidNonWhitelisted`) — patrón sistémico, ⚡ Acciones inmediatas antes del próximo deploy, 🟠 ALTA (+10 more)
 
 ### Community 11 - "app/agenda · my_appointments_screen.dart"
-Cohesion: 0.07
-Nodes (29): appointment_status_chip.dart, ../../../../core/utils/peru_time.dart, ../../data/appointments_repository.dart, ../../domain/models/appointment_model.dart, Appointment, appt, build, _cancel (+21 more)
+Cohesion: 0.12
+Nodes (17): ../../data/appointments_repository.dart, appt, build, _cancel, _ClientApptCard, createState, _future, initState (+9 more)
 
 ### Community 12 - "app/favorites · favorites_screen.dart"
 Cohesion: 0.07
@@ -552,15 +548,15 @@ Nodes (28): ../../../auth/presentation/screens/login_screen.dart, ../providers/f
 
 ### Community 13 - "app/providers_list · card_action_buttons.dart"
 Cohesion: 0.03
-Nodes (89): card_action_buttons.dart, card_badges.dart, card_contact_actions.dart, card_cover_image.dart, card_helpers.dart, card_image_carousel.dart, card_location_text.dart, card_provider_info.dart (+81 more)
+Nodes (85): card_action_buttons.dart, card_badges.dart, card_contact_actions.dart, card_cover_image.dart, card_helpers.dart, card_image_carousel.dart, card_location_text.dart, card_provider_info.dart (+77 more)
 
 ### Community 14 - "app · provider_appointment_card_test.dart"
 Cohesion: 0.07
-Nodes (22): main, main, main, main, chicha, lomo, main, main (+14 more)
+Nodes (22): main, main, main, main, main, main, package:flutter_test/flutter_test.dart, package:mobile/core/utils/peru_time.dart (+14 more)
 
 ### Community 15 - "app/provider_dashboard · service_components.dart"
-Cohesion: 0.06
-Nodes (31): build, controller, current, EmptyServices, hint, isNegocio, keyboardType, label (+23 more)
+Cohesion: 0.04
+Nodes (44): ../../../../../core/utils/plan_limits.dart, OfferPostModel, build, _fallbackOfferIcon, isLoading, offer, OfferCard, OfferPostsSection (+36 more)
 
 ### Community 16 - "welcome_provider_plan_modal.dart"
 Cohesion: 0.05
@@ -575,20 +571,20 @@ Cohesion: 0.07
 Nodes (27): ../../domain/menu_order.dart, _add, build, businessName, _cart, _CartBar, count, createState (+19 more)
 
 ### Community 20 - "app/notifications · notifications_screen.dart"
-Cohesion: 0.04
-Nodes (54): ../../../ai_assistant/presentation/ai_assistant_fab.dart, core/router/app_router.dart, ../../domain/models/notification_model.dart, _handleFcmInbound, _recordBroadcastFromMessage, ThemeProvider, ../../../notifications/presentation/providers/notifications_provider.dart, package:mobile/shared/widgets/notification_modal.dart (+46 more)
+Cohesion: 0.07
+Nodes (26): ../../domain/models/notification_model.dart, _handleFcmTap, package:mobile/shared/widgets/notification_modal.dart, ../providers/notifications_provider.dart, Route /profile, Route /provider-panel, _goBack, _buildActions (+18 more)
 
 ### Community 21 - "backend/menu · menu.service.ts"
-Cohesion: 0.03
-Nodes (58): class, onboarding/widgets/onboarding_category_section.dart, _addCredential, build, _buildForm, businessName, _categories, _categoriesRepo (+50 more)
+Cohesion: 0.04
+Nodes (56): class, onboarding/widgets/onboarding_category_section.dart, _addCredential, build, _buildForm, businessName, _categories, _categoriesRepo (+48 more)
 
 ### Community 22 - "schedule_editor_screen.dart"
 Cohesion: 0.07
 Nodes (27): _activeDays, _addRange, build, createState, _dayCard, _dayKeys, _dayLabels, end (+19 more)
 
 ### Community 23 - "app/catalog · catalog_product_model.dart"
-Cohesion: 0.08
-Nodes (24): allItems, CatalogResponse, CatalogSection, category, description, effectivePrice, fromJson, hasOffer (+16 more)
+Cohesion: 0.07
+Nodes (25): allItems, CatalogResponse, CatalogSection, category, description, effectivePrice, fromJson, hasOffer (+17 more)
 
 ### Community 24 - "catalog_screen.dart"
 Cohesion: 0.08
@@ -604,19 +600,19 @@ Nodes (24): createItem, ../../data/menu_repository.dart, deleteItem, _dio, getMe
 
 ### Community 27 - "backend · factories.ts"
 Cohesion: 0.08
-Nodes (26): mockGenerateContent, AiKnowledgeSeeder, mockGenerateContent, sentryCaptureException, build(), makeCacheHarness(), mockGenerateContent, mockGenerateContent (+18 more)
+Nodes (26): mockGenerateContent, SaveMessageInput, KnowledgeEntryDto, TurnSignals, AiRetentionService, MsgOpts, mockGenerateContent, sentryCaptureException (+18 more)
 
 ### Community 28 - "app/providers_list · provider_info_section.dart"
 Cohesion: 0.03
-Nodes (86): ../feature_chips.dart, build, EmptyReviews, HomeReviewsSection, isLoading, onViewAll, review, ReviewCard (+78 more)
+Nodes (81): build, EmptyReviews, HomeReviewsSection, isLoading, onViewAll, review, ReviewCard, reviews (+73 more)
 
 ### Community 29 - "provider_onboarding_form.dart"
 Cohesion: 0.02
-Nodes (100): ProviderOnboardingForm, _acquirePremium, _addressController, build, _businessNameController, _categories, _clearDraft, createState (+92 more)
+Nodes (98): _acquirePremium, _addressController, build, _businessNameController, _categories, _clearDraft, createState, _department (+90 more)
 
 ### Community 30 - "otp_verification_screen.dart"
-Cohesion: 0.10
-Nodes (21): FocusNode, package:mobile/features/auth/presentation/screens/onboarding/onboarding_screen.dart, build, controller, _controllers, createState, dispose, focusNode (+13 more)
+Cohesion: 0.07
+Nodes (26): dart:math, analytics, build, color, HomeStatsGrid, icon, isLoading, label (+18 more)
 
 ### Community 31 - "providers_provider.dart"
 Cohesion: 0.02
@@ -631,12 +627,12 @@ Cohesion: 0.08
 Nodes (25): build, CatalogProductFormSheet, _CatalogProductFormSheetState, _category, createState, _desc, dispose, existing (+17 more)
 
 ### Community 34 - "profile_social_section.dart"
-Cohesion: 0.08
-Nodes (24): _allowedSpecs, _allSpecs, build, color, createState, _expanded, hint, isNegocio (+16 more)
+Cohesion: 0.09
+Nodes (22): AppointmentSlot, appointmentStatusLabel, clientName, clientPhone, date, description, fromJson, id (+14 more)
 
 ### Community 35 - "profile_info_section.dart"
-Cohesion: 0.09
-Nodes (23): ../../../../auth/presentation/screens/onboarding/widgets/onboarding_category_section.dart, build, _categoriesLabel, ContactCard, createState, EditCard, _hasAddress, icon (+15 more)
+Cohesion: 0.13
+Nodes (15): AiToolDef, allOff, allOn, ADMIN_ONLY, ADMIN_TOOLS, ALL_ROLES, COMMON_TOOLS, PROVIDER_ROLES (+7 more)
 
 ### Community 36 - "admin · status-badge.tsx"
 Cohesion: 0.08
@@ -647,8 +643,8 @@ Cohesion: 0.11
 Nodes (17): _timer, ../providers/providers_provider.dart, _active, build, _buildCollapsed, _buildExpanded, _collapse, _controller (+9 more)
 
 ### Community 38 - "app/provider_dashboard · panel_services_tab.dart"
-Cohesion: 0.10
-Nodes (22): ../../../agenda/presentation/screens/manage_appointments_screen.dart, ../../../catalog/presentation/screens/manage_catalog_screen.dart, ../../../menu/presentation/screens/manage_menu_screen.dart, ../../providers/offer_posts_provider.dart, OfferPostsProvider, ../../../quotation/presentation/screens/manage_quotations_screen.dart, build, _buildAddFab (+14 more)
+Cohesion: 0.09
+Nodes (21): chat_screen.dart, PartyDisplay, ../providers/chat_provider.dart, _Avatar, build, c, _ChatRoomTile, createState (+13 more)
 
 ### Community 39 - "backend/quotations · quotations.service.ts"
 Cohesion: 0.13
@@ -659,46 +655,44 @@ Cohesion: 0.09
 Nodes (21): clientName, clientPhone, description, estimatedPrice, fromJson, id, isPending, isResponded (+13 more)
 
 ### Community 41 - "profile_photos_section.dart"
-Cohesion: 0.10
-Nodes (21): AddPhotoTile, build, c, _confirmDeletePhoto, createState, EmptyPhotoTile, locked, max (+13 more)
+Cohesion: 0.15
+Nodes (6): EmailRetentionService, EmailService, baseEmail(), EMAIL_BRANDING, footer(), SOCIAL
 
 ### Community 42 - "app/provider_dashboard · home_services_preview.dart"
-Cohesion: 0.08
-Nodes (25): LeadConversionController, categoryIdsFromLead(), convertLead(), ConvertOptions, ConvertResult, generateAccessPassword(), norm(), resolveLocality() (+17 more)
+Cohesion: 0.07
+Nodes (30): slugify(), uniqueSlug(), categoryIdsFromLead(), convertLead(), ConvertOptions, ConvertResult, generateAccessPassword(), norm() (+22 more)
 
 ### Community 43 - "backend/localities · localities.service.ts"
-Cohesion: 0.07
-Nodes (12): ACTIVE_STATUSES, WEEKDAY_KEYS, CategoryFeatureRow, effectiveFeaturesFromCategories(), FeatureSurface, ProviderFeaturesService, toFeatureArray(), visibleProviderFeatures() (+4 more)
+Cohesion: 0.05
+Nodes (19): ChatService, CategoryLookup, validateProviderCategorySelection(), visibleProviderFeatures(), CANONICAL_PROVIDER_TYPES, isIndividualProviderType(), normalizeProviderType(), providerTypeLabel() (+11 more)
 
 ### Community 44 - "manage_appointments_screen.dart"
 Cohesion: 0.11
 Nodes (19): AutomaticKeepAliveClientMixin, schedule_editor_screen.dart, _ApptTab, _ApptTabState, build, createState, _emptyLabel, _fetch (+11 more)
 
 ### Community 45 - "app/shared · cart_order.dart"
-Cohesion: 0.12
-Nodes (16): buffer, buildOrderMessage, buildOrderUrl, cartCount, CartLine, cartTotal, effectivePrice, extractWhatsappNumber (+8 more)
+Cohesion: 0.10
+Nodes (19): buffer, buildOrderMessage, buildOrderUrl, cartCount, CartLine, cartTotal, effectivePrice, extractWhatsappNumber (+11 more)
 
 ### Community 46 - "backend/email · email.service.ts"
 Cohesion: 0.10
 Nodes (20): Admin Panel (Puerto 3001), Backend (Puerto 3000), Caveman Mode: Active, 🚀 Comandos Esenciales (RTK si está disponible), ⭐ Contexto del sistema (auto-cargado — LEER PRIMERO), Contexto Estructural con Graphify, 📁 Estructura y módulos, Flutter Feature-First (+12 more)
 
 ### Community 47 - "app/providers_list · slide_community_visual.dart"
-Cohesion: 0.02
-Nodes (88): ../../features/provider_dashboard/presentation/screens/provider_panel.dart, join_us_components.dart, build, JoinUsInitialView, onOpenPanel, onOpenPanelChoice, onSelectType, join_us_status_banners.dart (+80 more)
+Cohesion: 0.05
+Nodes (34): List, build, color, features, _hex, icon, id, isPopular (+26 more)
 
 ### Community 48 - "app · main.dart"
 Cohesion: 0.03
-Nodes (60): @pragma, core/services/notification_handler.dart, core/widgets/auth_side_effect_dialogs.dart, features/auth/presentation/providers/registration_provider.dart, features/auth/presentation/screens/setup_password_screen.dart, features/auth/presentation/screens/welcome_onboarding_modal.dart, features/chat/presentation/providers/chat_provider.dart, features/favorites/presentation/providers/favorites_provider.dart (+52 more)
+Nodes (61): @pragma, core/services/notification_handler.dart, core/widgets/auth_side_effect_dialogs.dart, features/auth/presentation/providers/registration_provider.dart, features/auth/presentation/screens/setup_password_screen.dart, features/auth/presentation/screens/welcome_onboarding_modal.dart, features/chat/presentation/providers/chat_provider.dart, features/favorites/presentation/providers/favorites_provider.dart (+53 more)
 
 ### Community 49 - "onboarding_screen.dart"
-Cohesion: 0.06
-Nodes (29): bool get, ../../../../core/utils/logger.dart, build, isNegocio, isProfesional, ProfilePreviewMock, type, oficio,
-  profesional,
-  negocio, (+21 more)
+Cohesion: 0.13
+Nodes (14): ../../../../core/utils/logger.dart, clear, _dio, _error, _favoriteIds, _favorites, initialize, isFavorite (+6 more)
 
 ### Community 50 - "backend/admin · events.gateway.ts"
-Cohesion: 0.04
-Nodes (19): AuthSocket, EventsGateway, NotificationPayload, SocketUser, PushNotificationsService, QUOTATION_IMAGE_FOLDERS, PLAN_COSTS, PLAN_DURATION_MONTHS (+11 more)
+Cohesion: 0.08
+Nodes (10): AdminDashboardService, AdminPaymentsService, AdminReportsService, csvRow(), CsvValue, escapeCsvCell(), clearProvidersCache(), planToPriority() (+2 more)
 
 ### Community 51 - "appointments_repository.dart"
 Cohesion: 0.11
@@ -706,11 +700,11 @@ Nodes (18): _action, AppointmentsRepository, cancel, complete, confirm, create, 
 
 ### Community 52 - "guest_chat_screen.dart"
 Cohesion: 0.11
-Nodes (18): ofi_chat_avatar.dart, _ask, build, createState, dispose, _FaqChips, _goToLogin, _GuestBubble (+10 more)
+Nodes (18): ../domain/ai_message_model.dart, ofi_chat_avatar.dart, _ask, build, createState, dispose, _FaqChips, _GuestBubble (+10 more)
 
 ### Community 53 - "app/provider_dashboard · plan_data.dart"
 Cohesion: 0.03
-Nodes (68): icon, kSortOptions, label, subtitle, value, IconData, BenefitRow, build (+60 more)
+Nodes (62): ../../../agenda/presentation/screens/booking_screen.dart, ../../../catalog/presentation/screens/catalog_screen.dart, Color, ../../features/provider_dashboard/presentation/screens/provider_panel.dart, icon, kSortOptions, label, subtitle (+54 more)
 
 ### Community 54 - "filter_bar.dart"
 Cohesion: 0.29
@@ -718,15 +712,15 @@ Nodes (7): 10. Checklist final por feature, Agenda, Carta/Catálogo OFICIO, Coti
 
 ### Community 55 - "profile_availability_section.dart"
 Cohesion: 0.11
-Nodes (18): AvailabilityChip, build, _buildAvailabilitySection, _buildScheduleSection, color, createState, isNegocio, isPaused (+10 more)
+Nodes (17): BenefitRow, build, color, gradient, icon, iconColor, kJoinUsBenefits, label (+9 more)
 
 ### Community 56 - "fix-image-urls.ts"
 Cohesion: 0.33
 Nodes (4): adapter, NEW_BASE, pool, prisma
 
 ### Community 57 - "backend/auth · auth.service.ts"
-Cohesion: 0.04
-Nodes (24): AuthService, TRUSTED_SOCIAL_EMAIL_PROVIDERS, EmailRetentionService, EmailService, baseEmail(), EMAIL_BRANDING, footer(), SOCIAL (+16 more)
+Cohesion: 0.06
+Nodes (9): AuthService, TRUSTED_SOCIAL_EMAIL_PROVIDERS, FirebaseService, AuthAccountService, AuthRegistrationService, RegisterProviderData, RegisterUserData, generateTokens() (+1 more)
 
 ### Community 58 - "app/auth · ofi_speech_bubble.dart"
 Cohesion: 0.05
@@ -734,11 +728,11 @@ Nodes (37): Animation, AnimationController, dart:ui, join_us_initial_view.dart, 
 
 ### Community 59 - "app/providers_list · home_notifications_section.dart"
 Cohesion: 0.03
-Nodes (81): ../../core/constants/app_colors.dart, ../../core/theme/app_theme_colors.dart, ../../../data/dashboard_repository.dart, build, FilterBottomButtons, hasChanges, onApply, onClear (+73 more)
+Nodes (58): build, FilterBottomButtons, hasChanges, onApply, onClear, AppFilterChip, build, color (+50 more)
 
 ### Community 60 - "app/provider_dashboard · home_header.dart"
-Cohesion: 0.05
-Nodes (43): ../../features/providers_list/presentation/providers/providers_provider.dart, accentColor, build, _confirmCancel, _continue, createState, _goToProviderForm, icon (+35 more)
+Cohesion: 0.03
+Nodes (74): ../../../ai_assistant/presentation/ai_assistant_fab.dart, core/router/app_router.dart, ../../features/providers_list/presentation/providers/providers_provider.dart, _handleFcmInbound, _recordBroadcastFromMessage, ../../../notifications/presentation/providers/notifications_provider.dart, accentColor, build (+66 more)
 
 ### Community 61 - "provider_model.dart"
 Cohesion: 0.03
@@ -763,7 +757,7 @@ Nodes (16): 1. Regla de ejecucion, 2.1 Hardening de código activo — PR #49, 2
 
 ### Community 66 - "backend/common · minio.service.ts"
 Cohesion: 0.04
-Nodes (32): IMAGE_FORMATS, ManagedImageLocation, ManagedImageReference, MinioService, SupportedImageFormat, CategoryLookup, validateProviderCategorySelection(), CANONICAL_PROVIDER_TYPES (+24 more)
+Nodes (36): AiKnowledgeSeeder, ACTIVE_STATUSES, WEEKDAY_KEYS, IMAGE_FORMATS, ManagedImageLocation, ManagedImageReference, MinioService, SupportedImageFormat (+28 more)
 
 ### Community 67 - "admin · ai-analytics-content.tsx"
 Cohesion: 0.06
@@ -775,15 +769,19 @@ Nodes (38): ai_assistant_provider.dart, guest_chat_screen.dart, package:mobile/f
 
 ### Community 69 - "offer_form_sheet.dart"
 Cohesion: 0.05
-Nodes (38): ../../../../../core/utils/plan_limits.dart, OfferPostModel, service_components.dart, build, _clearDraft, createState, _descCtrl, dispose (+30 more)
+Nodes (47): ../../../agenda/presentation/screens/manage_appointments_screen.dart, ../../../catalog/presentation/screens/manage_catalog_screen.dart, ../../../menu/presentation/screens/manage_menu_screen.dart, ../../providers/offer_posts_provider.dart, OfferPostsProvider, ../../../quotation/presentation/screens/manage_quotations_screen.dart, build, _buildAddFab (+39 more)
+
+### Community 70 - "backend/providers · providers.controller.ts"
+Cohesion: 0.12
+Nodes (16): accent, avatarInitials, badgeColor, badgeIcon, badgeLabel, build, category, color (+8 more)
 
 ### Community 71 - "app/auth · my_appointments_screen.dart"
-Cohesion: 0.07
-Nodes (48): JoinUsModal, _JoinUsModalState, JoinUsTypeDetail, _JoinUsTypeDetailState, _TrustApprovalDialog, _TrustApprovalDialogState, OfiAvatar, _AnimatedDots (+40 more)
+Cohesion: 0.04
+Nodes (84): FilterRadarMap, _FilterRadarMapState, JoinUsModal, _JoinUsModalState, JoinUsTypeDetail, _JoinUsTypeDetailState, _TrustApprovalDialog, _TrustApprovalDialogState (+76 more)
 
 ### Community 72 - "admin · api.ts"
 Cohesion: 0.03
-Nodes (64): ReferralStats, CONSENT_LABEL, Tab, TABS, AUDIENCES, AdminChatRoom, AdminChatsPage, AdminFormOptions (+56 more)
+Nodes (64): ReferralStats, CONSENT_LABEL, Tab, TABS, AdminChatRoom, AdminChatsPage, AdminFormOptions, AdminOfferItem (+56 more)
 
 ### Community 73 - "service_request_model.dart"
 Cohesion: 0.04
@@ -803,15 +801,15 @@ Nodes (50): package:showcaseview/showcaseview.dart, showcase_data.dart, showcase
 
 ### Community 77 - "service_form_sheet.dart"
 Cohesion: 0.07
-Nodes (29): build, colors, createState, dash, _descCtrl, dispose, existing, existingUrl (+21 more)
+Nodes (27): build, colors, createState, dash, _descCtrl, dispose, existing, existingUrl (+19 more)
 
 ### Community 78 - "app/providers_list · provider_gallery.dart"
-Cohesion: 0.15
-Nodes (13): package:photo_view/photo_view.dart, package:photo_view/photo_view_gallery.dart, accent, build, createState, _currentIndex, dispose, images (+5 more)
+Cohesion: 0.12
+Nodes (15): ../../features/localities/data/dynamic_locations.dart, build, department, district, gpsLoading, LocationSection, onDepartmentChanged, onDistrictChanged (+7 more)
 
 ### Community 79 - "backend/ai-assistant · ai-assistant.service.ts"
-Cohesion: 0.10
-Nodes (15): asString(), captureSearchProviders(), CALLER, mockGenerateContent, AiCaller, AiHistoryTurn, CALLER, mockGenerateContent (+7 more)
+Cohesion: 0.11
+Nodes (11): userDailyKey(), asString(), captureSearchProviders(), classifyIntent(), dedupeProviders(), secondsUntilPeruMidnight(), AiAssistantService, CALLER (+3 more)
 
 ### Community 80 - "app_router.dart"
 Cohesion: 0.04
@@ -835,15 +833,15 @@ Nodes (8): AcceptOfferDto, ArrivedDto, CreateServiceRequestDto, PaginateRequests
 
 ### Community 85 - "backend/admin · admin.controller.ts"
 Cohesion: 0.03
-Nodes (20): AdminController, ALLOWED_IMAGE_EXTENSIONS, imageFilter(), memOpts, providerImagesOpts, trustValidationImagesOpts, CreateLocalityDto, UpdateLocalityDto (+12 more)
+Nodes (11): AdminController, CreateLocalityDto, UpdateLocalityDto, BroadcastEmailDto, EmailAudience, CATEGORY_PROVIDER_TYPES, CreateCategoryDto, UpdateCategoryDto (+3 more)
 
 ### Community 86 - "panel_stats_tab.dart"
-Cohesion: 0.06
-Nodes (33): _BigStatCard, build, _buildContactBreakdown, _buildDailyChart, _buildPeriodSelector, _buildProfileInfo, _buildRatingSection, _buildSummaryCards (+25 more)
+Cohesion: 0.04
+Nodes (47): build, coverUrl, HomeHeader, HomeServiceBadge, isNegocio, isPaused, name, planBadgeIsLast (+39 more)
 
 ### Community 88 - "app/auth · edit_profile_screen.dart"
-Cohesion: 0.05
-Nodes (43): ../../../auth/presentation/providers/auth_provider.dart, ../../../../chat/presentation/providers/chat_provider.dart, ../../../../chat/presentation/screens/chat_screen.dart, ../../../favorites/presentation/providers/favorites_provider.dart, featured_carousels.dart, FeaturedGroup, login_required_dialog.dart, ProviderModel get (+35 more)
+Cohesion: 0.03
+Nodes (93): ../../../auth/presentation/providers/auth_provider.dart, ../../../../chat/presentation/providers/chat_provider.dart, ../../../../chat/presentation/screens/chat_screen.dart, ../../../../core/constants/app_strings.dart, create_review_sheet.dart, ../../../favorites/presentation/providers/favorites_provider.dart, featured_carousels.dart, FeaturedGroup (+85 more)
 
 ### Community 89 - "package.json"
 Cohesion: 0.09
@@ -851,23 +849,25 @@ Nodes (23): dependencies, autoprefixer, class-variance-authority, clsx, date-fns
 
 ### Community 90 - "provider_panel.dart"
 Cohesion: 0.04
-Nodes (49): ../../../../features/subastas/presentation/screens/oportunidades_tab.dart, panel_home_tab.dart, panel_profile_tab.dart, panel_services_tab.dart, panel_settings_tab.dart, panel_stats_tab.dart, PreferredSizeWidget, activeType (+41 more)
+Nodes (51): ../../../../features/subastas/presentation/screens/oportunidades_tab.dart, panel_home_tab.dart, panel_profile_tab.dart, panel_services_tab.dart, panel_settings_tab.dart, panel_stats_tab.dart, PreferredSizeWidget, activeType (+43 more)
 
 ### Community 91 - "backend/ai-assistant · ai-data-access.service.ts"
-Cohesion: 0.06
-Nodes (36): ADMIN, ADMIN_META, CLIENT, mockGenerateContent, PENDING, STATS, TOP, AI_QUERY_STOPWORDS (+28 more)
+Cohesion: 0.05
+Nodes (45): ADMIN, ADMIN_META, CLIENT, mockGenerateContent, PENDING, STATS, TOP, AI_QUERY_STOPWORDS (+37 more)
 
 ### Community 92 - "backend/ai-assistant · ai-quota.service.ts"
-Cohesion: 0.07
-Nodes (16): AiAssistantModule, AiKnowledgeService, KnowledgeEntryDto, AiLearningPublisherService, PublishTemplate, AiLearningIntent, AiLearningService, TurnSignals (+8 more)
+Cohesion: 0.10
+Nodes (12): DAILY_LIMIT_BY_ROLE, AiAssistantModule, AiLearningIntent, AiLearningService, AiQuotaService, RedisLike, formatAiReply(), AdminStrategy (+4 more)
 
 ### Community 93 - "package.json"
 Cohesion: 0.05
 Nodes (44): dependencies, bcrypt, cache-manager, cache-manager-redis-yet, class-transformer, class-validator, compression, dotenv (+36 more)
 
 ### Community 94 - "panel_profile_tab.dart"
-Cohesion: 0.14
-Nodes (13): Color get, IconData get, legal_content.dart, _accentColor, build, _content, _icon, LegalSection (+5 more)
+Cohesion: 0.08
+Nodes (22): Color get, IconData get, legal_content.dart, oficio,
+  profesional,
+  negocio,, _accentColor, build, _content, _icon (+14 more)
 
 ### Community 95 - "chat_provider.dart"
 Cohesion: 0.05
@@ -877,9 +877,13 @@ Nodes (42): ../../data/chat_repository.dart, _activeProviderType, _activeRoomId,
 Cohesion: 0.05
 Nodes (42): approvedAt, approvedInvited, avatarUrl, averageRating, businessName, categoryName, code, CoinRedemption (+34 more)
 
+### Community 97 - "backend/ai-assistant · ai-analytics.service.ts"
+Cohesion: 0.13
+Nodes (15): build, _ClientQuotCard, createState, _future, initState, message, MyQuotationsScreen, _MyQuotationsScreenState (+7 more)
+
 ### Community 98 - "app/catalog · catalog_repository.dart"
-Cohesion: 0.05
-Nodes (50): ../../../core/errors/app_exception.dart, ../../../../core/errors/failures.dart, ../../../core/network/dio_client.dart, dart:io, CatalogRepository, createProduct, deleteProduct, _dio (+42 more)
+Cohesion: 0.09
+Nodes (22): ../../../core/errors/app_exception.dart, ../../../../core/errors/failures.dart, createMercadoPagoPreference, _dio, getMyPayments, _handleDio, PaymentsRepository, submitYapePayment (+14 more)
 
 ### Community 99 - "location_picker_sheet.dart"
 Cohesion: 0.05
@@ -903,19 +907,19 @@ Nodes (36): ../../../../core/network/socket_service.dart, _activeProfileType, ad
 
 ### Community 104 - "app/providers_list · provider_detail_screen.dart"
 Cohesion: 0.05
-Nodes (42): _accent, build, _buildReportButton, _buildReviewsSection, _canReview, collapseLabel, createState, expandLabel (+34 more)
+Nodes (40): _accent, build, _buildReportButton, _buildReviewsSection, _canReview, collapseLabel, createState, expandLabel (+32 more)
 
 ### Community 105 - "trust_validation_form_screen.dart"
 Cohesion: 0.05
-Nodes (41): ../../data/trust_validation_repository.dart, _bizAddressCtrl, build, _businessPhoto, _businessPhoto2, _CameraHint, _capturePhoto, createState (+33 more)
+Nodes (39): ../../data/trust_validation_repository.dart, _bizAddressCtrl, build, _businessPhoto, _businessPhoto2, _CameraHint, _capturePhoto, createState (+31 more)
 
 ### Community 106 - "onboarding_delivery_section.dart"
-Cohesion: 0.07
-Nodes (29): FormState, reset_password_screen.dart, build, ChangePasswordScreen, _ChangePasswordScreenState, _confirmCtrl, controller, createState (+21 more)
+Cohesion: 0.05
+Nodes (41): FormState, package:provider/provider.dart, ../providers/referrals_provider.dart, reset_password_screen.dart, build, ChangePasswordScreen, _ChangePasswordScreenState, _confirmCtrl (+33 more)
 
 ### Community 107 - "backend/users · users.controller.ts"
-Cohesion: 0.13
-Nodes (4): CreateUserReportDto, UpdateProfileDto, UserReportsService, UsersController
+Cohesion: 0.09
+Nodes (6): CreateUserReportDto, SuggestLocalityDto, UpdateProfileDto, LocalitiesController, LocalitiesService, UserReportsService
 
 ### Community 108 - "web · benefits-section.tsx"
 Cohesion: 0.06
@@ -926,8 +930,8 @@ Cohesion: 0.06
 Nodes (28): ChatRoomsList(), Props, ClientSection, FavoriteItem, NotificationItem, AccountMenu(), dropdownVariants, META (+20 more)
 
 ### Community 110 - "admin · page.tsx"
-Cohesion: 0.07
-Nodes (23): DAYS, DEFAULT_SCHEDULE, Props, TYPE_CARD_STYLES, CatNode, EditProviderModal(), PLAN_OPTIONS, Props (+15 more)
+Cohesion: 0.15
+Nodes (8): DAYS, DEFAULT_SCHEDULE, Props, TYPE_CARD_STYLES, AdminFormCategory, AdminFormLocality, getFormOptions(), ProviderType
 
 ### Community 111 - "showcase_data.dart"
 Cohesion: 0.05
@@ -938,8 +942,8 @@ Cohesion: 0.09
 Nodes (18): DashboardPage(), ExpiringProvidersModal, GraceProvidersTable(), Props, colorConfig, MetricCard(), MetricCardProps, ReferralsWidget() (+10 more)
 
 ### Community 113 - "backend/app.controller.ts · app.controller.ts"
-Cohesion: 0.09
-Nodes (28): AdminModule, AppointmentsModule, AuthModule, ChatModule, CommonModule, ProviderFeaturesModule, EmailModule, EventsModule (+20 more)
+Cohesion: 0.10
+Nodes (26): AdminModule, AppointmentsModule, AuthModule, AdminChatsController, ChatModule, ProviderFeaturesModule, EmailModule, EventsModule (+18 more)
 
 ### Community 114 - "my_requests_screen.dart"
 Cohesion: 0.05
@@ -962,8 +966,8 @@ Cohesion: 0.06
 Nodes (34): _cache, _categoriesFromMap, _categoriesToMap, category, CategoryModel, checkRecommendation, children, data (+26 more)
 
 ### Community 119 - "backend/offer-posts · offer-posts.controller.ts"
-Cohesion: 0.07
-Nodes (8): CreateOfferPostDto, UpdateOfferPostDto, ReportOfferDto, VALID_REASONS, AdminOffersController, OffersPublicController, ProviderOffersController, OfferPostsService
+Cohesion: 0.06
+Nodes (11): CommonModule, CreateOfferPostDto, UpdateOfferPostDto, ReportOfferDto, VALID_REASONS, AdminOfferReportsController, AdminOffersController, OffersPublicController (+3 more)
 
 ### Community 120 - "create_review_sheet.dart"
 Cohesion: 0.06
@@ -971,7 +975,7 @@ Nodes (35): package:mobile/core/errors/app_exception.dart, package:mobile/core/u
 
 ### Community 121 - "oportunidades_tab.dart"
 Cohesion: 0.06
-Nodes (35): _availableFooter, _BlockedBanner, _budgetLabel, canParticipate, color, _CountdownBadge, createState, _detailStatus (+27 more)
+Nodes (33): _availableFooter, _BlockedBanner, _budgetLabel, canParticipate, color, _CountdownBadge, createState, _detailStatus (+25 more)
 
 ### Community 122 - "phone_input_section.dart"
 Cohesion: 0.05
@@ -986,20 +990,20 @@ Cohesion: 0.06
 Nodes (33): acceptOffer, createRequest, ../../data/subastas_repository.dart, deleteRequest, _dio, getMyRequests, getOpportunities, _handleDio (+25 more)
 
 ### Community 125 - "app/subastas · publish_request_sheet.dart"
-Cohesion: 0.06
-Nodes (32): double? _lat,, _budgetMaxCtrl, _budgetMinCtrl, build, _categories, _catIcon, _catQuery, _catSearchCtrl (+24 more)
+Cohesion: 0.05
+Nodes (41): double? _lat,, package:flutter/services.dart, package:share_plus/share_plus.dart, Route /my-requests, _budgetMaxCtrl, _budgetMinCtrl, build, _categories (+33 more)
 
 ### Community 126 - "backend/payments · payments.service.ts"
-Cohesion: 0.11
-Nodes (9): PAID_PLANS, PaidPlan, PROVIDER_TYPES, ProviderTypeValue, MercadoPagoService, PaymentsService, PLAN_PRICES_PEN, PLAN_PRIORITY (+1 more)
+Cohesion: 0.07
+Nodes (10): CreatePreferenceDto, PAID_PLANS, PaidPlan, PROVIDER_TYPES, ProviderTypeValue, SubmitYapeDto, MercadoPagoController, MercadoPagoService (+2 more)
 
 ### Community 127 - "referral_my_code_tab.dart"
 Cohesion: 0.17
-Nodes (11): build, code, coins, CoinsCard, color, _copyToClipboard, icon, label (+3 more)
+Nodes (11): code, coins, CoinsCard, color, _copyToClipboard, icon, label, MetricBox (+3 more)
 
 ### Community 128 - "home_recent_chats.dart"
-Cohesion: 0.06
-Nodes (33): ../../../../chat/domain/models/chat_room_model.dart, ChatRoomSummary, ../../../domain/models/service_item_model.dart, build, _ChatRow, _Empty, HomeRecentChats, _initialAvatar (+25 more)
+Cohesion: 0.03
+Nodes (60): ../../../../chat/domain/models/chat_room_model.dart, ChatRoomSummary, ../../core/theme/app_theme_colors.dart, ../../../domain/models/service_item_model.dart, build, label, SectionLabel, build (+52 more)
 
 ### Community 129 - "web · types.ts"
 Cohesion: 0.21
@@ -1015,7 +1019,7 @@ Nodes (17): file, bgCard, build, colors, existingPhotoUrl, icon, isEditMode, kee
 
 ### Community 132 - "ai_assistant_fab.dart"
 Cohesion: 0.06
-Nodes (33): ai_assistant_screen.dart, ofi_avatar.dart, ofi_speech_bubble.dart, AiAssistantFab, _AiAssistantFabState, _audience, _avatarSize, _bubbleVisible (+25 more)
+Nodes (30): ai_assistant_screen.dart, ofi_avatar.dart, ofi_speech_bubble.dart, _audience, _avatarSize, _bubbleVisible, build, _canShowBubble (+22 more)
 
 ### Community 133 - "app/provider_dashboard · settings_dialogs.dart"
 Cohesion: 0.11
@@ -1030,8 +1034,8 @@ Cohesion: 0.05
 Nodes (36): EditAction, EMPTY_FORM, REASON_LABELS, ReportsDashboard(), PROVIDER_TYPE_LABEL, providerTypeLabel(), TrustValidationDetailPage(), AdminReward (+28 more)
 
 ### Community 136 - "filter_sheet.dart"
-Cohesion: 0.06
-Nodes (31): ../../core/services/geocoding_service.dart, filter/filter_availability_section.dart, filter/filter_bottom_buttons.dart, filter/filter_location_section.dart, filter/filter_radar_map.dart, filter/filter_section_label.dart, filter/filter_sort_section.dart, filter/filter_verification_section.dart (+23 more)
+Cohesion: 0.07
+Nodes (29): ../../core/services/geocoding_service.dart, filter/filter_availability_section.dart, filter/filter_bottom_buttons.dart, filter/filter_location_section.dart, filter/filter_radar_map.dart, filter/filter_section_label.dart, filter/filter_sort_section.dart, filter/filter_verification_section.dart (+21 more)
 
 ### Community 137 - "dashboard_repository.dart"
 Cohesion: 0.06
@@ -1046,8 +1050,8 @@ Cohesion: 0.08
 Nodes (20): AiChatResponse, AiHistoryResponse, AiSupportAction, FAQ_ITEMS, getAccessToken(), getRedirectPath(), isAuthenticated(), saveSession() (+12 more)
 
 ### Community 140 - "review_detail_sheet.dart"
-Cohesion: 0.07
-Nodes (30): ../../../../core/utils/permission_service.dart, ../../data/reviews_repository.dart, review_image_fullscreen.dart, build, _buildCommentBubble, _buildEvidencePhoto, _buildReplyBubble, _buildReviewHeader (+22 more)
+Cohesion: 0.05
+Nodes (38): ../../../../core/utils/permission_service.dart, ../../data/reviews_repository.dart, ReviewModel, package:flutter_rating_bar/flutter_rating_bar.dart, review_image_fullscreen.dart, ../../../../shared/widgets/user_profile_sheet.dart, build, _buildCommentBubble (+30 more)
 
 ### Community 141 - "public_offer_model.dart"
 Cohesion: 0.06
@@ -1055,11 +1059,7 @@ Nodes (30): averageRating, businessName, categories, coverUrl, data, description
 
 ### Community 142 - "app/offer_posts · offers_filter_sheet.dart"
 Cohesion: 0.07
-Nodes (31): ../../../localities/data/dynamic_locations.dart, build, _buildBottomButtons, _buildCategoriesSection, _buildFilteredCategories, _buildHeader, _buildLocationSection, _catChip (+23 more)
-
-### Community 143 - "backend/ai-assistant · openrouter.provider.ts"
-Cohesion: 0.09
-Nodes (12): CALLER, GEMINI_TOOLS, OpenAiFunctionDef, OpenAiMessage, OpenAiTool, OpenAiToolCall, OpenRouterCompletion, OpenRouterGenerateParams (+4 more)
+Nodes (30): ../../../localities/data/dynamic_locations.dart, _buildBottomButtons, _buildCategoriesSection, _buildFilteredCategories, _buildHeader, _buildLocationSection, _catChip, _CategoryChip (+22 more)
 
 ### Community 144 - "admin · provider-detail-modal.tsx"
 Cohesion: 0.22
@@ -1070,8 +1070,8 @@ Cohesion: 0.06
 Nodes (34): ../../data/offers_repository.dart, applyAdvanced, _categorySlugs, clearAdvanced, _department, _district, _fetch, hasAdvancedFilters (+26 more)
 
 ### Community 146 - "backend · prisma.mock.ts"
-Cohesion: 0.12
-Nodes (19): FixtureProvider, pendingProviderFixture(), providerFixture(), rejectedProviderFixture(), build(), build(), build(), build() (+11 more)
+Cohesion: 0.09
+Nodes (28): FixtureProvider, pendingProviderFixture(), providerFixture(), rejectedProviderFixture(), FixtureUser, socialUserFixture(), softDeletedUserFixture(), userFixture() (+20 more)
 
 ### Community 147 - "web · api.ts"
 Cohesion: 0.07
@@ -1082,16 +1082,16 @@ Cohesion: 0.07
 Nodes (28): ../../core/constants/peru_locations.dart, ../../../core/services/local_cache_service.dart, _applyExtras, _cache, _cacheKey, districtsOf, _extraDepts, _extraDists (+20 more)
 
 ### Community 149 - "onboarding_plans_sheet.dart"
-Cohesion: 0.07
-Nodes (27): build, color, createState, _feat, features, highlighted, icon, _isNegocio (+19 more)
+Cohesion: 0.08
+Nodes (25): build, color, createState, _feat, features, highlighted, icon, _isNegocio (+17 more)
 
 ### Community 150 - "user_profile_sheet.dart"
 Cohesion: 0.07
-Nodes (28): package:mobile/features/providers_list/presentation/widgets/login_required_dialog.dart, package:mobile/shared/widgets/user_report_sheet.dart, avatarUrl, build, context, createdAt, createState, firstName (+20 more)
+Nodes (26): package:mobile/features/providers_list/presentation/widgets/login_required_dialog.dart, package:mobile/shared/widgets/user_report_sheet.dart, avatarUrl, build, context, createdAt, createState, firstName (+18 more)
 
 ### Community 151 - "app/chat · chat_screen.dart"
-Cohesion: 0.03
-Nodes (77): chat_screen.dart, main, package:mobile/shared/widgets/app_network_image.dart, package:mobile/shared/widgets/user_profile_sheet.dart, provider_panel.dart, ChatProvider, ../providers/chat_provider.dart, _Avatar (+69 more)
+Cohesion: 0.07
+Nodes (26): package:mobile/shared/widgets/user_profile_sheet.dart, _autoStickToBottom, c, _ChatHeader, _Composer, _controller, createState, _EmptyConversation (+18 more)
 
 ### Community 152 - "backend/referrals · referrals.service.ts"
 Cohesion: 0.07
@@ -1102,8 +1102,8 @@ Cohesion: 0.07
 Nodes (27): compilerOptions, allowSyntheticDefaultImports, baseUrl, declaration, emitDecoratorMetadata, esModuleInterop, experimentalDecorators, forceConsistentCasingInFileNames (+19 more)
 
 ### Community 154 - "chat_room_model.dart"
-Cohesion: 0.07
-Nodes (26): chat_message_model.dart, avatarUrl, businessName, ChatRoomSummary, client, clientId, ClientPreview, copyWith (+18 more)
+Cohesion: 0.08
+Nodes (25): chat_message_model.dart, avatarUrl, businessName, ChatRoomSummary, client, clientId, ClientPreview, copyWith (+17 more)
 
 ### Community 155 - "app/core · social_auth_service.dart"
 Cohesion: 0.07
@@ -1111,11 +1111,11 @@ Nodes (28): _, _auth, cancelled, _codeChallenge, error, errorMessage, _generateC
 
 ### Community 156 - "app/provider_dashboard · home_stat_cards.dart"
 Cohesion: 0.03
-Nodes (63): Color, dart:math, analytics, build, color, HomeStatsGrid, icon, isLoading (+55 more)
+Nodes (77): join_us_components.dart, build, JoinUsInitialView, onOpenPanel, onOpenPanelChoice, onSelectType, _AnimatedPlanCard, build (+69 more)
 
 ### Community 157 - "app/ai_assistant · ai_assistant_repository.dart"
 Cohesion: 0.08
-Nodes (24): AiErrorKind, AiHistoryTurn, blocked, cached, _dio, _extractMessage, fetchHistory, fromJson (+16 more)
+Nodes (23): AiErrorKind, AiHistoryTurn, blocked, cached, _dio, _extractMessage, fetchHistory, fromJson (+15 more)
 
 ### Community 158 - "ai_assistant_provider.dart"
 Cohesion: 0.06
@@ -1126,20 +1126,20 @@ Cohesion: 0.07
 Nodes (28): _autoAdvanceTimer, build, _buildSlides, createState, _currentPage, dispose, _entryController, _entryFade (+20 more)
 
 ### Community 160 - "backend/ai-assistant · ai-feature-flag.service.ts"
-Cohesion: 0.08
-Nodes (21): AiAssistantController, CachedResponse, AiChatResult, AiToolDef, AiUserRole, ProviderCardDto, AiFeatureFlagService, AiHistoryTurnDto (+13 more)
+Cohesion: 0.10
+Nodes (12): AiAssistantController, CachedResponse, AiChatResult, AiUserRole, ProviderCardDto, AiFeatureFlagService, CALLER, mockGenerateContent (+4 more)
 
 ### Community 161 - "web · hero-section.tsx"
 Cohesion: 0.07
 Nodes (26): containerVariants, itemVariants, StatDef, StatItem(), statItemVariants, stats, statsContainerVariants, StatTone (+18 more)
 
 ### Community 162 - "filter_radar_map.dart"
-Cohesion: 0.06
-Nodes (30): _animateTo, build, _center, createState, department, didUpdateWidget, dispose, district (+22 more)
+Cohesion: 0.07
+Nodes (26): _animateTo, build, _center, createState, department, didUpdateWidget, dispose, district (+18 more)
 
 ### Community 163 - "app/auth · join_us_type_detail.dart"
-Cohesion: 0.07
-Nodes (28): badge, build, ctaLabel, features, FreePeriodBanner, isHighlighted, name, onCta (+20 more)
+Cohesion: 0.13
+Nodes (14): badge, build, ctaLabel, features, FreePeriodBanner, isHighlighted, name, onCta (+6 more)
 
 ### Community 164 - "app/subastas · submit_offer_sheet.dart"
 Cohesion: 0.10
@@ -1151,7 +1151,7 @@ Nodes (24): ../../../provider_dashboard/domain/models/service_item_model.dart, b
 
 ### Community 166 - "app/auth · registration_provider.dart"
 Cohesion: 0.10
-Nodes (19): ../../data/auth_repository.dart, package:flutter/foundation.dart, clearError, clearPendingRegistration, _error, hasPending, _isLoading, _pendingEmail (+11 more)
+Nodes (18): AuthRepository, ../../data/auth_repository.dart, adapter, main, repo, package:mobile/core/errors/failures.dart, package:mobile/features/auth/data/auth_repository.dart, clearError (+10 more)
 
 ### Community 167 - "web · referral-panel.tsx"
 Cohesion: 0.08
@@ -1162,8 +1162,8 @@ Cohesion: 0.08
 Nodes (24): dio_client.dart, ../errors/app_exception.dart, ../../features/auth/data/auth_local_storage.dart, ../../features/auth/data/saved_accounts_storage.dart, Interceptor, _accessToken, ApiInterceptor, _bareDio (+16 more)
 
 ### Community 169 - "app/auth · profile_badges.dart"
-Cohesion: 0.06
-Nodes (31): package:provider/provider.dart, AccountTypeBadge, ApprovalStep, auth, build, description, _isNegocio, _isProfesional (+23 more)
+Cohesion: 0.21
+Nodes (3): AiKnowledgeService, AiLearningPublisherService, PublishTemplate
 
 ### Community 170 - "user_model.dart"
 Cohesion: 0.09
@@ -1182,8 +1182,8 @@ Cohesion: 0.12
 Nodes (13): firebaseApp(), firebaseConfig, getFirebaseAuth(), signInWithGoogleIdToken(), districtsOf(), PERU_DEPARTMENTS, PERU_DISTRICTS, PERU_PROVINCES (+5 more)
 
 ### Community 174 - "app · chat_screen_test.dart"
-Cohesion: 0.07
-Nodes (28): package:mobile/features/chat/domain/models/chat_message_model.dart, package:mobile/features/chat/presentation/providers/chat_provider.dart, package:mobile/features/chat/presentation/screens/chat_screen.dart, adapter, main, msgJson, roomJson, currentUserId (+20 more)
+Cohesion: 0.06
+Nodes (33): main, package:mobile/features/auth/domain/models/user_model.dart, package:mobile/features/chat/domain/models/chat_message_model.dart, package:mobile/features/chat/domain/models/chat_room_model.dart, package:mobile/features/chat/presentation/providers/chat_provider.dart, package:mobile/features/chat/presentation/screens/chat_screen.dart, package:mobile/features/providers_list/domain/models/review_model.dart, package:mobile/features/referrals/domain/models/referral_models.dart (+25 more)
 
 ### Community 175 - "reset_password_screen.dart"
 Cohesion: 0.09
@@ -1198,8 +1198,8 @@ Cohesion: 0.09
 Nodes (21): ChatMessagesPage, ChatRepository, ChatRoomBasic, clientId, createdAt, _dio, fromJson, getMyRooms (+13 more)
 
 ### Community 178 - "app/auth · saved_accounts_storage.dart"
-Cohesion: 0.09
-Nodes (21): accessToken, addOrUpdate, clear, email, firstName, fromJson, fullName, getAll (+13 more)
+Cohesion: 0.04
+Nodes (46): AuthLocalStorage, clearSession, getAccessToken, getRefreshToken, getUser, hasSession, _keyAccessToken, _keyRefreshToken (+38 more)
 
 ### Community 179 - "app/subastas · offer_comparison_sheet.dart"
 Cohesion: 0.09
@@ -1207,7 +1207,7 @@ Nodes (20): OfferModel, ServiceRequestModel, ../../../offer_posts/presentation/s
 
 ### Community 180 - "app/providers_list · join_us_fab.dart"
 Cohesion: 0.04
-Nodes (57): ../../../auth/presentation/screens/onboarding/provider_onboarding_form.dart, ../../../auth/presentation/widgets/join_us/join_us_modal.dart, ../../../../core/constants/app_strings.dart, create_review_sheet.dart, MaterialPageRoute, _openAssistant, _, accountTypeLabel (+49 more)
+Nodes (56): ../../../auth/presentation/screens/onboarding/provider_onboarding_form.dart, ../../../auth/presentation/widgets/join_us/join_us_modal.dart, MaterialPageRoute, _openAssistant, _goToLogin, AccountTypeBadge, ApprovalStep, auth (+48 more)
 
 ### Community 181 - "_contributing.md"
 Cohesion: 0.12
@@ -1231,7 +1231,7 @@ Nodes (19): Duration get, categories, createdAt, description, expiresAt, fromJso
 
 ### Community 186 - "card_location_text.dart"
 Cohesion: 0.05
-Nodes (36): EdgeInsetsGeometry, package:mobile/core/services/geocoding_service.dart, package:mobile/shared/widgets/skeleton_loaders.dart, package:shimmer/shimmer.dart, build, createState, didUpdateWidget, fallbackToLocality (+28 more)
+Nodes (34): EdgeInsetsGeometry, package:mobile/core/services/geocoding_service.dart, package:mobile/shared/widgets/skeleton_loaders.dart, package:shimmer/shimmer.dart, build, createState, didUpdateWidget, fallbackToLocality (+26 more)
 
 ### Community 187 - "app/referrals · referral_earn_coins_tab.dart"
 Cohesion: 0.14
@@ -1294,12 +1294,12 @@ Cohesion: 0.11
 Nodes (18): ../../data/saved_accounts_storage.dart, SavedAccount, account, _accounts, _AccountTile, build, _confirmDelete, createState (+10 more)
 
 ### Community 203 - "backend/ai-assistant · ai-analytics.service.ts"
-Cohesion: 0.07
-Nodes (20): AiAnalyticsController, AiAnalyticsService, AiSecurityEventsDto, AiSummaryDto, AiTopQueryDto, AiUsagePoint, TimelineRow, breakerOpensKey() (+12 more)
+Cohesion: 0.09
+Nodes (13): AiAnalyticsController, AiAnalyticsService, AiSecurityEventsDto, AiSummaryDto, AiTopQueryDto, AiUsagePoint, TimelineRow, breakerOpensKey() (+5 more)
 
 ### Community 204 - "app/auth · change_password_screen.dart"
 Cohesion: 0.15
-Nodes (12): package:flutter_secure_storage/flutter_secure_storage.dart, didChangePlatformBrightness, dispose, initialize, isDark, _kThemeKey, _mode, setMode (+4 more)
+Nodes (10): main, chicha, lomo, main, package:mobile/features/menu/domain/menu_order.dart, package:mobile/features/menu/domain/models/menu_item_model.dart, package:mobile/features/menu/presentation/widgets/menu_item_card.dart, package:mobile/features/providers_list/domain/models/provider_model.dart (+2 more)
 
 ### Community 205 - "report_sheet.dart"
 Cohesion: 0.11
@@ -1323,7 +1323,7 @@ Nodes (19): ElevatedButton, package:mobile/core/theme/theme_provider.dart, packa
 
 ### Community 210 - "chat_message_model.dart"
 Cohesion: 0.12
-Nodes (16): DateTime?, apiName, ChatMessageModel, chatRoomId, clientTempId, content, copyWith, createdAt (+8 more)
+Nodes (16): int?, apiName, ChatMessageModel, chatRoomId, clientTempId, content, copyWith, createdAt (+8 more)
 
 ### Community 211 - "notification_model.dart"
 Cohesion: 0.11
@@ -1338,8 +1338,8 @@ Cohesion: 0.11
 Nodes (17): Position?, addressController, build, _buildAddressField, _buildDivider, _buildGpsButton, _buildMapsUrlRow, _buildToggle (+9 more)
 
 ### Community 214 - "app/auth · profile_sections.dart"
-Cohesion: 0.11
-Nodes (18): ActionButton, build, children, color, createState, _ctrl, dispose, _expanded (+10 more)
+Cohesion: 0.10
+Nodes (20): ActionButton, build, children, color, createState, _ctrl, dispose, ExpandableSection (+12 more)
 
 ### Community 216 - "setup_password_screen.dart"
 Cohesion: 0.12
@@ -1363,11 +1363,11 @@ Nodes (22): AiMessageModel, AiSender, AiSupportAction, error, fromJson, greeting
 
 ### Community 221 - "filter_location_section.dart"
 Cohesion: 0.04
-Nodes (55): ../../../data/providers_repository.dart, ../../features/localities/data/dynamic_locations.dart, filter_chip.dart, availability, AvailabilitySection, build, onChanged, build (+47 more)
+Nodes (46): ../../core/constants/app_colors.dart, ../../../data/dashboard_repository.dart, filter_chip.dart, availability, AvailabilitySection, build, onChanged, build (+38 more)
 
 ### Community 222 - "yape_payment_model.dart"
 Cohesion: 0.12
-Nodes (15): amount, createdAt, fromJson, id, isApproved, isPending, isRejected, note (+7 more)
+Nodes (16): DateTime?, amount, createdAt, fromJson, id, isApproved, isPending, isRejected (+8 more)
 
 ### Community 223 - "legal_content.dart"
 Cohesion: 0.12
@@ -1386,20 +1386,20 @@ Cohesion: 0.12
 Nodes (15): 1. Concrete Transformation Patterns, 2. Error-First Structure, 3. Quantified Impact, 4. Self-Contained Examples, 5. Semantic Naming, Code Example Standards, Comments, Impact Level Guidelines (+7 more)
 
 ### Community 227 - "app · app_smoke_test.dart"
-Cohesion: 0.15
-Nodes (12): MaterialApp, NavigatorState, package:flutter_localizations/flutter_localizations.dart, package:mobile/core/constants/feature_flags.dart, package:mobile/core/router/app_router.dart, package:mobile/features/favorites/presentation/providers/favorites_provider.dart, package:mobile/features/provider_dashboard/presentation/providers/offer_posts_provider.dart, _buildApp (+4 more)
+Cohesion: 0.09
+Nodes (20): adapter, installTestBackend, _secureMem, _secureStorageChannel, MaterialApp, mock_dio_adapter.dart, NavigatorState, package:flutter_localizations/flutter_localizations.dart (+12 more)
 
 ### Community 228 - "offer_card_test.dart"
-Cohesion: 0.07
-Nodes (26): main, OfferStatus, package:mobile/features/auth/domain/models/user_model.dart, package:mobile/features/chat/domain/models/chat_room_model.dart, package:mobile/features/providers_list/domain/models/review_model.dart, package:mobile/features/referrals/domain/models/referral_models.dart, package:mobile/features/subastas/domain/models/service_request_model.dart, package:mobile/features/subastas/presentation/providers/subastas_provider.dart (+18 more)
+Cohesion: 0.09
+Nodes (21): OfferStatus, package:mobile/features/subastas/domain/models/service_request_model.dart, package:mobile/features/subastas/presentation/providers/subastas_provider.dart, package:mobile/features/subastas/presentation/widgets/offer_comparison_sheet.dart, adapter, main, offerJson, requestJson (+13 more)
 
 ### Community 229 - "onboarding_category_section.dart"
 Cohesion: 0.12
 Nodes (15): package:mobile/features/providers_list/data/providers_repository.dart, build, categories, CategorySelectionResult, _emitRemove, id, _isNegocio, maxCategories (+7 more)
 
 ### Community 230 - "user_report_sheet.dart"
-Cohesion: 0.09
-Nodes (22): package:mobile/shared/widgets/app_snack_bar.dart, _, confirmDeleteAccount, confirmLogout, ProfileDialogs, showReportProblem, ../../../provider_dashboard/data/dashboard_repository.dart, build (+14 more)
+Cohesion: 0.13
+Nodes (15): build, createState, _descController, dispose, _reasons, reportedUserId, _selectedReason, _sending (+7 more)
 
 ### Community 231 - "package.json"
 Cohesion: 0.10
@@ -1422,8 +1422,8 @@ Cohesion: 0.18
 Nodes (10): 0. Precondición, 3. Commit, 8. Cierre, Subir cambio: rama → PR → CI → merge, 1. Rama segura, 2. Stage selectivo, 4. Push y PR por REST, 5. CI (+2 more)
 
 ### Community 236 - "card_image_carousel.dart"
-Cohesion: 0.14
-Nodes (14): package:carousel_slider/carousel_slider.dart, build, createState, _current, dotSize, errorWidget, fit, height (+6 more)
+Cohesion: 0.13
+Nodes (15): package:carousel_slider/carousel_slider.dart, package:mobile/shared/widgets/app_network_image.dart, build, createState, _current, dotSize, errorWidget, fit (+7 more)
 
 ### Community 237 - "app/payments · payment_history_screen.dart"
 Cohesion: 0.16
@@ -1438,28 +1438,28 @@ Cohesion: 0.14
 Nodes (13): departments, districts, districtsOf, findDepartmentCanonical, findDistrictCanonical, findProvinceCanonical, hasDistricts, _norm (+5 more)
 
 ### Community 240 - "offer_posts_provider.dart"
-Cohesion: 0.09
-Nodes (20): createOffer, ../../data/offer_posts_repository.dart, deleteOffer, _dio, getMyOffers, OfferPostsRepository, updateOffer, ../../../domain/models/offer_post_model.dart (+12 more)
+Cohesion: 0.08
+Nodes (23): bool get, ../../data/offer_posts_repository.dart, ../../../domain/models/offer_post_model.dart, OfferPostsStatus get, package:mobile/shared/widgets/location_picker_sheet.dart, activeOffers, createOffer, deleteOffer (+15 more)
 
 ### Community 241 - "app/auth · auth_local_storage.dart"
-Cohesion: 0.14
-Nodes (13): AuthLocalStorage, clearSession, getAccessToken, getRefreshToken, getUser, hasSession, _keyAccessToken, _keyRefreshToken (+5 more)
+Cohesion: 0.17
+Nodes (11): dep, departmentProvinceLabel, dist, districtProvinceLabel, isBusinessOpen, isPaidPlan, isPremiumPlan, isStandardPlan (+3 more)
 
 ### Community 242 - "app/catalog · catalog_manager_provider.dart"
-Cohesion: 0.13
-Nodes (14): CatalogStatus get, ../../data/catalog_repository.dart, _busy, CatalogStatus, _error, _items, load, providerId (+6 more)
+Cohesion: 0.08
+Nodes (24): CatalogStatus get, CatalogRepository, createProduct, ../../data/catalog_repository.dart, deleteProduct, _dio, getCatalog, reorder (+16 more)
 
 ### Community 243 - "backend/common · prisma-exception.filter.ts"
 Cohesion: 0.17
 Nodes (4): PrismaExceptionFilter, BigintInterceptor, DiagnosticInterceptor, AppModule
 
 ### Community 244 - "admin · expiring-providers-modal.tsx"
-Cohesion: 0.16
-Nodes (11): ExpiringProvidersModal(), Props, ExpiringProvider, getExpiringProviders(), getNotifications(), notifyProvider(), uploadProviderImage(), fetchApi (+3 more)
+Cohesion: 0.09
+Nodes (16): ExpiringProvidersModal(), Props, AUDIENCES, broadcastEmail(), broadcastNotification(), EmailAudience, ExpiringProvider, getExpiringProviders() (+8 more)
 
 ### Community 245 - "admin · page.tsx"
-Cohesion: 0.10
-Nodes (17): AdminTabs(), Tab, PendingApprovalsTable(), Props, RejectModal, TYPE_STYLES, Action, ModalState (+9 more)
+Cohesion: 0.06
+Nodes (32): AdminTabs(), Tab, CatNode, EditProviderModal(), PLAN_OPTIONS, Props, SOCIAL_FIELDS, SocialKey (+24 more)
 
 ### Community 246 - "docs · CONTEXTO_PROYECTO.md"
 Cohesion: 0.15
@@ -1482,20 +1482,24 @@ Cohesion: 0.15
 Nodes (12): BoxFit, package:cached_network_image/cached_network_image.dart, AppNetworkImage, build, errorWidget, fit, height, placeholder (+4 more)
 
 ### Community 252 - "provider_feature_ctas.dart"
-Cohesion: 0.15
-Nodes (12): ../../../agenda/presentation/screens/booking_screen.dart, ../../../catalog/presentation/screens/catalog_screen.dart, ../../../menu/presentation/screens/menu_screen.dart, ../../../quotation/presentation/screens/request_quotation_screen.dart, accent, build, _FeatureCta, icon (+4 more)
+Cohesion: 0.18
+Nodes (10): 1. Alcance de F1, 2. Contrato real de OpenWA usado, 3. Variables de entorno (backend), 4. Persistencia mínima (privacidad), 5. Semántica at-most-once, 6. F0 — configuración de OpenWA (operación manual), 7. Activación (orden estricto), 8. Pruebas (+2 more)
+
+### Community 253 - "backend/chat · chat.service.ts"
+Cohesion: 0.18
+Nodes (10): build, _buildDeliverySection, _buildOficioDomicilioSection, _buildToggleRow, hasDelivery, isOficio, OnboardingDeliverySection, onDeliveryChanged (+2 more)
 
 ### Community 254 - "web · page.tsx"
 Cohesion: 0.10
 Nodes (19): 1.1 El panel web crashea para TODO proveedor Profesional, 1. CRÍTICO — bloquea producción, 2.1 Migrar con UNA sola especialidad devuelve 400 (el caso más común), 2.2 "Ir a mi panel" desde tu propia tarjeta rompe para Profesional (404), 2.3 El FAB "Ir a mi panel" (puerta principal al panel) nunca abre el panel Profesional, 2.4 Yape desde el panel (móvil y web) no manda `providerType` → 400 con 2 perfiles, 2.5 Cancelar plan con 2 perfiles también da 400 (regresión), 2.6 `loadDashboard()` sin argumentos borra el tipo activo y el panel entero empieza a fallar (+11 more)
 
 ### Community 255 - "admin · providers-list.tsx"
-Cohesion: 0.33
-Nodes (4): slugify(), uniqueSlug(), PublicProfessionalProfileDelegate, PublicProfileController
+Cohesion: 0.20
+Nodes (9): appointment_status_chip.dart, ../../../../core/utils/peru_time.dart, Appointment, appt, build, onComplete, onConfirm, onReject (+1 more)
 
 ### Community 256 - "app_exception.dart"
-Cohesion: 0.23
-Nodes (12): AppException, AuthException, ConflictException, fields, message, NetworkException, NotFoundException, ServerException (+4 more)
+Cohesion: 0.26
+Nodes (11): AppException, AuthException, ConflictException, fields, message, NetworkException, NotFoundException, ServerException (+3 more)
 
 ### Community 257 - "app/core · peru_time.dart"
 Cohesion: 0.15
@@ -1510,16 +1514,16 @@ Cohesion: 0.09
 Nodes (19): package:mobile/features/auth/presentation/screens/onboarding/provider_onboarding_form.dart, package:mobile/features/provider_dashboard/presentation/widgets/welcome_provider_plan_modal.dart, package:shared_preferences/shared_preferences.dart, _adminKey, blockingModalActive, hasSeen, hasSeenAdminTab, _keyForUser (+11 more)
 
 ### Community 260 - "backend · gemini.contract.spec.ts"
-Cohesion: 0.22
-Nodes (6): contractShape(), fcContainer(), sdkVersion(), SNAPSHOT_PATH, typeOf(), AdminOfferReportsController
+Cohesion: 0.32
+Nodes (5): contractShape(), fcContainer(), sdkVersion(), SNAPSHOT_PATH, typeOf()
 
 ### Community 261 - "app/referrals · referral_history_tab.dart"
 Cohesion: 0.15
 Nodes (13): @immutable, CoinRedemption, ReferralHistory, referral_helpers.dart, build, _emptyBox, HistoryReferralTile, HistoryTab (+5 more)
 
 ### Community 262 - "review_card.dart"
-Cohesion: 0.18
-Nodes (10): canReview, createReply, createReview, _dio, getProviderReviews, getReplies, ReviewsRepository, updateReview (+2 more)
+Cohesion: 0.06
+Nodes (34): ../../../core/network/dio_client.dart, dart:io, _dio, getExtras, LocalitiesRepository, suggest, createOffer, deleteOffer (+26 more)
 
 ### Community 263 - "backend/ai-assistant · ai-sanitizer.service.ts"
 Cohesion: 0.31
@@ -1534,8 +1538,8 @@ Cohesion: 0.22
 Nodes (9): _map, schedule_editor.dart, build, CollapsibleSchedule, _CollapsibleScheduleState, createState, didUpdateWidget, _expanded (+1 more)
 
 ### Community 267 - "app_snack_bar.dart"
-Cohesion: 0.17
-Nodes (11): _AppSnackContent, build, color, icon, message, onDismiss, _show, showErrorSnack (+3 more)
+Cohesion: 0.22
+Nodes (3): FavoritesController, FavoritesModule, FavoritesService
 
 ### Community 268 - "backend · admin-router.spec.ts"
 Cohesion: 0.11
@@ -1557,21 +1561,17 @@ Nodes (7): ChatMsg, Role, GREETING, AiSupportAction, askAssistant(), getAssistan
 Cohesion: 0.25
 Nodes (7): author, description, license, name, private, type, version
 
-### Community 273 - "web · onboarding-plans-modal.tsx"
-Cohesion: 0.12
-Nodes (17): build, _buildAppBar, createState, isNegocio, isPaused, _isSaving, onPauseToggle, PanelProfileTab (+9 more)
-
 ### Community 274 - "card_contact_actions.dart"
-Cohesion: 0.33
-Nodes (7): package:mobile/core/constants/app_strings.dart, package:url_launcher/url_launcher.dart, _, CardContactActions, makeCall, openWhatsApp, ../../../../../shared/widgets/phone_input_section.dart
+Cohesion: 0.12
+Nodes (16): ../../../data/providers_repository.dart, build, categories, CategorySheetSection, onLeafTap, onParentTap, selectedLeaf, selectedParent (+8 more)
 
 ### Community 275 - "app · app_notification_test.dart"
-Cohesion: 0.17
-Nodes (10): main, package:mobile/features/notifications/domain/models/notification_model.dart, package:mobile/features/notifications/presentation/providers/notifications_provider.dart, adapter, _broadcast, createdAt, id, isRead (+2 more)
+Cohesion: 0.11
+Nodes (15): dart:convert, Future, main, package:mobile/features/notifications/domain/models/notification_model.dart, package:mobile/features/notifications/presentation/providers/notifications_provider.dart, adapter, _broadcast, createdAt (+7 more)
 
 ### Community 276 - "app/auth · welcome_onboarding_modal.dart"
-Cohesion: 0.07
-Nodes (27): PageController, _anim, body, build, createState, _currentPage, dispose, _fadeAnim (+19 more)
+Cohesion: 0.05
+Nodes (38): package:photo_view/photo_view.dart, package:photo_view/photo_view_gallery.dart, PageController, _anim, body, build, createState, _currentPage (+30 more)
 
 ### Community 277 - "referral_helpers.dart"
 Cohesion: 0.25
@@ -1582,12 +1582,12 @@ Cohesion: 0.43
 Nodes (6): fetchProfile(), generateMetadata(), PublicProfile, PublicProfilePage(), ctaPrimary(), ctaSecondary
 
 ### Community 279 - "reviews_repository.dart"
-Cohesion: 0.12
-Nodes (16): build, coverUrl, HomeHeader, HomeServiceBadge, isNegocio, isPaused, name, planBadgeIsLast (+8 more)
+Cohesion: 0.25
+Nodes (7): package:flutter/foundation.dart, AppLogger, error, info, network, success, warning
 
 ### Community 281 - "provider_type_selector.dart"
-Cohesion: 0.22
-Nodes (8): department, district, fromJson, id, LocalityExtra, province, source, toJson
+Cohesion: 0.20
+Nodes (9): department, district, fromJson, id, LocalityExtra, province, source, toJson (+1 more)
 
 ### Community 282 - "SKILL.md"
 Cohesion: 0.18
@@ -1621,10 +1621,6 @@ Nodes (9): 1. Query Performance (query), 2. Connection Management (conn), 3. Sec
 Cohesion: 0.20
 Nodes (9): Compile and run the project, Deployment, Description, License, Project setup, Resources, Run tests, Stay in touch (+1 more)
 
-### Community 298 - "geocoding_helper.dart"
-Cohesion: 0.13
-Nodes (14): CategoryDto, KnowledgeDto, MyContextDto, MyProviderContextDto, MyUserContextDto, OfferDto, PendingApprovalItemDto, PendingApprovalsDto (+6 more)
-
 ### Community 299 - "backend/auth · jwt.strategy.ts"
 Cohesion: 0.12
 Nodes (17): 11. Principio de rollback, 2. Matriz rápida, 4.1 Qué está apagado, 4.2 Backend, 4.3 Mobile, 4.4 Admin, 4.5 Ofi, 4.6 Web (+9 more)
@@ -1642,8 +1638,8 @@ Cohesion: 0.20
 Nodes (9): 1. Query Performance (query), 2. Connection Management (conn), 3. Security & RLS (security), 4. Schema Design (schema), 5. Concurrency & Locking (lock), 6. Data Access Patterns (data), 7. Monitoring & Diagnostics (monitor), 8. Advanced Features (advanced) (+1 more)
 
 ### Community 315 - "users.service.ts"
-Cohesion: 0.12
-Nodes (15): adapter, installTestBackend, _secureMem, _secureStorageChannel, mock_dio_adapter.dart, package:flutter/services.dart, package:mobile/core/network/api_interceptor.dart, package:mobile/core/network/dio_client.dart (+7 more)
+Cohesion: 0.33
+Nodes (5): ../../domain/models/appointment_model.dart, AppointmentStatusChip, build, _color, status
 
 ### Community 321 - "mercadopago-deploy.md"
 Cohesion: 0.22
@@ -1666,8 +1662,8 @@ Cohesion: 0.16
 Nodes (9): ARQUITECTURA DE DESPLIEGUE — Servi, Conexión a base de datos, Estado de despliegue verificado, Límites del tier gratuito (DISEÑAR PARA ESTO), Resiliencia / seguridad operativa, Topología, Variables de entorno críticas (no hardcodear), Índices clave (ya en schema) (+1 more)
 
 ### Community 333 - "referrals.controller.ts"
-Cohesion: 0.15
-Nodes (14): SocialProvider, package:flutter_svg/flutter_svg.dart, package:mobile/core/social_auth_service.dart, build, busy, createState, customLabel, onTap (+6 more)
+Cohesion: 0.16
+Nodes (13): SocialProvider, package:mobile/core/social_auth_service.dart, build, busy, createState, customLabel, onTap, _pressed (+5 more)
 
 ### Community 336 - "SKILL.md"
 Cohesion: 0.25
@@ -1710,8 +1706,8 @@ Cohesion: 0.33
 Nodes (5): Verificación inteligente por diff, 1. Detectar apps afectadas, 2. Checks por app (solo las afectadas), 3. Reporte, Regla
 
 ### Community 346 - "photo_source_sheet.dart"
-Cohesion: 0.05
-Nodes (53): DynamicLocations, ../../features/auth/presentation/providers/auth_provider.dart, _onAuthChanged, profile_components.dart, AvatarPickerManager, build, dispose, InitialsAvatar (+45 more)
+Cohesion: 0.04
+Nodes (60): DynamicLocations, ../../features/auth/presentation/providers/auth_provider.dart, FocusNode, _onAuthChanged, package:mobile/features/auth/presentation/screens/onboarding/onboarding_screen.dart, profile_components.dart, AvatarPickerManager, build (+52 more)
 
 ### Community 347 - "seed.ts"
 Cohesion: 0.40
@@ -1739,15 +1735,15 @@ Nodes (3): kOfertasEnabled, kReferidosEnabled, kSubastasEnabled
 
 ### Community 355 - "plan_limits_test.dart"
 Cohesion: 0.04
-Nodes (48): main, onboarding_address_section.dart, onboarding_category_section.dart, onboarding_delivery_section.dart, onboarding_location_section.dart, onboarding_photo_section.dart, onboarding_social_section.dart, package:mobile/core/utils/plan_limits.dart (+40 more)
+Nodes (46): onboarding_address_section.dart, onboarding_category_section.dart, onboarding_delivery_section.dart, onboarding_location_section.dart, onboarding_photo_section.dart, onboarding_social_section.dart, package:mobile/shared/widgets/collapsible_schedule.dart, addressController (+38 more)
 
 ### Community 425 - "yape_payment_screen.dart"
 Cohesion: 0.14
 Nodes (14): build, createState, _expanded, facebookCtrl, instagramCtrl, isNegocio, linkedinCtrl, OnboardingSocialSection (+6 more)
 
 ### Community 426 - "yape_payment_screen.dart"
-Cohesion: 0.15
-Nodes (13): dart:async, Timer?, build, createState, dispose, GreetingHeader, _GreetingHeaderState, _guestMessages (+5 more)
+Cohesion: 0.17
+Nodes (11): dart:async, Timer?, build, createState, dispose, _guestMessages, liveDistrict, liveProvince (+3 more)
 
 ### Community 439 - "Community 439"
 Cohesion: 0.14
@@ -1756,6 +1752,10 @@ Nodes (13): Admin (Next.js), Commits locales (6, en orden), Deuda menor, no bloq
 ### Community 440 - "Community 440"
 Cohesion: 0.17
 Nodes (12): ProvidersRepository, build, createState, _loading, providerId, _recommend, RecommendModal, _RecommendModalSheet (+4 more)
+
+### Community 441 - "Community 441"
+Cohesion: 0.07
+Nodes (17): AiHistoryTurn, AiConversationService, CALLER, CALLER, mockGenerateContent, CALLER, mockGenerateContent, SAMPLE_PROVIDER (+9 more)
 
 ### Community 442 - "Community 442"
 Cohesion: 0.33
@@ -1774,12 +1774,12 @@ Cohesion: 0.33
 Nodes (6): 1.1 No revertir PR #36 ni PR #37 completos, 1.2 Reactivar una feature por PR, 1.3 Los valores son literales, 1.4 Orden seguro de despliegue, 1.5 Base de datos de producción, 1. Reglas antes de reactivar
 
 ### Community 446 - "Community 446"
-Cohesion: 0.20
-Nodes (11): _, _Benefit, build, c, channel, color, icon, show (+3 more)
+Cohesion: 0.07
+Nodes (27): build, color, ContactPreviewIcon, HomeContactPreview, icon, locked, onTap, profile (+19 more)
 
 ### Community 447 - "Community 447"
 Cohesion: 0.33
-Nodes (5): clearAdminToken(), getAdminRefreshToken(), setAdminRefreshToken(), setAdminToken(), tryRefreshToken()
+Nodes (5): ../../domain/models/quotation_model.dart, build, _color, QuotationStatusChip, status
 
 ### Community 449 - "Community 449"
 Cohesion: 0.33
@@ -1801,10 +1801,6 @@ Nodes (5): 9. Verificación técnica obligatoria, Backend, CI y producción, Mob
 Cohesion: 0.31
 Nodes (8): buildSocialUrl(), SCHEDULE_DAYS, SOCIAL_DEFS, ServiceItem, fetchProfile(), generateMetadata(), PublicProfile, PublicProfilePage()
 
-### Community 456 - "Community 456"
-Cohesion: 0.20
-Nodes (9): ReviewModel, ../../../../shared/widgets/user_profile_sheet.dart, ../sheets/review_detail_sheet.dart, build, _formatDate, _openDetail, providerUserId, review (+1 more)
-
 ### Community 457 - "Community 457"
 Cohesion: 0.20
 Nodes (9): package:mobile/features/ai_assistant/presentation/ai_assistant_fab.dart, package:mobile/features/ai_assistant/presentation/ofi_avatar.dart, _FakeAuth, hasNegocioProfile, hasOficioProfile, hasProfessionalProfile, isAuthenticated, main (+1 more)
@@ -1825,29 +1821,13 @@ Nodes (7): Archivos, Comportamiento, Fotos → R2, Fuera de alcance, Paso 6 — 
 Cohesion: 0.25
 Nodes (4): getTrustValidationList(), TrustValidationItem, PROVIDER_TYPE_META, STATUS_TABS
 
-### Community 465 - "Community 465"
-Cohesion: 0.25
-Nodes (6): main, package:mobile/features/agenda/domain/models/appointment_model.dart, package:mobile/features/agenda/presentation/widgets/provider_appointment_card.dart, appt, host, main
-
 ### Community 466 - "Community 466"
 Cohesion: 0.25
 Nodes (7): accentColor, backgroundImage, SlideData, subtitle, title, visual, Widget?
 
-### Community 469 - "Community 469"
-Cohesion: 0.29
-Nodes (6): AuthRepository, adapter, main, repo, package:mobile/core/errors/failures.dart, package:mobile/features/auth/data/auth_repository.dart
-
-### Community 471 - "Community 471"
-Cohesion: 0.29
-Nodes (7): _handleFcmTap, Route /my-requests, Route /profile, Route /provider-panel, _goBack, route, _goToMyRequests
-
 ### Community 472 - "Community 472"
 Cohesion: 0.40
 Nodes (4): ImageSource, package:image_picker/image_picker.dart, PhotoSourceSheet, show
-
-### Community 473 - "Community 473"
-Cohesion: 0.40
-Nodes (4): build, heroTag, imageUrl, ReviewImageFullscreen
 
 ### Community 475 - "Community 475"
 Cohesion: 0.67
@@ -1858,24 +1838,24 @@ Cohesion: 0.67
 Nodes (3): AiAssistantException, SessionExpiredException, exception
 
 ## Knowledge Gaps
-- **5530 isolated node(s):** `repo`, `asJson`, `head`, `statusLines`, `dirtyFiles` (+5525 more)
+- **5548 isolated node(s):** `repo`, `asJson`, `head`, `statusLines`, `dirtyFiles` (+5543 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **114 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `_` connect `app_router.dart` to `app · app_smoke_test.dart`, `app/auth · profile_badges.dart`, `dio_client.dart`, `app_shell.dart`, `showcase_data.dart`, `app/providers_list · slide_community_visual.dart`, `app/subastas · offer_comparison_sheet.dart`, `photo_source_sheet.dart`, `app/providers_list · home_notifications_section.dart`, `welcome_screen.dart`?**
-  _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **Why does `AuthProvider` connect `photo_source_sheet.dart` to `app/provider_dashboard · profile_reach_section.dart`, `ai_assistant_fab.dart`, `app/provider_dashboard · settings_dialogs.dart`, `app/auth · auth_provider.dart`, `showcase_manager.dart`, `filter_sheet.dart`, `review_detail_sheet.dart`, `app/favorites · favorites_screen.dart`, `app/notifications · notifications_screen.dart`, `backend/menu · menu.service.ts`, `user_profile_sheet.dart`, `app/chat · chat_screen.dart`, `provider_onboarding_form.dart`, `ai_assistant_provider.dart`, `otp_verification_screen.dart`, `app/auth · join_us_type_detail.dart`, `app/subastas · submit_offer_sheet.dart`, `app/provider_dashboard · panel_services_tab.dart`, `app/auth · profile_badges.dart`, `yape_payment_screen.dart`, `app/providers_list · slide_community_visual.dart`, `app · main.dart`, `reset_password_screen.dart`, `app/providers_list · join_us_fab.dart`, `app/auth · ofi_speech_bubble.dart`, `app/provider_dashboard · home_header.dart`, `app/ai_assistant · ai_assistant_screen.dart`, `offer_form_sheet.dart`, `app/auth · my_appointments_screen.dart`, `Community 457`, `app/auth · saved_accounts_screen.dart`, `login_screen.dart`, `service_form_sheet.dart`, `app/offer_posts · offers_screen.cards.dart`, `dashboard_provider.dart`, `app/auth · profile_screen.dart`, `app/offer_posts · offer_detail_sheet.dart`, `panel_stats_tab.dart`, `Community 471`, `app/auth · edit_profile_screen.dart`, `setup_password_screen.dart`, `provider_panel.dart`, `location_picker_sheet.dart`, `app/providers_list · provider_detail_screen.dart`, `trust_validation_form_screen.dart`, `onboarding_delivery_section.dart`, `app/subastas · publish_request_sheet.dart`?**
-  _High betweenness centrality (0.015) - this node is a cross-community bridge._
-- **Why does `_` connect `ofi_messages.dart` to `dio_client.dart`, `app/provider_dashboard · home_stat_cards.dart`, `app/provider_dashboard · plan_data.dart`, `peru_locations.dart`?**
+- **Why does `AuthProvider` connect `photo_source_sheet.dart` to `app/provider_dashboard · profile_reach_section.dart`, `ai_assistant_fab.dart`, `app/provider_dashboard · settings_dialogs.dart`, `app/auth · auth_provider.dart`, `showcase_manager.dart`, `filter_sheet.dart`, `review_detail_sheet.dart`, `app/favorites · favorites_screen.dart`, `app/notifications · notifications_screen.dart`, `backend/menu · menu.service.ts`, `user_profile_sheet.dart`, `app/provider_dashboard · home_stat_cards.dart`, `provider_onboarding_form.dart`, `ai_assistant_provider.dart`, `app/subastas · submit_offer_sheet.dart`, `yape_payment_screen.dart`, `reset_password_screen.dart`, `app · main.dart`, `app/providers_list · join_us_fab.dart`, `app/auth · ofi_speech_bubble.dart`, `app/provider_dashboard · home_header.dart`, `app/ai_assistant · ai_assistant_screen.dart`, `offer_form_sheet.dart`, `app/auth · my_appointments_screen.dart`, `Community 457`, `app/auth · saved_accounts_screen.dart`, `login_screen.dart`, `service_form_sheet.dart`, `app/offer_posts · offers_screen.cards.dart`, `dashboard_provider.dart`, `app/auth · profile_screen.dart`, `app/offer_posts · offer_detail_sheet.dart`, `panel_stats_tab.dart`, `app/auth · edit_profile_screen.dart`, `setup_password_screen.dart`, `provider_panel.dart`, `location_picker_sheet.dart`, `app/providers_list · provider_detail_screen.dart`, `trust_validation_form_screen.dart`, `onboarding_delivery_section.dart`, `app/subastas · publish_request_sheet.dart`?**
+  _High betweenness centrality (0.023) - this node is a cross-community bridge._
+- **Why does `_` connect `app/provider_dashboard · profile_reach_section.dart` to `home_recent_chats.dart`, `app/provider_dashboard · privacy_section.dart`, `app/providers_list · home_notifications_section.dart`, `onboarding_delivery_section.dart`, `app/payments · payment_history_screen.dart`, `app/providers_list · slide_community_visual.dart`, `card_contact_actions.dart`, `app/provider_dashboard · plan_data.dart`, `app/auth · edit_profile_screen.dart`, `service_item_model.dart`, `photo_source_sheet.dart`, `Community 475`, `filter_location_section.dart`?**
   _High betweenness centrality (0.008) - this node is a cross-community bridge._
 - **What connects `repo`, `asJson`, `head` to the rest of the system?**
-  _5530 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _5548 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `backend/appointments · appointments.controller.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.04499217527386541 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.03849544519541581 - nodes in this community are weakly interconnected._
 - **Should `app/quotation · my_quotations_screen.dart` be split into smaller, more focused modules?**
-  _Cohesion score 0.049494949494949494 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.125 - nodes in this community are weakly interconnected._
 - **Should `app/agenda · booking_screen.dart` be split into smaller, more focused modules?**
-  _Cohesion score 0.0425531914893617 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08333333333333333 - nodes in this community are weakly interconnected._
+- **Should `app/provider_dashboard · profile_reach_section.dart` be split into smaller, more focused modules?**
+  _Cohesion score 0.03315105946684894 - nodes in this community are weakly interconnected._
