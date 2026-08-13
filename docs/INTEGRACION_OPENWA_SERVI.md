@@ -1,22 +1,23 @@
-# Integración WhatsApp ↔ OpenWA — F1 (asistente determinista)
+# Integración WhatsApp ↔ OpenWA — F1–F2
 
-**Estado:** F1 implementado en `backend/src/whatsapp-assistant`, **APAGADO por
-defecto** (`WHATSAPP_ASSISTANT_ENABLED=false`). Con el flag apagado el webhook
-responde `204` y no produce ningún efecto (no toca BD, no envía nada, no exige
-secretos).
+**Estado:** F1 determinista y F2 de Ofi público solo lectura implementados en
+`backend/src/whatsapp-assistant`, ambos **APAGADOS por defecto**. El master
+switch `WHATSAPP_ASSISTANT_ENABLED=false` deja el webhook en `204`, sin BD,
+envíos ni secretos. Aun con F1 encendido, F2 requiere su propio opt-in
+`WHATSAPP_ASSISTANT_AI_ENABLED=true`.
 
 **Reparto de responsabilidades:** OpenWA (`D:\OpenWA-Service`) permanece
 **genérico** (sesiones, envío, webhooks). Servi contiene la **identidad, las
-reglas F1, la auditoría mínima y el conocimiento** (FAQ pública). Servi nunca
+reglas, la auditoría mínima y el conocimiento** (FAQ pública y Ofi). Servi nunca
 mete lógica de negocio en OpenWA.
 
 ---
 
-## 1. Alcance de F1
+## 1. Alcance de F1 y F2
 
 - Entrada: webhook `message.received` de OpenWA hacia Servi.
 - Salida: a lo sumo **una** respuesta por mensaje, vía `POST send-text` de OpenWA.
-- Política **100% determinista, sin IA**, sin `AiAssistantService`, sin consultar
+- F1 aplica primero una política **100% determinista**, sin consultar
   usuario/proveedor/cuenta:
   - **FAQ pública de Servi** (servicios, uso de la app, registro, planes,
     proveedores, ayuda).
@@ -27,6 +28,17 @@ mete lógica de negocio en OpenWA.
     asignación/notificación a un agente humano queda para F4.
   - Número no vinculado a una cuenta → **solo FAQ pública** (cero OTP, cuenta o
     perfil). Sin acciones de admin, pagos, perfil, referidos ni escritura.
+- F2 es un enriquecimiento opcional de las consultas que F1 **ya clasificó como
+  Servi**. Reutiliza Ofi con persona `PUBLIC`, sin JWT ni vínculo de cuenta:
+  - Solo `search_providers`, `search_categories` y `explain_feature`; catálogo
+    público de proveedores verificados.
+  - Sin historial, conversaciones, memoria, caché semántica, aprendizaje ni
+    herramientas de usuario, proveedor, admin, pagos o referidos.
+  - No llegan a Ofi teléfono, JID, `chatId`, `messageId` ni sus HMAC; solo el
+    texto entrante. La salida es texto corto con guardrails, sin tarjetas ni
+    datos de contacto.
+  - Un tema fuera de Servi **nunca llega a IA**. Si Ofi está apagada, lenta,
+    bloqueada o sin presupuesto, se conserva la FAQ determinista de F1.
 
 ## 2. Contrato real de OpenWA usado
 
@@ -60,6 +72,17 @@ Ninguna lleva valores reales en `.env.example`. Requeridas **solo al activar**:
 | `OPENWA_WEBHOOK_SECRET`                  | Secreto HMAC (32 bytes) con el que OpenWA firma el webhook.                       |
 | `OPENWA_SERVI_SESSION_ID`                | UUID de la sesión de Servi en OpenWA.                                             |
 | `WHATSAPP_ASSISTANT_CONTACT_HASH_SECRET` | Secreto LOCAL para HMAC de contacto e id de mensaje; ninguno se guarda en claro.  |
+
+Opcionales de F2. F1 no cambia si faltan o si `WHATSAPP_ASSISTANT_AI_ENABLED`
+permanece en `false`:
+
+| Variable | Descripción |
+| --- | --- |
+| `WHATSAPP_ASSISTANT_AI_ENABLED` | Opt-in de Ofi público. `false` por defecto. Requiere además `AI_ENABLED=true` de Ofi. |
+| `WHATSAPP_ASSISTANT_AI_DAILY_PER_CONTACT` | Máximo diario por contacto HMAC. Default `10`; Redis caído = F2 no llama a IA. |
+| `WHATSAPP_ASSISTANT_AI_TIMEOUT_MS` | Deadline por mensaje. Default `12000`; al vencer responde fallback F1. |
+| `WHATSAPP_ASSISTANT_AI_MAX_INPUT_CHARS` | Tope de texto a Ofi. Default `600`. |
+| `WHATSAPP_ASSISTANT_AI_MAX_REPLY_CHARS` | Tope de respuesta WhatsApp. Default `900`. |
 
 ## 4. Persistencia mínima (privacidad)
 
@@ -112,6 +135,9 @@ F0 se hace **una vez, a mano** en OpenWA (Servi no configura OpenWA remoto):
 1. Aplicar `backend/prisma/sql/whatsapp_assistant.sql` en Supabase (manual).
 2. Completar en Render las 6 variables de la §3.
 3. Poner `WHATSAPP_ASSISTANT_ENABLED=true` y reiniciar el backend.
+4. Solo tras validar F1: para F2, asegurar `AI_ENABLED=true`, completar los
+   límites opcionales y poner `WHATSAPP_ASSISTANT_AI_ENABLED=true`. Si F2 falla,
+   apagar solo este segundo switch conserva F1.
 
 ## 8. Pruebas
 
@@ -119,6 +145,9 @@ F0 se hace **una vez, a mano** en OpenWA (Servi no configura OpenWA remoto):
   sesión/evento/`fromMe`/grupo inválidos, flag apagado, duplicado/concurrencia,
   STOP, HUMANO, pausa, fuera de alcance, y que **no** se llama a OpenWA en los
   casos suprimidos.
+- F2 agrega: no IA con flag apagado, cuota HMAC fail-closed, texto sin PII de
+  transporte, límites de entrada/salida, fallback F1 y rechazo fuera de Servi
+  sin llamada a Ofi.
 - Smoke manual (staging): con el flag encendido, enviar a la sesión de Servi
   desde otro número:
   - un texto de FAQ → recibe respuesta pública.
@@ -132,3 +161,6 @@ Poner `WHATSAPP_ASSISTANT_ENABLED=false` y reiniciar: el webhook vuelve a `204`
 inerte al instante, sin borrar datos. El módulo puede además retirarse de
 `AppModule` sin afectar al resto de Servi. Las tablas quedan inertes (se pueden
 conservar); no es necesario tocar Supabase para desactivar.
+
+Para revertir solo F2, poner `WHATSAPP_ASSISTANT_AI_ENABLED=false`: F1 sigue
+activa, determinista y sin llamadas a Ofi.

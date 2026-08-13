@@ -12,12 +12,20 @@
  * para que ninguna persona pueda perder esas garantías.
  */
 
-/** Las 4 personas drásticamente diferentes del asistente. */
+/**
+ * Las personas drásticamente diferentes del asistente.
+ *
+ * `PUBLIC` es la persona de canales ANÓNIMOS externos (WhatsApp, F2): no hay
+ * sesión, no hay cuenta y solo se puede leer catálogo público. No se resuelve
+ * nunca desde `resolvePersona` (el chat autenticado no la alcanza); solo la usa
+ * la ruta interna `chatPublicReadOnly`.
+ */
 export enum AiPersonaType {
   ADMIN = 'ADMIN',
   GUEST = 'GUEST',
   CLIENT = 'CLIENT',
   PROVIDER = 'PROVIDER',
+  PUBLIC = 'PUBLIC',
 }
 
 /**

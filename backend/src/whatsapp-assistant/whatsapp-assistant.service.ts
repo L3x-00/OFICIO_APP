@@ -1,7 +1,13 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  Optional,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { WhatsappAssistantConfig } from './whatsapp-assistant.config.js';
 import { WhatsappPolicyService } from './whatsapp-policy.service.js';
+import { WhatsappAiService } from './whatsapp-ai.service.js';
 import { OpenWaClient, OpenWaSendError } from './openwa.client.js';
 import {
   hashContact,
@@ -50,6 +56,9 @@ export class WhatsappAssistantService {
     private readonly config: WhatsappAssistantConfig,
     private readonly policy: WhatsappPolicyService,
     private readonly openwa: OpenWaClient,
+    // F2: fallback a "Ofi" solo lectura. Opcional — sin él (o con su flag
+    // apagado) el comportamiento es exactamente el determinista de F1.
+    @Optional() private readonly ai?: WhatsappAiService,
   ) {}
 
   async handleWebhook(
@@ -156,13 +165,23 @@ export class WhatsappAssistantService {
       return NO_EFFECT; // bot en pausa: mensajes posteriores no responden.
     }
 
-    // faq | reject ⇒ enviar respuesta.
+    // 6. Solo una consulta que la política YA reconoció como Servi puede llegar
+    //    a Ofi. Un `reject` queda siempre determinista: la IA jamás decide el
+    //    alcance ni recibe mensajes ajenos a la plataforma.
+    //    Si Ofi está apagada, sin presupuesto, bloqueada o lenta, se conserva
+    //    la respuesta FAQ fija de F1.
+    let reply = decision.reply;
+    if (decision.kind === 'faq' && this.ai) {
+      const aiReply = await this.ai.tryAnswer(inbound.text, contactHash);
+      if (aiReply) reply = aiReply;
+    }
+
     return this.sendAndRecord(
       inbound.sessionId,
       inboundId,
       baseUrl,
       inbound.chatId,
-      decision.reply,
+      reply,
     );
   }
 

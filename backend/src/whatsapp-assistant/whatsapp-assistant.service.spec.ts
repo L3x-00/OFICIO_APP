@@ -273,6 +273,91 @@ describe('WhatsappAssistantService', () => {
     expect(text).toBe(OUT_OF_SCOPE_REPLY);
   });
 
+  describe('F2 — fallback a Ofi (solo lectura)', () => {
+    let aiBridge: { tryAnswer: jest.Mock };
+    let withAi: WhatsappAssistantService;
+
+    beforeEach(() => {
+      aiBridge = { tryAnswer: jest.fn().mockResolvedValue(null) };
+      withAi = new WhatsappAssistantService(
+        prisma,
+        config,
+        new WhatsappPolicyService(),
+        openwa as any,
+        aiBridge as any,
+      );
+    });
+
+    it('consulta Servi reconocida + IA con respuesta → envía la respuesta de Ofi', async () => {
+      aiBridge.tryAnswer.mockResolvedValue('Ofi puede ayudarte con Servi.');
+      const [raw, sig] = bodyAndSig(
+        payload({ body: 'quiero buscar gasfiteros en El Tambo' }),
+      );
+      await expect(withAi.handleWebhook(raw, sig)).resolves.toEqual({
+        status: 200,
+      });
+      const [, , , text] = openwa.sendText.mock.calls[0];
+      expect(text).toBe('Ofi puede ayudarte con Servi.');
+      // A la IA solo va el texto; el contacto va como HMAC, nunca el teléfono.
+      const [sentText, contactHash] = aiBridge.tryAnswer.mock.calls[0];
+      expect(sentText).toBe('tienen gasfiteros en el tambo un domingo');
+      expect(contactHash).not.toContain('51999888777');
+    });
+
+    it('fuera de alcance → rechazo determinista sin tocar la IA', async () => {
+      const [raw, sig] = bodyAndSig(payload({ body: 'quien gano la copa' }));
+      await expect(withAi.handleWebhook(raw, sig)).resolves.toEqual({
+        status: 200,
+      });
+      const [, , , text] = openwa.sendText.mock.calls[0];
+      expect(text).toBe(OUT_OF_SCOPE_REPLY);
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+    });
+
+    it('FAQ conocida + Ofi sin respuesta → conserva fallback determinista', async () => {
+      const [raw, sig] = bodyAndSig(payload({ body: '¿cómo me registro?' }));
+      await expect(withAi.handleWebhook(raw, sig)).resolves.toEqual({
+        status: 200,
+      });
+      expect(aiBridge.tryAnswer).toHaveBeenCalledTimes(1);
+    });
+
+    it('STOP y HUMANO nunca llegan a la IA', async () => {
+      const [rawStop, sigStop] = bodyAndSig(payload({ body: 'STOP' }));
+      await withAi.handleWebhook(rawStop, sigStop);
+      const [rawHum, sigHum] = bodyAndSig(
+        payload({ id: 'otro-id', body: 'quiero un humano' }),
+      );
+      await withAi.handleWebhook(rawHum, sigHum);
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+    });
+
+    it('contacto dado de baja → no responde ni consulta la IA', async () => {
+      prisma.whatsappContactPreference.findUnique.mockResolvedValue({
+        optedOutAt: new Date(),
+        humanHandoverAt: null,
+      });
+      const [raw, sig] = bodyAndSig(payload({ body: 'una duda cualquiera' }));
+      await expect(withAi.handleWebhook(raw, sig)).resolves.toEqual({
+        status: 204,
+      });
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+      expect(openwa.sendText).not.toHaveBeenCalled();
+    });
+
+    it('duplicado (P2002) → no consulta la IA ni reenvía', async () => {
+      prisma.whatsappInboundMessage.create.mockRejectedValueOnce({
+        code: 'P2002',
+      });
+      const [raw, sig] = bodyAndSig(payload({ body: 'una duda cualquiera' }));
+      await expect(withAi.handleWebhook(raw, sig)).resolves.toEqual({
+        status: 204,
+      });
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+      expect(openwa.sendText).not.toHaveBeenCalled();
+    });
+  });
+
   it('fallo de envío → marca FAILED con código seguro y no reintenta (200)', async () => {
     openwa.sendText.mockRejectedValueOnce(new OpenWaSendError('SEND_TIMEOUT'));
     const [raw, sig] = bodyAndSig(payload({ body: '¿cómo me registro?' }));

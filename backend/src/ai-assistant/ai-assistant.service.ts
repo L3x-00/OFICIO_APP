@@ -45,6 +45,7 @@ import {
   type AiContextStrategy,
 } from './strategies/ai-context.strategy.js';
 import { GuestStrategy } from './strategies/guest.strategy.js';
+import { PublicStrategy } from './strategies/public.strategy.js';
 import { ClientStrategy } from './strategies/client.strategy.js';
 import { ProviderStrategy } from './strategies/provider.strategy.js';
 import { AdminStrategy } from './strategies/admin.strategy.js';
@@ -92,6 +93,40 @@ interface CachedResponse {
   reply: string;
   type?: 'PROVIDER_RESULTS';
   providers?: ProviderCardDto[];
+}
+
+/**
+ * Interlocutor sintético de la ruta pública (canales anónimos, F2). `userId: 0`
+ * NO identifica a nadie y NUNCA sirve para leer datos de cuenta: la persona
+ * PUBLIC no recibe tools de cuenta y `executeTool` rechaza cualquier tool de
+ * cuenta sin usuario autenticado.
+ */
+const PUBLIC_CALLER: AiCaller = Object.freeze({ userId: 0, role: 'USUARIO' });
+
+/**
+ * Tools que leen datos ASOCIADOS A UNA CUENTA (propia o de plataforma).
+ * Defensa en profundidad sobre la allowlist por persona: sin usuario
+ * autenticado (`userId > 0`) ninguna de estas se ejecuta, aunque un cambio
+ * futuro las dejara entrar en la allowlist de una persona anónima.
+ */
+const ACCOUNT_SCOPED_TOOLS: ReadonlySet<string> = new Set([
+  'recommend_actions',
+  'get_user_coins',
+  'get_referral_stats',
+  'get_my_context',
+  'get_subscription_status',
+  'get_provider_stats',
+  'get_platform_stats',
+  'get_top_providers',
+  'get_pending_approvals',
+]);
+
+/** Deadline propio de la ruta pública: NO cuenta como fallo del proveedor. */
+class PublicRouteTimeoutError extends Error {
+  constructor() {
+    super('public route deadline');
+    this.name = 'PublicRouteTimeoutError';
+  }
 }
 
 /**
@@ -153,6 +188,12 @@ export class AiAssistantService {
     @Optional()
     @Inject(AiLearningService)
     private readonly learning?: AiLearningService,
+    // Persona PUBLIC (canales anónimos externos, F2). Va AL FINAL a propósito:
+    // varios tests construyen el servicio posicionalmente y agregar el
+    // parámetro en medio desplazaría a `openrouter`/`memory`/`learning`.
+    @Optional()
+    @Inject(PublicStrategy)
+    private readonly publicStrategy?: PublicStrategy,
   ) {}
 
   /** Lazy init del SDK moderno @google/genai. */
@@ -504,6 +545,140 @@ export class AiAssistantService {
     };
   }
 
+  // ── Ruta interna PÚBLICA solo-lectura (canales anónimos, F2) ──
+
+  /**
+   * Responde una consulta de un canal EXTERNO ANÓNIMO (WhatsApp) reutilizando
+   * a Ofi en modo público solo-lectura. Es una ruta DELIBERADAMENTE distinta de
+   * `chat`, no una variante con banderas:
+   *
+   *   • NO lee ni persiste conversación, historial ni mensajes.
+   *   • NO usa memoria por usuario/proveedor ni registra learning.
+   *   • NO usa la caché de respuestas (ni lectura ni escritura).
+   *   • NO consume cuota por usuario ni usa un userId (real o falso) para
+   *     obtener datos de cuenta: la persona PUBLIC solo ve catálogo público.
+   *   • NO devuelve tarjetas ni datos de contacto: solo texto ya pasado por
+   *     guardrails (PII redactada) — el canal externo envía únicamente eso.
+   *
+   * Sí respeta el kill-switch global de IA, el circuit breaker y el presupuesto
+   * GLOBAL diario (control de costo, sin identidad).
+   *
+   * Devuelve `null` ante CUALQUIER bloqueo, respuesta vacía o fallo. Nunca
+   * lanza: el llamador debe tener su propia respuesta determinista de reserva.
+   */
+  async chatPublicReadOnly(
+    message: string,
+    options: { timeoutMs?: number } = {},
+  ): Promise<{ reply: string } | null> {
+    const text = typeof message === 'string' ? message.trim() : '';
+    if (!text) return null;
+
+    // Kill-switch global de IA (el flag del canal lo evalúa el propio canal).
+    if (!this.flags.isGloballyEnabled()) return null;
+
+    try {
+      const cb = await this.breaker.canRequest();
+      if (!cb.allowed) return null;
+
+      // Presupuesto GLOBAL diario: acota el costo. No es cuota por usuario ni
+      // depende de ninguna identidad.
+      const budget = await this.consumeCounter(
+        GLOBAL_DAILY_KEY,
+        this.globalDailyLimit(),
+        secondsUntilPeruMidnight() * 1000,
+      );
+      if (!budget.allowed) {
+        this.logger.warn('[AI-PUBLIC] presupuesto global agotado');
+        return null;
+      }
+
+      const san = this.sanitizer.sanitize(text);
+      if (san.flagged) return null;
+
+      const client = this.getClient();
+      if (!client) return null;
+
+      return await this.runPublicGeneration(client, san.cleaned, options);
+    } catch (e) {
+      // Blindaje final: la ruta pública nunca propaga un error al canal.
+      this.logger.warn(
+        `[AI-PUBLIC] fallo no controlado (se ignora): ${
+          (e as Error)?.message ?? 'desconocido'
+        }`,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Generación de la ruta pública con deadline propio. El deadline del canal
+   * es más corto que `GEMINI_TIMEOUT_MS`, por eso NO cuenta como fallo del
+   * circuit breaker: una respuesta lenta no debe abrir el breaker de toda la
+   * app. Un fallo real del proveedor sí se registra.
+   */
+  private async runPublicGeneration(
+    client: GoogleGenAI,
+    cleanedMessage: string,
+    options: { timeoutMs?: number },
+  ): Promise<{ reply: string } | null> {
+    // Sinks obligatorios de `callGemini`: se descartan a propósito. Los
+    // proveedores NO se exponen al canal externo (nada de tarjetas ni
+    // teléfonos) y no se alimenta memoria con los rubros buscados.
+    const providerSink: ProviderCardDto[] = [];
+    const categorySink: string[] = [];
+
+    const pending = this.callGemini(
+      client,
+      PUBLIC_CALLER,
+      cleanedMessage,
+      [], // sin historial: cada mensaje es autónomo.
+      AiPersonaType.PUBLIC,
+      providerSink,
+      categorySink,
+    );
+    // Si vence el deadline, `pending` puede rechazar después: absorbemos ese
+    // rechazo para no generar un unhandledRejection.
+    pending.catch(() => undefined);
+
+    const timeoutMs = options.timeoutMs ?? 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    try {
+      const out = await (timeoutMs > 0
+        ? Promise.race([
+            pending,
+            new Promise<never>((_, reject) => {
+              timer = setTimeout(
+                () => reject(new PublicRouteTimeoutError()),
+                timeoutMs,
+              );
+            }),
+          ])
+        : pending);
+      await this.breaker.recordSuccess();
+
+      const guarded = this.guardrails.apply(formatAiReply(out.reply));
+      if (guarded.toxic) return null;
+      const reply = guarded.safe.trim();
+      return reply.length > 0 ? { reply } : null;
+    } catch (err) {
+      if (err instanceof PublicRouteTimeoutError) {
+        this.logger.warn('[AI-PUBLIC] deadline del canal vencido');
+        return null;
+      }
+      await this.breaker.recordFailure(err);
+      await this.bumpGeminiErrorCounter();
+      this.logger.warn(
+        `[AI-PUBLIC] generación falló: ${
+          err instanceof Error ? err.message : 'desconocido'
+        }`,
+      );
+      return null;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
   /**
    * Historial reciente del usuario para sincronizar el chat entre
    * dispositivos (cross-device). Best-effort: [] si la BD no responde.
@@ -743,6 +918,11 @@ export class AiAssistantService {
     const name = call.name ?? '';
     if (!activeNames.has(name)) {
       return { error: `Herramienta no disponible: ${name || '(sin nombre)'}` };
+    }
+    // Defensa en profundidad: sin usuario autenticado, ninguna tool que lea
+    // datos de cuenta corre — aunque la allowlist de una persona cambiara.
+    if (ACCOUNT_SCOPED_TOOLS.has(name) && !(caller.userId > 0)) {
+      return { error: `Herramienta no disponible: ${name}` };
     }
 
     const args = call.args ?? {};
@@ -1124,6 +1304,8 @@ export class AiAssistantService {
         return this.providerStrategy;
       case AiPersonaType.GUEST:
         return this.guestStrategy;
+      case AiPersonaType.PUBLIC:
+        return this.publicStrategy;
       case AiPersonaType.CLIENT:
       default:
         return this.clientStrategy;
