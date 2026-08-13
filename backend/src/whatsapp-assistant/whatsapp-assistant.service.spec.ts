@@ -331,7 +331,7 @@ describe('WhatsappAssistantService', () => {
       expect(text).toBe('Ofi puede ayudarte con Servi.');
       // A la IA solo va el texto; el contacto va como HMAC, nunca el teléfono.
       const [sentText, contactHash] = aiBridge.tryAnswer.mock.calls[0];
-      expect(sentText).toBe('tienen gasfiteros en el tambo un domingo');
+      expect(sentText).toBe('quiero buscar gasfiteros en El Tambo');
       expect(contactHash).not.toContain('51999888777');
     });
 
