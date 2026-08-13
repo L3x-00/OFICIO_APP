@@ -52,6 +52,19 @@ mete lógica de negocio en OpenWA.
   - Para Ofi, un chat vinculado sigue siendo lectura de catálogo público:
     no historial, memoria, cuenta, pagos, perfil, referidos, admin ni escritura.
 
+### F4 — handover humano, métricas y DLQ segura
+
+- `HUMANO` mantiene la pausa determinista de F1 y, con
+  `WHATSAPP_ASSISTANT_OPERATIONS_ENABLED=true`, abre un único handover opaco
+  por contacto. El panel ADMIN muestra solo identificador interno, estado y
+  hora; no expone `sessionId`, HMAC, teléfono, JID, texto ni cuenta vinculada.
+- La DLQ lista únicamente fallos `FAILED` no reconocidos y su `errorCode`
+  seguro. Reconocer un fallo deja auditoría del admin y **no** reintenta ni
+  permite reenviar: Servi no persiste contenido o destino, para mantener
+  at-most-once y privacidad.
+- F4 usa su propio flag. Apagado, F1-F3 no insertan ni consultan sus tablas y
+  el endpoint admin responde que la operación no está disponible.
+
 ## 2. Contrato real de OpenWA usado
 
 Verificado contra `D:\OpenWA-Service`:
@@ -105,6 +118,13 @@ switch y secreto. El fallo siempre es genérico para no revelar cuentas/códigos
 | `WHATSAPP_ASSISTANT_LINK_SECRET`      | Secreto distinto de HMAC webhook/contacto; mínimo 32 bytes aleatorios. |
 | `WHATSAPP_ASSISTANT_LINK_TTL_MINUTES` | Expiración de desafío. Default `10`, máximo efectivo `30`.             |
 
+Opcional de F4. Requiere SQL manual antes de encenderlo; no modifica el envío
+ni habilita replay de mensajes:
+
+| Variable                                | Descripción                                             |
+| --------------------------------------- | ------------------------------------------------------- |
+| `WHATSAPP_ASSISTANT_OPERATIONS_ENABLED` | Opt-in del ledger de handover/DLQ. `false` por defecto. |
+
 Rutas privadas F3 (todas con JWT y `userId` solo del token):
 `POST /whatsapp-assistant/link-code`, `GET /whatsapp-assistant/link`,
 `DELETE /whatsapp-assistant/link`. Nunca devuelven teléfono, JID o hash.
@@ -120,6 +140,11 @@ Se guardan **solo claves mínimas**: nunca texto ni teléfono.
   **at-most-once** sin persistir ese dato en claro.
 - `whatsapp_contact_preference` — `unique(sessionId, contactHash)` con
   `optedOutAt` / `humanHandoverAt`. El contacto se identifica **solo por HMAC**.
+- F3 añade `whatsapp_link_challenge` y `whatsapp_linked_contact`; ningún código,
+  rol ni teléfono se conserva en claro.
+- F4 añade `whatsapp_handover` (contacto HMAC, estado y tiempos) y dos marcas
+  de reconocimiento DLQ sobre `whatsapp_inbound_message`. El panel ADMIN no
+  selecciona ni recibe `contactHash`, `sessionId` o `messageIdHash`.
 
 SQL idempotente equivalente: `backend/prisma/sql/whatsapp_assistant.sql`. El
 schema Prisma es la fuente; el SQL es el espejo que **el propietario aplica a
@@ -133,8 +158,8 @@ agente ejecuta SQL/Prisma contra prod.
    responde `204` y **no** se produce otra salida.
 3. Antes de llamar a `send-text` se marca `SEND_STARTED`.
 4. Si la llamada sale pero el estado final falla, **no** se reintenta
-   automáticamente (F4 manejará la DLQ). Los fallos de envío guardan solo un
-   `errorCode` seguro.
+   automáticamente. F4 solo permite reconocer el fallo en una DLQ sin replay;
+   los fallos de envío guardan solo un `errorCode` seguro.
 
 ## 6. F0 — configuración de OpenWA (operación manual)
 
@@ -168,6 +193,10 @@ F0 se hace **una vez, a mano** en OpenWA (Servi no configura OpenWA remoto):
    `WHATSAPP_ASSISTANT_LINK_SECRET` y habilitar
    `WHATSAPP_ASSISTANT_LINK_ENABLED=true`. No activar F3 si ese SQL no está
    aplicado; no usar `migrate deploy` ni `db push` contra producción.
+6. Solo tras validar F1-F3: aplicar manualmente
+   `backend/prisma/sql/whatsapp_assistant_operations.sql` y habilitar
+   `WHATSAPP_ASSISTANT_OPERATIONS_ENABLED=true`. El panel ADMIN sirve para
+   tomar handovers y reconocer DLQ; no activa reintentos de entrega.
 
 ## 8. Pruebas
 
@@ -181,6 +210,8 @@ F0 se hace **una vez, a mano** en OpenWA (Servi no configura OpenWA remoto):
 - F3 agrega: código efímero HMAC, vencimiento/uso único, no takeover,
   STOP/HUMANO antes de vínculo, rol ADMIN degradado y contexto vinculado sin
   tools de cuenta.
+- F4 agrega: `HUMANO` crea un único handover opaco, endpoints solo ADMIN,
+  listas sin PII, reconocimiento atómico y DLQ que no llama a OpenWA.
 - Smoke manual (staging): con el flag encendido, enviar a la sesión de Servi
   desde otro número:
   - un texto de FAQ → recibe respuesta pública.
@@ -200,3 +231,6 @@ activa, determinista y sin llamadas a Ofi.
 
 Para revertir solo F3, poner `WHATSAPP_ASSISTANT_LINK_ENABLED=false`: F1/F2
 siguen; los vínculos y desafíos quedan inertes sin borrar historial ni datos.
+
+Para revertir solo F4, poner `WHATSAPP_ASSISTANT_OPERATIONS_ENABLED=false`:
+F1-F3 siguen y el ledger queda inerte. No borra tickets ni habilita reintentos.

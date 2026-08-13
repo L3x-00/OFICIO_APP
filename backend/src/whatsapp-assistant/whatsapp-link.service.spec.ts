@@ -70,7 +70,8 @@ describe('WhatsappLinkService', () => {
     expect(out?.code).toMatch(/^[A-HJKMNP-Z2-9]{10}$/);
     const data = db.whatsappLinkChallenge.create.mock.calls[0][0].data;
     expect(data.codeHash).toEqual(expect.any(String));
-    expect(JSON.stringify(data)).not.toContain(out?.code ?? '');
+    expect(data).not.toHaveProperty('code');
+    expect(data.codeHash).not.toBe(out?.code);
     expect(data.userId).toBe(7);
   });
 

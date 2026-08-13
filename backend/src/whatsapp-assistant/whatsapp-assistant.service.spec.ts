@@ -195,6 +195,33 @@ describe('WhatsappAssistantService', () => {
     );
   });
 
+  it('HUMANO pausa y registra un handover opaco cuando F4 está encendida', async () => {
+    const operations = {
+      recordHandover: jest.fn().mockResolvedValue(undefined),
+    };
+    const withOperations = new WhatsappAssistantService(
+      prisma,
+      config,
+      new WhatsappPolicyService(),
+      openwa as any,
+      undefined,
+      undefined,
+      operations as any,
+    );
+    const [raw, sig] = bodyAndSig(payload({ body: 'HUMANO' }));
+
+    await expect(withOperations.handleWebhook(raw, sig)).resolves.toEqual({
+      status: 200,
+    });
+
+    expect(operations.recordHandover).toHaveBeenCalledWith(
+      prisma,
+      SESSION,
+      expect.any(String),
+    );
+    expect(openwa.sendText).toHaveBeenCalledTimes(1);
+  });
+
   it('duplicado / concurrencia (P2002) → 204 y NO reenvía', async () => {
     prisma.whatsappInboundMessage.create.mockRejectedValueOnce({
       code: 'P2002',

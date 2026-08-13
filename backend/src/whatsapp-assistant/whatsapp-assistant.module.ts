@@ -5,8 +5,11 @@ import { WhatsappAssistantConfig } from './whatsapp-assistant.config.js';
 import { WhatsappPolicyService } from './whatsapp-policy.service.js';
 import { WhatsappAiService } from './whatsapp-ai.service.js';
 import { WhatsappLinkService } from './whatsapp-link.service.js';
+import { WhatsappOperationsController } from './whatsapp-operations.controller.js';
+import { WhatsappOperationsService } from './whatsapp-operations.service.js';
 import { OpenWaClient } from './openwa.client.js';
 import { AiAssistantModule } from '../ai-assistant/ai-assistant.module.js';
+import { AuthModule } from '../auth/auth.module.js';
 
 /**
  * Integración WhatsApp ↔ OpenWA. OFF por defecto
@@ -20,14 +23,15 @@ import { AiAssistantModule } from '../ai-assistant/ai-assistant.module.js';
  * Si se quita de AppModule, Servi compila y funciona igual.
  */
 @Module({
-  imports: [AiAssistantModule],
-  controllers: [WhatsappAssistantController],
+  imports: [AiAssistantModule, AuthModule],
+  controllers: [WhatsappAssistantController, WhatsappOperationsController],
   providers: [
     WhatsappAssistantService,
     WhatsappAssistantConfig,
     WhatsappPolicyService,
     WhatsappAiService,
     WhatsappLinkService,
+    WhatsappOperationsService,
     OpenWaClient,
   ],
 })

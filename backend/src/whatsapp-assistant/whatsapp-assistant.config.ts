@@ -134,6 +134,11 @@ export class WhatsappAssistantConfig {
     );
   }
 
+  /** F4: ledger de handover y fallos de entrega. Default FALSE. */
+  get operationsEnabled(): boolean {
+    return this.bool('WHATSAPP_ASSISTANT_OPERATIONS_ENABLED', false);
+  }
+
   private get isProd(): boolean {
     return (this.config.get<string>('NODE_ENV') ?? '') === 'production';
   }

@@ -13,6 +13,7 @@ import {
   LINK_SUCCESS_REPLY,
   WhatsappLinkService,
 } from './whatsapp-link.service.js';
+import { WhatsappOperationsService } from './whatsapp-operations.service.js';
 import { OpenWaClient, OpenWaSendError } from './openwa.client.js';
 import {
   hashContact,
@@ -65,6 +66,7 @@ export class WhatsappAssistantService {
     // apagado) el comportamiento es exactamente el determinista de F1.
     @Optional() private readonly ai?: WhatsappAiService,
     @Optional() private readonly links?: WhatsappLinkService,
+    @Optional() private readonly operations?: WhatsappOperationsService,
   ) {}
 
   async handleWebhook(
@@ -355,6 +357,7 @@ export class WhatsappAssistantService {
         await this.upsertPreferenceWith(tx, sessionId, contactHash, {
           handover: true,
         });
+        await this.operations?.recordHandover(tx, sessionId, contactHash);
         return { inboundId: row.id, shouldSend: true };
       });
     } catch (err) {

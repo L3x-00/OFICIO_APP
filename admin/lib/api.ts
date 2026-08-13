@@ -146,6 +146,49 @@ export const getAiTopQueries = (limit = 10) =>
 export const getAiSecurityEvents = () =>
   fetchApi<AiSecurityEvents>('/ai-assistant/analytics/security-events');
 
+export interface WhatsappOperationsSummary {
+  handoversToday: number;
+  openHandovers: number;
+  pendingDeliveryFailures: number;
+}
+
+export interface WhatsappHandover {
+  id: number;
+  status: 'OPEN' | 'ACKNOWLEDGED';
+  requestedAt: string;
+}
+
+export interface WhatsappDeliveryFailure {
+  id: number;
+  errorCode: string | null;
+  createdAt: string;
+}
+
+export const getWhatsappOperationsSummary = () =>
+  fetchApi<WhatsappOperationsSummary>('/admin/whatsapp-assistant/summary');
+
+export const getWhatsappHandovers = (limit = 30) =>
+  fetchApi<WhatsappHandover[]>(
+    `/admin/whatsapp-assistant/handovers?limit=${limit}`,
+  );
+
+export const acknowledgeWhatsappHandover = (id: number) =>
+  fetchApi<{ ok: boolean }>(
+    `/admin/whatsapp-assistant/handovers/${id}/acknowledge`,
+    { method: 'POST' },
+  );
+
+export const getWhatsappDeliveryFailures = (limit = 30) =>
+  fetchApi<WhatsappDeliveryFailure[]>(
+    `/admin/whatsapp-assistant/delivery-failures?limit=${limit}`,
+  );
+
+export const acknowledgeWhatsappDeliveryFailure = (id: number) =>
+  fetchApi<{ ok: boolean }>(
+    `/admin/whatsapp-assistant/delivery-failures/${id}/acknowledge`,
+    { method: 'POST' },
+  );
+
 // ── BROADCAST DE NOTIFICACIONES PUSH ───────────────────────
 // El admin envía un push masivo a todos los usuarios con FCM token.
 // El backend responde con `enqueued` (cantidad de tokens encolados)

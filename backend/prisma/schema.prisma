@@ -1237,9 +1237,14 @@ model WhatsappInboundMessage {
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
   processedAt   DateTime?
+  /// Confirmación operativa de un fallo. Nunca habilita reintentos: no se
+  /// conserva el mensaje ni el chat de origen.
+  dlqAcknowledgedAt       DateTime?
+  dlqAcknowledgedByUserId Int?
 
   @@unique([sessionId, messageIdHash])
   @@index([status])
+  @@index([status, dlqAcknowledgedAt])
   @@map("whatsapp_inbound_message")
 }
 
@@ -1298,6 +1303,24 @@ model WhatsappLinkedContact {
   @@map("whatsapp_linked_contact")
 }
 
+/// Handover operativo por contacto opaco. No replica chats, mensajes, JID ni
+/// teléfono: el operador trabaja el caso por el canal autorizado de Servi.
+model WhatsappHandover {
+  id                   Int                     @id @default(autoincrement())
+  sessionId            String
+  contactHash          String
+  status               WhatsappHandoverStatus @default(OPEN)
+  requestedAt          DateTime                @default(now())
+  acknowledgedAt       DateTime?
+  acknowledgedByUserId Int?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  @@unique([sessionId, contactHash])
+  @@index([status, requestedAt])
+  @@map("whatsapp_handover")
+}
+
 enum WhatsappInboundStatus {
   /// Clave creada (guard de idempotencia); aún sin decidir salida.
   RECEIVED
@@ -1309,4 +1332,9 @@ enum WhatsappInboundStatus {
   SUPPRESSED
   /// La llamada de envío falló; se guarda solo errorCode seguro. Sin reintento.
   FAILED
+}
+
+enum WhatsappHandoverStatus {
+  OPEN
+  ACKNOWLEDGED
 }
