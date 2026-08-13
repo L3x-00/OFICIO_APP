@@ -1210,3 +1210,65 @@ enum MessageStatus {
   DELIVERED
   READ
 }
+
+// ─────────────────────────────────────────────────────────────────
+// Integración WhatsApp ↔ OpenWA (F1). OFF por defecto
+// (WHATSAPP_ASSISTANT_ENABLED=false). Persiste SOLO claves mínimas:
+// nunca texto ni teléfono. El teléfono/JID del contacto se guarda
+// SOLO como HMAC (contactHash), nunca en claro.
+// SQL idempotente equivalente: prisma/sql/whatsapp_assistant.sql
+// (lo aplica el USUARIO a mano en Supabase — protocolo /sql-prod).
+// ─────────────────────────────────────────────────────────────────
+
+/// Registro idempotente de un webhook `message.received` procesado.
+/// La unicidad (sessionId, messageIdHash) da semántica at-most-once: un
+/// segundo delivery del mismo mensaje choca en el índice y NO reenvía.
+model WhatsappInboundMessage {
+  id            Int                   @id @default(autoincrement())
+  sessionId     String
+  /// HMAC-SHA256 con separación de dominio del id de mensaje. Algunos ids
+  /// contienen el JID/teléfono, por eso no se guarda el valor original.
+  messageIdHash String
+  status        WhatsappInboundStatus @default(RECEIVED)
+  /// Código seguro y corto del fallo de envío (ej. SEND_TIMEOUT). Sin detalle.
+  errorCode     String?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  processedAt   DateTime?
+
+  @@unique([sessionId, messageIdHash])
+  @@index([status])
+  @@map("whatsapp_inbound_message")
+}
+
+/// Preferencia por contacto (opt-out / pausa por derivación a humano).
+/// El contacto se identifica SOLO por HMAC (sessionId + contactHash),
+/// nunca por teléfono en claro.
+model WhatsappContactPreference {
+  id              Int       @id @default(autoincrement())
+  sessionId       String
+  /// HMAC-SHA256(teléfono/JID, WHATSAPP_ASSISTANT_CONTACT_HASH_SECRET).
+  contactHash     String
+  /// Set cuando el contacto pidió STOP/DETENER: no se le envía más.
+  optedOutAt      DateTime?
+  /// Set cuando pidió HUMANO/ASESOR: el bot queda en pausa para ese contacto.
+  humanHandoverAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([sessionId, contactHash])
+  @@map("whatsapp_contact_preference")
+}
+
+enum WhatsappInboundStatus {
+  /// Clave creada (guard de idempotencia); aún sin decidir salida.
+  RECEIVED
+  /// Marcado ANTES de llamar a OpenWA send-text (at-most-once).
+  SEND_STARTED
+  /// Envío confirmado por OpenWA.
+  SENT
+  /// Procesado sin salida (opt-out, pausa, fuera de alcance sin respuesta).
+  SUPPRESSED
+  /// La llamada de envío falló; se guarda solo errorCode seguro. Sin reintento.
+  FAILED
+}

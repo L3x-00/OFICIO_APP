@@ -37,6 +37,7 @@ import { CatalogModule } from './catalog/catalog.module.js';
 import { QuotationsModule } from './quotations/quotations.module.js';
 import { ProfessionalMigrationsModule } from './professional-migrations/professional-migrations.module.js';
 import { LeadConversionModule } from './lead-conversion/lead-conversion.module.js';
+import { WhatsappAssistantModule } from './whatsapp-assistant/whatsapp-assistant.module.js';
 @Module({
   imports: [
     // 1. Configuración Global
@@ -150,6 +151,9 @@ import { LeadConversionModule } from './lead-conversion/lead-conversion.module.j
     ProfessionalMigrationsModule,
     // Captación: conversión admin de leads NEGOCIO (staging) → Provider real.
     LeadConversionModule,
+    // Integración WhatsApp ↔ OpenWA (F1). OFF por defecto
+    // (WHATSAPP_ASSISTANT_ENABLED=false): el webhook queda inerte (204).
+    WhatsappAssistantModule,
   ],
   controllers: [AppController],
   providers: [

@@ -22,7 +22,12 @@ if (process.env.SENTRY_DSN) {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // rawBody: true → Nest preserva el cuerpo crudo en `req.rawBody`. Lo necesita
+  // el webhook de WhatsApp (whatsapp-assistant) para verificar la firma HMAC
+  // sobre los bytes exactos recibidos. No afecta al resto de rutas.
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
 
   // 0. HARDENING (helmet + compression) ANTES de CORS
   // helmet aplica cabeceras de seguridad (CSP relajada para no romper imágenes
