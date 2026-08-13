@@ -18,6 +18,9 @@ export class LinkedReadOnlyStrategy implements AiContextStrategy {
       'suscripción, acciones de proveedor ni administración.',
       'Si preguntan por datos o cambios de cuenta, indícales entrar a la app o',
       'web de Servi con su sesión. No pidas ni repitas datos personales.',
+      'Puedes compartir solo los enlaces oficiales del contexto curado de Servi.',
+      'No prometas fechas ni menciones o expliques funciones ocultas; redirige',
+      'a buscar y contactar proveedores directamente.',
       'Responde para WhatsApp: máximo 3 frases cortas o 4 viñetas con •.',
     ].join('\n');
   }

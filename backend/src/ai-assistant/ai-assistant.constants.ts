@@ -21,7 +21,8 @@ export const AI_PROMPT_VERSION = 'v2';
 
 // ── Knowledge base (Fase 2) ─────────────────────────────────
 /** Clave Redis del contexto de knowledge cacheado. */
-export const KNOWLEDGE_CACHE_KEY = 'ai:knowledge:context';
+// v2 invalida el bloque previo sin límites al desplegar el contexto acotado.
+export const KNOWLEDGE_CACHE_KEY = 'ai:knowledge:context:v2';
 /** TTL del cache de knowledge: 5 minutos (en ms — cache-manager v5+). */
 export const KNOWLEDGE_CACHE_TTL_MS = 5 * 60 * 1000;
 

@@ -52,7 +52,7 @@ interface LinkStore {
   whatsappLinkedContact: {
     findUnique(args: unknown): Promise<LinkContactRow | null>;
     deleteMany(args: unknown): Promise<unknown>;
-    upsert(args: unknown): Promise<unknown>;
+    upsert(args: unknown): Promise<LinkContactRow>;
   };
   user: {
     findFirst(args: unknown): Promise<LinkUserRow | null>;
@@ -208,12 +208,15 @@ export class WhatsappLinkService {
             NOT: { contactHash },
           },
         });
-        await tx.whatsappLinkedContact.upsert({
+        const persisted = await tx.whatsappLinkedContact.upsert({
           where: { sessionId_contactHash: { sessionId, contactHash } },
           create: { sessionId, contactHash, userId: challenge.userId },
           update: { linkedAt: now },
+          select: { userId: true },
         });
-        return true;
+        // Dos challenges distintos pueden competir por el mismo contacto. El
+        // upsert nunca transfiere el vínculo: confirma solo al dueño resultante.
+        return persisted.userId === challenge.userId;
       });
     } catch {
       // Sin detalle: una excepción de BD jamás filtra estado del código/cuenta.
@@ -280,12 +283,22 @@ export class WhatsappLinkService {
   }
 
   private generateCode(): string {
-    const bytes = randomBytes(LINK_CODE_LENGTH);
     let code = '';
-    for (const byte of bytes) {
-      // El alfabeto tiene 32 símbolos: máscara de 5 bits sin sesgo por módulo.
-      code += LINK_CODE_ALPHABET[byte & 31];
+
+    while (code.length < LINK_CODE_LENGTH) {
+      const bytes = randomBytes(LINK_CODE_LENGTH);
+      for (const byte of bytes) {
+        // El alfabeto tiene 31 símbolos. Rechazar los 8 valores finales evita
+        // sesgo por módulo y nunca indexa fuera del alfabeto.
+        const unbiasedLimit =
+          Math.floor(256 / LINK_CODE_ALPHABET.length) *
+          LINK_CODE_ALPHABET.length;
+        if (byte >= unbiasedLimit) continue;
+        code += LINK_CODE_ALPHABET[byte % LINK_CODE_ALPHABET.length];
+        if (code.length === LINK_CODE_LENGTH) break;
+      }
     }
+
     return code;
   }
 

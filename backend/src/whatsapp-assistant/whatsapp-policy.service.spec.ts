@@ -2,7 +2,12 @@ import {
   WhatsappPolicyService,
   normalizeText,
 } from './whatsapp-policy.service.js';
-import { HUMAN_HANDOVER_REPLY, OUT_OF_SCOPE_REPLY } from './whatsapp-faq.js';
+import {
+  GREETING_REPLY,
+  HIDDEN_FEATURES_REPLY,
+  HUMAN_HANDOVER_REPLY,
+  OUT_OF_SCOPE_REPLY,
+} from './whatsapp-faq.js';
 
 describe('normalizeText', () => {
   it('quita acentos, baja a minúsculas y colapsa espacios', () => {
@@ -33,12 +38,23 @@ describe('WhatsappPolicyService', () => {
   });
 
   it('HUMANO/ASESOR/PERSONA → handover con una confirmación', () => {
-    for (const t of ['humano', 'quiero un asesor', 'una persona por favor']) {
+    for (const t of [
+      'humano',
+      'quiero un asesor',
+      'una persona por favor',
+      'persona',
+    ]) {
       expect(policy.decide(t)).toEqual({
         kind: 'handover',
         reply: HUMAN_HANDOVER_REPLY,
       });
     }
+  });
+
+  it('no pausa el bot por una coincidencia parcial de persona', () => {
+    expect(policy.decide('¿qué personas pueden usar Servi?')).toMatchObject({
+      kind: 'reject',
+    });
   });
 
   it('opt_out tiene prioridad sobre handover', () => {
@@ -78,6 +94,44 @@ describe('WhatsappPolicyService', () => {
       expect(d.kind).toBe('faq');
       expect((d as { reply: string }).reply.length).toBeGreaterThan(0);
     }
+  });
+
+  it('saludo puro → presentación fija; saludo con consulta → FAQ', () => {
+    expect(policy.decide('Hola')).toEqual({
+      kind: 'faq',
+      reply: GREETING_REPLY,
+      aiEligible: false,
+    });
+    expect(policy.decide('hola, necesito un gasfitero')).toMatchObject({
+      kind: 'faq',
+      aiEligible: true,
+    });
+  });
+
+  it('funciones ocultas → desvío fijo sin falsos positivos', () => {
+    for (const text of [
+      '¿tienen ofertas?',
+      'quiero una promoción',
+      'puedo agendar una cita?',
+      'necesito una cotización',
+    ]) {
+      expect(policy.decide(text)).toEqual({
+        kind: 'faq',
+        reply: HIDDEN_FEATURES_REPLY,
+        aiEligible: false,
+      });
+    }
+    expect(policy.decide('necesito un electricista')).toMatchObject({
+      kind: 'faq',
+      aiEligible: true,
+    });
+  });
+
+  it('descarga → enlaces oficiales de web y Android', () => {
+    const decision = policy.decide('¿dónde descargo la app Android?');
+    expect(decision).toMatchObject({ kind: 'faq', aiEligible: true });
+    expect((decision as { reply: string }).reply).toContain('oficioapp.org.pe');
+    expect((decision as { reply: string }).reply).toContain('play.google.com');
   });
 
   it('fuera de alcance de Servi → rechazo corto', () => {

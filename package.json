@@ -7,6 +7,7 @@
   },
   "description": "Tooling raíz de Servi: preflight, Husky y lint-staged. Cada app mantiene sus dependencias y checks.",
   "scripts": {
+    "ai:audit": "node .agents/skills/servi-ai-release-audit/scripts/verify-ai-safety.mjs",
     "preflight": "node .agents/skills/servi-preflight/scripts/preflight.mjs",
     "prepare": "husky"
   },
