@@ -21,6 +21,7 @@ function buildConfig(overrides: Record<string, unknown> = {}) {
     contactHashSecret: 'contact-secret',
     apiKey: 'api-key',
     baseUrl: BASE_URL,
+    linkOperational: false,
     assertEnabledConfig: jest.fn(() => BASE_URL),
     ...overrides,
   } as any;
@@ -405,7 +406,7 @@ describe('WhatsappAssistantService', () => {
       };
       withF3 = new WhatsappAssistantService(
         prisma,
-        config,
+        buildConfig({ linkOperational: true }),
         new WhatsappPolicyService(),
         openwa as any,
         aiBridge as any,
@@ -427,6 +428,23 @@ describe('WhatsappAssistantService', () => {
       expect(openwa.sendText.mock.calls[0][3]).toBe(LINK_SUCCESS_REPLY);
       expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
       expect(aiBridge.tryAnswerLinked).not.toHaveBeenCalled();
+    });
+
+    it('F3 apagada → no consume código y conserva respuesta determinista F1', async () => {
+      const withLinkDisabled = new WhatsappAssistantService(
+        prisma,
+        buildConfig({ linkOperational: false }),
+        new WhatsappPolicyService(),
+        openwa as any,
+        aiBridge as any,
+        links as any,
+      );
+      const [raw, sig] = bodyAndSig(payload({ body: 'VINCULAR ABCDEFGHJK' }));
+
+      await withLinkDisabled.handleWebhook(raw, sig);
+
+      expect(links.consumeCode).not.toHaveBeenCalled();
+      expect(openwa.sendText.mock.calls[0][3]).toBe(OUT_OF_SCOPE_REPLY);
     });
 
     it('VINCULAR inválido usa respuesta genérica sin llamar a Ofi', async () => {

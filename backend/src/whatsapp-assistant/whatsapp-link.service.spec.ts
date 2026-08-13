@@ -38,7 +38,7 @@ function store(overrides: Record<string, unknown> = {}) {
     whatsappLinkedContact: {
       findUnique: jest.fn().mockResolvedValue(null),
       deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
-      upsert: jest.fn().mockResolvedValue({}),
+      upsert: jest.fn().mockResolvedValue({ userId: 7 }),
     },
     user: {
       findFirst: jest.fn().mockResolvedValue(activeUser()),
@@ -109,6 +109,17 @@ describe('WhatsappLinkService', () => {
     );
     expect(db.whatsappLinkChallenge.updateMany).not.toHaveBeenCalled();
     expect(db.whatsappLinkedContact.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it('no confirma un vínculo si una carrera conserva otro dueño', async () => {
+    const db = store();
+    db.whatsappLinkChallenge.findFirst.mockResolvedValue({ id: 11, userId: 7 });
+    db.whatsappLinkedContact.upsert.mockResolvedValue({ userId: 8 });
+    const svc = new WhatsappLinkService(db, config());
+
+    await expect(svc.consumeCode('contact-hmac', 'ABCDEFGHJK')).resolves.toBe(
+      false,
+    );
   });
 
   it('vínculo válido reemplaza solo el contacto anterior de la misma cuenta', async () => {

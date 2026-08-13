@@ -13,6 +13,11 @@ interface KnowledgeEntryDto {
   content: unknown;
 }
 
+/** Límites del bloque dinámico: acotan costo y exposición ante datos anómalos. */
+export const MAX_KNOWLEDGE_ENTRIES = 30;
+export const MAX_KNOWLEDGE_CONTEXT_CHARS = 12_000;
+const MAX_KNOWLEDGE_TOPIC_CHARS = 120;
+
 /**
  * Knowledge Base dinámica de "Ofi" (Fase 2).
  *
@@ -52,6 +57,7 @@ export class AiKnowledgeService {
         where: { isActive: true },
         select: { topic: true, content: true },
         orderBy: { topic: 'asc' },
+        take: MAX_KNOWLEDGE_ENTRIES,
       });
     } catch (e) {
       this.logger.warn(`Knowledge fetch falló: ${(e as Error)?.message ?? e}`);
@@ -82,15 +88,34 @@ export class AiKnowledgeService {
     }
   }
 
-  /** Serializa entries a texto compacto para el prompt. */
+  /** Serializa entries a texto compacto y acotado para el prompt. */
   private format(entries: KnowledgeEntryDto[]): string {
     if (entries.length === 0) return '';
-    return entries
-      .map((e) => {
-        const body =
-          typeof e.content === 'string' ? e.content : JSON.stringify(e.content);
-        return `## ${e.topic}\n${body}`;
-      })
-      .join('\n\n');
+
+    const parts: string[] = [];
+    let remaining = MAX_KNOWLEDGE_CONTEXT_CHARS;
+
+    for (const entry of entries.slice(0, MAX_KNOWLEDGE_ENTRIES)) {
+      const topic = entry.topic
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, MAX_KNOWLEDGE_TOPIC_CHARS);
+      const serialized =
+        typeof entry.content === 'string'
+          ? entry.content
+          : JSON.stringify(entry.content);
+      const body = (serialized ?? '').replace(/\0/g, '').trim();
+      if (!topic || !body || remaining <= 0) continue;
+
+      const prefix = `Tema: ${topic}\nDatos: `;
+      const available = remaining - prefix.length;
+      if (available <= 0) break;
+
+      const content = body.slice(0, available);
+      parts.push(`${prefix}${content}`);
+      remaining -= prefix.length + content.length + 2;
+    }
+
+    return parts.join('\n\n');
   }
 }

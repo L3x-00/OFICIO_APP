@@ -1,0 +1,4 @@
+interface:
+  display_name: "Auditoría IA Servi"
+  short_description: "Audita Ofi y WhatsApp antes de publicar"
+  default_prompt: "Usa $servi-ai-release-audit para auditar Ofi y WhatsApp antes de publicar."

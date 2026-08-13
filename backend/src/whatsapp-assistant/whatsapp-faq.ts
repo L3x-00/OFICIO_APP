@@ -5,11 +5,25 @@
  *
  * La identidad y las reglas viven en Servi (no en OpenWA, que es genérico).
  */
+import {
+  SERVI_ANDROID_URL,
+  SERVI_WEB_URL,
+} from '../ai-assistant/servi-platform-knowledge.js';
 
 /** Respuesta corta cuando el mensaje cae fuera del alcance de Servi. */
 export const OUT_OF_SCOPE_REPLY =
-  'Soy el asistente de Servi y solo puedo ayudarte con temas de la app Servi ' +
-  '(servicios, registro, planes, proveedores). ¿En qué de Servi te ayudo?';
+  'Soy el asistente de Servi. Puedo ayudarte con servicios, registro, planes y ' +
+  'proveedores. ¿Qué necesitas saber sobre Servi?';
+
+/** Presentación fija: un saludo sin contexto no debe parecer un rechazo. */
+export const GREETING_REPLY =
+  '¡Hola! Soy Ofi, el asistente de Servi. Puedo ayudarte a buscar un servicio, ' +
+  'registrarte como proveedor o conocer cómo funciona la plataforma.';
+
+/** Desvío de producto: no nombra ni promete funcionalidades no disponibles. */
+export const HIDDEN_FEATURES_REPLY =
+  'Por ahora Servi se enfoca en conectar directamente con proveedores y en el ' +
+  'catálogo de servicios. ¿Buscas algún servicio para contactarlo?';
 
 /** Confirmación única al derivar a un asesor humano. */
 export const HUMAN_HANDOVER_REPLY =
@@ -20,6 +34,8 @@ export interface FaqEntry {
   /** Palabras/frases (ya normalizadas: minúsculas, sin acentos) que disparan. */
   readonly keywords: readonly string[];
   readonly answer: string;
+  /** `false` mantiene el texto de marca determinista y fuera de Ofi. */
+  readonly aiEligible?: boolean;
 }
 
 /**
@@ -27,6 +43,41 @@ export interface FaqEntry {
  * primera entrada con un keyword presente en el texto normalizado.
  */
 export const SERVI_FAQ: readonly FaqEntry[] = [
+  {
+    // Evitar términos cortos: `cita` coincide con "necesita" y `oferta` con
+    // "ofertar". Estas frases conservan la respuesta de marca incluso con F2.
+    keywords: [
+      'subasta',
+      'ofertas',
+      'promocion',
+      'descuento',
+      'cupon',
+      'referid',
+      'monedas',
+      'agenda',
+      'agendar',
+      'reservar cita',
+      'cotiza',
+    ],
+    answer: HIDDEN_FEATURES_REPLY,
+    aiEligible: false,
+  },
+  {
+    keywords: [
+      'descarg',
+      'play store',
+      'android',
+      'servi en iphone',
+      'servi en ios',
+      'app store',
+      'pagina web',
+      'sitio web',
+      'enlace',
+    ],
+    answer:
+      `Puedes usar Servi en la web: ${SERVI_WEB_URL}. ` +
+      `En Android descárgala desde Google Play: ${SERVI_ANDROID_URL}`,
+  },
   {
     keywords: [
       'registr',
@@ -36,9 +87,9 @@ export const SERVI_FAQ: readonly FaqEntry[] = [
       'inscrib',
     ],
     answer:
-      'Para registrarte en Servi descarga la app o entra a la web, elige ' +
-      '"Crear cuenta" y sigue los pasos. Si eres proveedor, puedes crear tu ' +
-      'perfil de servicio desde la sección de registro de proveedor.',
+      `Para registrarte entra a ${SERVI_WEB_URL} o descarga la app, elige ` +
+      '"Crear cuenta" y sigue los pasos. Si eres proveedor, crea tu perfil ' +
+      'desde el registro de proveedor.',
   },
   {
     keywords: [
@@ -52,9 +103,9 @@ export const SERVI_FAQ: readonly FaqEntry[] = [
       'gratis',
     ],
     answer:
-      'Servi es gratis para clientes. Los proveedores eligen un plan: GRATIS, ' +
-      'ESTÁNDAR o PREMIUM, con más alcance y funciones según el plan. Puedes ' +
-      'ver y cambiar tu plan desde el panel de proveedor.',
+      'Servi es gratis para clientes. Los proveedores eligen GRATIS, ESTÁNDAR ' +
+      'o PREMIUM según el alcance y funciones que necesiten. Revisa y cambia ' +
+      'tu plan desde el panel de proveedor.',
   },
   {
     keywords: [
@@ -66,9 +117,9 @@ export const SERVI_FAQ: readonly FaqEntry[] = [
       'negocio',
     ],
     answer:
-      'En Servi un proveedor ofrece sus servicios (oficios, negocios o ' +
-      'profesionales) a clientes cercanos. Regístrate como proveedor, completa ' +
-      'tu perfil y aparecerás en las búsquedas de tu zona.',
+      'En Servi puedes ofrecer un Oficio, servicio Profesional o Negocio a ' +
+      'clientes cercanos. Regístrate como proveedor, completa tu perfil y ' +
+      'aparecerás en las búsquedas de tu zona.',
   },
   {
     keywords: [
@@ -93,16 +144,41 @@ export const SERVI_FAQ: readonly FaqEntry[] = [
       'usar la app',
     ],
     answer:
-      'Con Servi buscas servicios locales (electricistas, gasfiteros, ' +
-      'peluquerías, restaurantes y más) cerca de ti, ves su perfil y los ' +
-      'contactas directo. Abre la app, busca la categoría y filtra por tu zona.',
+      `Con Servi buscas servicios locales cerca de ti, ves perfiles y contactas ` +
+      `directo. Entra a ${SERVI_WEB_URL} o abre la app, busca la categoría y filtra por tu zona.`,
   },
   {
     keywords: ['que es servi', 'que es', 'para que sirve', 'sobre servi'],
     answer:
-      'Servi es un marketplace de servicios locales del Perú: conecta clientes ' +
-      'con proveedores cercanos (oficios, negocios y profesionales). Clientes ' +
-      'gratis; proveedores con planes de suscripción.',
+      'Servi es una plataforma peruana de servicios locales, con cobertura ' +
+      'inicial en Huancayo y alrededores. Conecta clientes con proveedores ' +
+      'cercanos de oficios, profesionales y negocios.',
+  },
+  {
+    keywords: [
+      'estafa',
+      'confiab',
+      'seguro',
+      'resena',
+      'opinion',
+      'verificad',
+      'sello',
+    ],
+    answer:
+      'Revisa la información visible en cada perfil, como sellos y reseñas. ' +
+      'Servi ayuda a comparar opciones, pero siempre decide con quién contactar.',
+  },
+  {
+    keywords: [
+      'donde funciona',
+      'que ciudad',
+      'huancayo',
+      'junin',
+      'provincia',
+    ],
+    answer:
+      'Servi tiene cobertura inicial en Huancayo y alrededores, Junín. Busca ' +
+      'por categoría y zona para ver proveedores disponibles.',
   },
   {
     keywords: [

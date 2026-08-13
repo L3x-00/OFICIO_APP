@@ -8,6 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { WhatsappAssistantConfig } from './whatsapp-assistant.config.js';
 import { WhatsappPolicyService } from './whatsapp-policy.service.js';
 import { WhatsappAiService } from './whatsapp-ai.service.js';
+import { OUT_OF_SCOPE_REPLY } from './whatsapp-faq.js';
 import {
   LINK_FAILURE_REPLY,
   LINK_SUCCESS_REPLY,
@@ -176,14 +177,20 @@ export class WhatsappAssistantService {
     // 6. Vínculo F3 después de HMAC, dedup y preferencias. El código exacto
     // nunca se persiste/loguea; todo resultado inválido recibe igual respuesta.
     if (decision.kind === 'link') {
-      const linked =
-        (await this.links?.consumeCode(contactHash, decision.code)) ?? false;
+      const linkOperational = this.config.linkOperational;
+      const linked = linkOperational
+        ? ((await this.links?.consumeCode(contactHash, decision.code)) ?? false)
+        : false;
       return this.sendAndRecord(
         inbound.sessionId,
         inboundId,
         baseUrl,
         inbound.chatId,
-        linked ? LINK_SUCCESS_REPLY : LINK_FAILURE_REPLY,
+        linked
+          ? LINK_SUCCESS_REPLY
+          : linkOperational
+            ? LINK_FAILURE_REPLY
+            : OUT_OF_SCOPE_REPLY,
       );
     }
 
@@ -193,7 +200,7 @@ export class WhatsappAssistantService {
     //    Si Ofi está apagada, sin presupuesto, bloqueada o lenta, se conserva
     //    la respuesta FAQ fija de F1.
     let reply = decision.reply;
-    if (decision.kind === 'faq' && this.ai) {
+    if (decision.kind === 'faq' && decision.aiEligible && this.ai) {
       const identity = await this.links?.resolveIdentity(contactHash);
       const aiReply = identity
         ? await this.ai.tryAnswerLinked(inbound.text, contactHash, identity)

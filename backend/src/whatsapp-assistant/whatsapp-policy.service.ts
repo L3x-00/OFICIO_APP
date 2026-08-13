@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  GREETING_REPLY,
   HUMAN_HANDOVER_REPLY,
   OUT_OF_SCOPE_REPLY,
   SERVI_FAQ,
@@ -10,7 +11,7 @@ export type PolicyDecision =
   | { kind: 'opt_out' } // STOP/DETENER: persistir baja, NO enviar.
   | { kind: 'handover'; reply: string } // HUMANO: pausar bot + 1 confirmación.
   | { kind: 'link'; code: string } // F3: consume OTP efímero de vínculo.
-  | { kind: 'faq'; reply: string } // Respuesta pública de Servi.
+  | { kind: 'faq'; reply: string; aiEligible: boolean } // Respuesta pública de Servi.
   | { kind: 'reject'; reply: string }; // Fuera de alcance: rechazo corto.
 
 // Frases que disparan opt-out. Se comparan sobre el texto normalizado.
@@ -23,13 +24,19 @@ const OPT_OUT_PATTERNS = [
 ];
 
 // Frases que piden un humano.
-const HANDOVER_TOKENS = [
-  'humano',
-  'asesor',
-  'persona',
-  'agente',
-  'hablar con alguien',
+const HANDOVER_PATTERNS = [
+  /\bhumano\b/,
+  /\basesor(?:a)?\b/,
+  /\bagente\b/,
+  /\bhablar con (?:alguien|una persona)\b/,
+  /\buna persona\b/,
+  /^persona$/,
 ];
+
+// Solo saludos completos. "Hola, necesito un gasfitero" sigue la FAQ de
+// búsqueda y puede usar F2 si ese switch se activa.
+const GREETING_ONLY =
+  /^(?:hola|holi|buenas?|buen dia|buenos dias|buenas tardes|buenas noches|que tal|saludos|alo)(?: servi)?[!¡,.?]*$/;
 
 // Diez símbolos base32 sin caracteres ambiguos = 50 bits. El texto debe ser
 // EXACTAMENTE `VINCULAR <código>`; nada más entra al flujo de escritura F3.
@@ -64,6 +71,10 @@ function isOptOutRequest(normalized: string): boolean {
   return OPT_OUT_PATTERNS.some((pattern) => pattern.test(normalized));
 }
 
+function isHandoverRequest(normalized: string): boolean {
+  return HANDOVER_PATTERNS.some((pattern) => pattern.test(normalized));
+}
+
 /**
  * Política F1: 100% determinista, sin IA, sin AiAssistantService, sin consultar
  * usuario/proveedor/cuenta. Solo FAQ pública de Servi + opt-out + derivación.
@@ -79,7 +90,7 @@ export class WhatsappPolicyService {
     }
 
     // 2. Derivación a humano.
-    if (includesToken(normalized, HANDOVER_TOKENS)) {
+    if (isHandoverRequest(normalized)) {
       return { kind: 'handover', reply: HUMAN_HANDOVER_REPLY };
     }
 
@@ -91,8 +102,16 @@ export class WhatsappPolicyService {
     // 4. FAQ pública de Servi (primera coincidencia gana).
     for (const entry of SERVI_FAQ) {
       if (includesToken(normalized, entry.keywords)) {
-        return { kind: 'faq', reply: entry.answer };
+        return {
+          kind: 'faq',
+          reply: entry.answer,
+          aiEligible: entry.aiEligible !== false,
+        };
       }
+    }
+
+    if (GREETING_ONLY.test(normalized)) {
+      return { kind: 'faq', reply: GREETING_REPLY, aiEligible: false };
     }
 
     // 5. Fuera de alcance de Servi: rechazo corto.

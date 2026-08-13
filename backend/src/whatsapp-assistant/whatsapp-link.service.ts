@@ -52,7 +52,7 @@ interface LinkStore {
   whatsappLinkedContact: {
     findUnique(args: unknown): Promise<LinkContactRow | null>;
     deleteMany(args: unknown): Promise<unknown>;
-    upsert(args: unknown): Promise<unknown>;
+    upsert(args: unknown): Promise<LinkContactRow>;
   };
   user: {
     findFirst(args: unknown): Promise<LinkUserRow | null>;
@@ -208,12 +208,15 @@ export class WhatsappLinkService {
             NOT: { contactHash },
           },
         });
-        await tx.whatsappLinkedContact.upsert({
+        const persisted = await tx.whatsappLinkedContact.upsert({
           where: { sessionId_contactHash: { sessionId, contactHash } },
           create: { sessionId, contactHash, userId: challenge.userId },
           update: { linkedAt: now },
+          select: { userId: true },
         });
-        return true;
+        // Dos challenges distintos pueden competir por el mismo contacto. El
+        // upsert nunca transfiere el vínculo: confirma solo al dueño resultante.
+        return persisted.userId === challenge.userId;
       });
     } catch {
       // Sin detalle: una excepción de BD jamás filtra estado del código/cuenta.
