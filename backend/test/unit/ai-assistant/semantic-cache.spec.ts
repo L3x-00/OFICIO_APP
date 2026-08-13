@@ -30,6 +30,7 @@ jest.mock('@google/genai', () => ({
 
 import { AiAssistantService } from '../../../src/ai-assistant/ai-assistant.service.js';
 import { semanticCanonical } from '../../../src/ai-assistant/ai-assistant.helpers.js';
+import { SERVI_KNOWLEDGE_VERSION } from '../../../src/ai-assistant/servi-platform-knowledge.js';
 import type {
   AiCaller,
   AiHistoryTurn,
@@ -41,7 +42,9 @@ function makeService() {
   // Caché REAL en memoria (Map) para que set/get persistan entre llamadas.
   const store = new Map<string, unknown>();
   const config = {
-    get: jest.fn((k: string) => (k === 'GEMINI_API_KEY' ? 'test-key' : undefined)),
+    get: jest.fn((k: string) =>
+      k === 'GEMINI_API_KEY' ? 'test-key' : undefined,
+    ),
   };
   const flags = {
     promptVersion: () => 'v1',
@@ -92,7 +95,9 @@ function makeService() {
     saveMessage: jest.fn(async () => {}),
   };
   const cache = {
-    get: jest.fn(async (k: string) => (store.has(k) ? store.get(k) : undefined)),
+    get: jest.fn(async (k: string) =>
+      store.has(k) ? store.get(k) : undefined,
+    ),
     set: jest.fn(async (k: string, v: unknown) => {
       store.set(k, v);
     }),
@@ -148,10 +153,29 @@ describe('AiAssistantService — caché semántico', () => {
     expect(r2.reply).toBe(r1.reply);
   });
 
+  it('versiona el caché cuando cambia el catálogo recuperable de Servi', async () => {
+    mockGenerateContent.mockResolvedValue({
+      text: 'Puedes crear tu perfil de electricista desde Servi.',
+      functionCalls: [],
+      usageMetadata: { totalTokenCount: 10 },
+    });
+    const { service, store } = makeService();
+
+    await service.chat(CLIENT, 'quiero registrar mi perfil de electricista');
+
+    expect(
+      [...store.keys()].some((key) =>
+        key.includes(`v1:${SERVI_KNOWLEDGE_VERSION}:USUARIO:`),
+      ),
+    ).toBe(true);
+  });
+
   it('búsqueda con proveedores: se cachea CON tarjetas y el hit las reconstruye', async () => {
     mockGenerateContent
       .mockResolvedValueOnce({
-        functionCalls: [{ name: 'search_providers', args: { category: 'electricista' } }],
+        functionCalls: [
+          { name: 'search_providers', args: { category: 'electricista' } },
+        ],
         usageMetadata: { totalTokenCount: 5 },
       })
       .mockResolvedValueOnce({

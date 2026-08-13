@@ -5,6 +5,7 @@ const root = resolve(import.meta.dirname, '../../../..');
 const required = [
   'servi.md',
   'backend/src/ai-assistant/servi-platform-knowledge.ts',
+  'backend/src/ai-assistant/servi-platform-knowledge.spec.ts',
   'backend/src/whatsapp-assistant/whatsapp-assistant.config.ts',
   'backend/src/whatsapp-assistant/whatsapp-assistant.service.ts',
   'backend/src/ai-assistant/tools/tool-registry.ts',
@@ -21,12 +22,27 @@ function source(relative) {
 
 if (failures.length === 0) {
   const knowledge = source('backend/src/ai-assistant/servi-platform-knowledge.ts');
+  const knowledgeSpec = source('backend/src/ai-assistant/servi-platform-knowledge.spec.ts');
   const config = source('backend/src/whatsapp-assistant/whatsapp-assistant.config.ts');
   const assistant = source('backend/src/whatsapp-assistant/whatsapp-assistant.service.ts');
   const tools = source('backend/src/ai-assistant/tools/tool-registry.ts');
 
   for (const url of ['https://oficioapp.org.pe', 'https://play.google.com/store/apps/details?id=com.oficioapp.mobile']) {
     if (!knowledge.includes(url)) failures.push(`Falta enlace canónico: ${url}`);
+  }
+  for (const marker of [
+    'retrieveServiKnowledge',
+    'MAX_RETRIEVED_SERVI_CHUNKS = 3',
+    'MAX_RETRIEVED_SERVI_CHARS = 3_200',
+    'SERVI_KNOWLEDGE_VERSION',
+  ]) {
+    if (!knowledge.includes(marker)) failures.push(`RAG local incompleto: ${marker}`);
+  }
+  if (knowledge.includes("from 'node:fs'")) {
+    failures.push('No leer servi.md crudo durante respuestas');
+  }
+  if (!knowledgeSpec.includes('no copia el mensaje')) {
+    failures.push('Falta regresión anti-inyección del RAG local');
   }
   for (const flag of [
     "WHATSAPP_ASSISTANT_ENABLED', false",
