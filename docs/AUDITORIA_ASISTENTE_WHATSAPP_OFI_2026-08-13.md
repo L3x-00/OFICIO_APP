@@ -18,6 +18,19 @@ y la KB dinámica como datos, nunca como instrucciones. La KB dinámica queda
 limitada a 30 entradas y 12 000 caracteres; cambia de clave de caché al
 desplegar para no reutilizar durante cinco minutos un bloque anterior.
 
+### Recuperación local desde `servi.md`
+
+Ofi no queda limitado al archivo: conserva el razonamiento del modelo, la
+memoria por usuario/proveedor, la KB dinámica y las herramientas autorizadas.
+`servi.md` alimenta un catálogo curado y versionado en
+`servi-platform-knowledge.ts`. Por cada consulta se recuperan como máximo tres
+fragmentos relevantes (3 200 caracteres), sin embeddings, red ni consumo extra
+de la API gratuita. El mensaje solo selecciona datos; nunca se copia como
+instrucción. La versión del catálogo invalida respuestas FAQ cacheadas tras una
+actualización. Cambiar `servi.md` exige revisar y actualizar el catálogo curado:
+no se ingesta Markdown crudo porque contiene ejemplos, instrucciones de canal y
+afirmaciones que podrían estar desactualizadas.
+
 ## Fronteras verificadas
 
 | Área | Resultado |
