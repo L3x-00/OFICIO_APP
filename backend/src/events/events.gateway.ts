@@ -87,6 +87,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     'RECHAZADO',
     'PLAN_APROBADO',
     'PLAN_RECHAZADO',
+    'MP_PAYMENT_REJECTED',
     'PLAN_SOLICITADO',
     'MAS_INFO',
     'VERIFICACION_REVOCADA',

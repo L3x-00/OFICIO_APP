@@ -1,7 +1,9 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
+  Query,
   Req,
   Logger,
   Request,
@@ -43,6 +45,23 @@ export class MercadoPagoController {
     });
   }
 
+  /**
+   * El móvil consulta solo su propio intento al volver del Checkout. La
+   * activación sigue dependiendo exclusivamente del webhook firmado.
+   */
+  @Get('status')
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { ttl: 60_000, limit: 20 } })
+  async getCheckoutStatus(
+    @Request() req: AuthenticatedRequest,
+    @Query('reference') reference?: string,
+  ) {
+    return this.mpService.getPaymentStatusForUser({
+      userId: req.user.userId,
+      externalReference: reference ?? '',
+    });
+  }
+
   // Throttle del webhook: 60 req/min por IP. Webhooks legítimos de MP
   // nunca superan esto incluso en picos. Mitiga el brute-force de
   // payment IDs que un atacante intentaría para forzar lookups.
@@ -80,9 +99,7 @@ export class MercadoPagoController {
       if (payment.status === 'approved') {
         await this.handleApprovedPayment(payment);
       } else if (payment.status === 'rejected') {
-        this.logger.log(
-          `❌ Pago ${id} rechazado: ${payment.externalReference}`,
-        );
+        await this.handleRejectedPayment(payment);
       } else {
         this.logger.log(
           `⏳ Pago ${id} estado=${payment.status}: ${payment.externalReference}`,
@@ -166,8 +183,8 @@ export class MercadoPagoController {
     amount: number;
     currency: string;
     externalReference: string;
-    paymentMethod: string;
-    dateApproved: string;
+    paymentMethod: string | null;
+    dateApproved: string | null;
   }) {
     // Formato nuevo: "user_123_type_OFICIO_plan_ESTANDAR" (A-02).
     // Formato legacy aceptado para pagos en vuelo: "user_123_plan_ESTANDAR".
@@ -228,7 +245,38 @@ export class MercadoPagoController {
       amount: payment.amount,
       paymentMethod: 'mercadopago',
       paymentId: payment.id.toString(),
-      dateApproved: payment.dateApproved,
+      dateApproved: payment.dateApproved ?? new Date().toISOString(),
+    });
+  }
+
+  private async handleRejectedPayment(payment: {
+    id: number;
+    externalReference: string;
+    statusDetail: string | null;
+    paymentMethod: string | null;
+  }) {
+    const reference = MercadoPagoService.parsePaymentReference(
+      payment.externalReference,
+    );
+    if (!reference) {
+      this.logger.warn(
+        `Pago MP ${payment.id} rechazado con referencia no reconocida`,
+      );
+      return;
+    }
+
+    // status_detail explica el rechazo en Render para diagnóstico. Al usuario
+    // solo llega una guía segura, nunca señales internas antifraude.
+    this.logger.warn(
+      `Pago MP ${payment.id} rechazado: detail=${payment.statusDetail ?? 'unknown'}, method=${payment.paymentMethod ?? 'unknown'}`,
+    );
+    await this.paymentsService.notifyMercadoPagoRejected({
+      paymentId: payment.id.toString(),
+      providerId: reference.providerId,
+      userId: reference.userId,
+      plan: reference.plan,
+      statusDetail: payment.statusDetail,
+      paymentMethod: payment.paymentMethod,
     });
   }
 }

@@ -6,8 +6,30 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
+import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { PaidPlan, ProviderTypeValue } from './dto/create-preference.dto.js';
+
+export type MercadoPagoPaymentDetails = {
+  id: number;
+  status: string;
+  statusDetail: string | null;
+  amount: number;
+  currency: string;
+  externalReference: string;
+  paymentMethod: string | null;
+  dateApproved: string | null;
+};
+
+export type MercadoPagoPaymentReference = {
+  providerId: number;
+  userId: number;
+  plan: PaidPlan;
+  attemptId: string | null;
+};
+
+const PAYMENT_REFERENCE =
+  /^provider_(\d+)_user_(\d+)_plan_(ESTANDAR|PREMIUM)(?:_attempt_([a-f0-9]{32}))?$/;
 
 @Injectable()
 export class MercadoPagoService {
@@ -33,6 +55,42 @@ export class MercadoPagoService {
   /// rechazar pagos manipulados.
   static expectedPriceFor(plan: PaidPlan): number {
     return MercadoPagoService.PLAN_CATALOG[plan].price;
+  }
+
+  /**
+   * La referencia identifica el perfil, dueño y un intento concreto. El
+   * intento evita que el cliente confunda un rechazo anterior con el checkout
+   * que acaba de abrir.
+   */
+  static parsePaymentReference(
+    reference: string,
+  ): MercadoPagoPaymentReference | null {
+    const match = PAYMENT_REFERENCE.exec(reference);
+    if (!match) return null;
+
+    return {
+      providerId: Number(match[1]),
+      userId: Number(match[2]),
+      plan: match[3] as PaidPlan,
+      attemptId: match[4] ?? null,
+    };
+  }
+
+  /** Mensaje seguro para el proveedor; el detalle técnico queda solo en logs. */
+  static rejectionMessage(statusDetail: string | null): string {
+    switch (statusDetail) {
+      case 'cc_rejected_insufficient_amount':
+        return 'Tu medio de pago no tiene fondos suficientes. Prueba otro medio de pago.';
+      case 'cc_rejected_bad_filled_card_number':
+      case 'cc_rejected_bad_filled_date':
+      case 'cc_rejected_bad_filled_security_code':
+        return 'Revisa los datos del medio de pago e intenta nuevamente.';
+      case 'cc_rejected_card_disabled':
+      case 'cc_rejected_call_for_authorize':
+        return 'Autoriza la compra con tu banco o usa otro medio de pago.';
+      default:
+        return 'Mercado Pago no pudo aprobar este intento. Prueba otro medio de pago o inténtalo más tarde.';
+    }
   }
 
   constructor(
@@ -100,6 +158,8 @@ export class MercadoPagoService {
     const meta = MercadoPagoService.PLAN_CATALOG[params.plan];
     const preference = new Preference(this.client);
 
+    const attemptId = randomUUID().replaceAll('-', '');
+    const externalReference = `provider_${provider.id}_user_${user.id}_plan_${params.plan}_attempt_${attemptId}`;
     const result = await preference.create({
       body: {
         items: [
@@ -120,10 +180,10 @@ export class MercadoPagoService {
         },
         notification_url: `${this.apiBaseUrl}/payments/mercadopago/webhook`,
         auto_return: 'approved',
-        // Referencia estable por Provider.id. El tipo puede cambiar de
-        // OFICIO a PROFESIONAL, pero el perfil y sus pagos conservan el id.
-        // También incluye userId para que el webhook valide pertenencia.
-        external_reference: `provider_${provider.id}_user_${user.id}_plan_${params.plan}`,
+        // La referencia incluye Provider.id estable y un nonce por Checkout.
+        // El tipo puede cambiar de OFICIO a PROFESIONAL sin romper el vínculo,
+        // y el nonce separa este intento de cualquier pago anterior.
+        external_reference: externalReference,
       },
     });
 
@@ -138,12 +198,15 @@ export class MercadoPagoService {
       preferenceId: result.id,
       initPoint,
       sandboxInitPoint: result.sandbox_init_point,
+      externalReference,
     };
   }
 
   /// Obtiene los detalles completos de un pago desde MercadoPago.
   /// Lo usa el webhook para verificar status, monto y external_reference.
-  async getPaymentDetails(paymentId: string) {
+  async getPaymentDetails(
+    paymentId: string,
+  ): Promise<MercadoPagoPaymentDetails> {
     const url = `https://api.mercadopago.com/v1/payments/${paymentId}`;
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${this.accessToken}` },
@@ -153,15 +216,94 @@ export class MercadoPagoService {
         `Error al consultar pago ${paymentId}: ${response.statusText}`,
       );
     }
-    const data = await response.json();
+    return this.toPaymentDetails(await response.json());
+  }
+
+  /**
+   * Consulta acotada al intento que el mismo usuario acaba de abrir. Nunca
+   * expone credenciales ni datos de tarjeta al móvil.
+   */
+  async getPaymentStatusForUser(params: {
+    userId: number;
+    externalReference: string;
+  }) {
+    const parsed = MercadoPagoService.parsePaymentReference(
+      params.externalReference,
+    );
+    if (!parsed?.attemptId || parsed.userId !== params.userId) {
+      throw new BadRequestException('Intento de pago inválido');
+    }
+
+    const provider = await this.prisma.provider.findUnique({
+      where: { id: parsed.providerId },
+      select: { userId: true },
+    });
+    if (!provider || provider.userId !== params.userId) {
+      throw new NotFoundException('Perfil de proveedor no encontrado');
+    }
+
+    const payment = await this.findLatestPaymentByReference(
+      params.externalReference,
+    );
+    if (!payment) {
+      return { status: 'not_found' as const, message: null };
+    }
+
+    return {
+      status: payment.status,
+      message:
+        payment.status === 'rejected'
+          ? MercadoPagoService.rejectionMessage(payment.statusDetail)
+          : null,
+    };
+  }
+
+  private async findLatestPaymentByReference(
+    externalReference: string,
+  ): Promise<MercadoPagoPaymentDetails | null> {
+    const query = new URLSearchParams({
+      external_reference: externalReference,
+      sort: 'date_created',
+      criteria: 'desc',
+      limit: '1',
+    });
+    const response = await fetch(
+      `https://api.mercadopago.com/v1/payments/search?${query.toString()}`,
+      { headers: { Authorization: `Bearer ${this.accessToken}` } },
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Error al buscar pago por referencia: ${response.statusText}`,
+      );
+    }
+
+    const data = (await response.json()) as { results?: unknown[] };
+    const first = data.results?.[0];
+    return first
+      ? this.toPaymentDetails(first as Record<string, unknown>)
+      : null;
+  }
+
+  private toPaymentDetails(
+    data: Record<string, unknown>,
+  ): MercadoPagoPaymentDetails {
     return {
       id: data.id as number,
       status: data.status as string,
+      statusDetail:
+        typeof data.status_detail === 'string' ? data.status_detail : null,
       amount: data.transaction_amount as number,
       currency: data.currency_id as string,
-      externalReference: data.external_reference as string,
-      paymentMethod: data.payment_method_id as string,
-      dateApproved: data.date_approved as string,
+      externalReference:
+        typeof data.external_reference === 'string'
+          ? data.external_reference
+          : '',
+      paymentMethod:
+        typeof data.payment_method_id === 'string'
+          ? data.payment_method_id
+          : null,
+      dateApproved:
+        typeof data.date_approved === 'string' ? data.date_approved : null,
     };
   }
 }

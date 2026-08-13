@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/errors/failures.dart';
+import '../domain/models/mercadopago_checkout_model.dart';
 import '../domain/models/yape_payment_model.dart';
 
 class PaymentsRepository {
@@ -72,7 +73,7 @@ class PaymentsRepository {
   /// userId del JWT; precio y descripción los pone el servidor desde su
   /// catálogo (anti-tampering). providerType identifica a cuál perfil
   /// (OFICIO/NEGOCIO) aplicar el plan en usuarios con ambos.
-  Future<String> createMercadoPagoPreference({
+  Future<MercadoPagoCheckout> createMercadoPagoPreference({
     required String plan,
     required String providerType,
   }) async {
@@ -80,6 +81,18 @@ class PaymentsRepository {
       '/payments/mercadopago/create-preference',
       data: {'plan': plan, 'providerType': providerType},
     );
-    return res.data['initPoint'] as String;
+    return MercadoPagoCheckout.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  /// Estado del intento actual. El backend valida que la referencia pertenezca
+  /// al usuario autenticado antes de consultar Mercado Pago.
+  Future<MercadoPagoCheckoutStatus> getMercadoPagoCheckoutStatus(
+    String externalReference,
+  ) async {
+    final res = await _dio.get(
+      '/payments/mercadopago/status',
+      queryParameters: {'reference': externalReference},
+    );
+    return MercadoPagoCheckoutStatus.fromJson(res.data as Map<String, dynamic>);
   }
 }
