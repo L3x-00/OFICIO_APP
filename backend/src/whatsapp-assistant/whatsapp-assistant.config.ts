@@ -18,6 +18,18 @@ import { ConfigService } from '@nestjs/config';
  *   OPENWA_WEBHOOK_SECRET=...              (HMAC del webhook entrante)
  *   OPENWA_SERVI_SESSION_ID=...           (UUID de la sesión de Servi)
  *   WHATSAPP_ASSISTANT_CONTACT_HASH_SECRET=...  (HMAC local de identificadores)
+ *
+ * F2 (reuso de "Ofi" solo lectura), todas OPCIONALES y con default seguro:
+ *   WHATSAPP_ASSISTANT_AI_ENABLED=true|false     (default false)
+ *   WHATSAPP_ASSISTANT_AI_DAILY_PER_CONTACT=10
+ *   WHATSAPP_ASSISTANT_AI_TIMEOUT_MS=12000
+ *   WHATSAPP_ASSISTANT_AI_MAX_INPUT_CHARS=600
+ *   WHATSAPP_ASSISTANT_AI_MAX_REPLY_CHARS=900
+ *
+ * F3 (vínculo posterior de cuenta), opt-in e independiente de F2:
+ *   WHATSAPP_ASSISTANT_LINK_ENABLED=true|false   (default false)
+ *   WHATSAPP_ASSISTANT_LINK_SECRET=...           (HMAC del código)
+ *   WHATSAPP_ASSISTANT_LINK_TTL_MINUTES=10
  */
 @Injectable()
 export class WhatsappAssistantConfig {
@@ -31,6 +43,12 @@ export class WhatsappAssistantConfig {
     const raw = this.config.get<string>(key);
     if (raw === undefined || raw === null || raw === '') return fallback;
     return raw.toLowerCase() === 'true' || raw === '1';
+  }
+
+  /** Entero positivo con fallback; valores inválidos o <=0 usan el default. */
+  private int(key: string, fallback: number): number {
+    const parsed = Number.parseInt(this.str(key), 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
   }
 
   /** Master switch. Default FALSE (opt-in explícito). */
@@ -56,6 +74,69 @@ export class WhatsappAssistantConfig {
 
   get contactHashSecret(): string {
     return this.str('WHATSAPP_ASSISTANT_CONTACT_HASH_SECRET');
+  }
+
+  // ── F2: reuso de "Ofi" en modo solo lectura ──────────────────
+  //
+  // Switch INDEPENDIENTE del master switch: con F1 encendido y este apagado,
+  // el comportamiento es exactamente el de F1 (política determinista).
+  // No exige variables nuevas obligatorias: si falta la clave de Gemini, Ofi
+  // devuelve bloqueado y WhatsApp cae a la respuesta determinista.
+
+  /** Habilita el fallback a Ofi (GUEST + sandbox). Default FALSE. */
+  get aiEnabled(): boolean {
+    return this.bool('WHATSAPP_ASSISTANT_AI_ENABLED', false);
+  }
+
+  /** Consultas IA por contacto y por día (ventana Perú). */
+  get aiDailyPerContact(): number {
+    return this.int('WHATSAPP_ASSISTANT_AI_DAILY_PER_CONTACT', 10);
+  }
+
+  /** Espera máxima por la respuesta de Ofi antes de caer a F1. */
+  get aiTimeoutMs(): number {
+    return this.int('WHATSAPP_ASSISTANT_AI_TIMEOUT_MS', 12000);
+  }
+
+  /** Longitud máxima de entrada que se manda a la IA. */
+  get aiMaxInputChars(): number {
+    return this.int('WHATSAPP_ASSISTANT_AI_MAX_INPUT_CHARS', 600);
+  }
+
+  /** Longitud máxima del texto que se envía por WhatsApp. */
+  get aiMaxReplyChars(): number {
+    return this.int('WHATSAPP_ASSISTANT_AI_MAX_REPLY_CHARS', 900);
+  }
+
+  // ── F3: vínculo de número ↔ cuenta ──────────────────────────
+
+  /** Switch del vínculo. No altera F1/F2 si queda apagado. */
+  get linkEnabled(): boolean {
+    return this.bool('WHATSAPP_ASSISTANT_LINK_ENABLED', false);
+  }
+
+  /** Secreto exclusivo para HMAC de códigos de vínculo. */
+  get linkSecret(): string {
+    return this.str('WHATSAPP_ASSISTANT_LINK_SECRET');
+  }
+
+  /** Caducidad corta del código; máximo 30 min aun si se configura más. */
+  get linkTtlMs(): number {
+    return (
+      Math.min(this.int('WHATSAPP_ASSISTANT_LINK_TTL_MINUTES', 10), 30) * 60_000
+    );
+  }
+
+  /** F3 solo opera con flag, sesión y secreto explícitos. */
+  get linkOperational(): boolean {
+    return (
+      this.linkEnabled && Boolean(this.sessionId) && Boolean(this.linkSecret)
+    );
+  }
+
+  /** F4: ledger de handover y fallos de entrega. Default FALSE. */
+  get operationsEnabled(): boolean {
+    return this.bool('WHATSAPP_ASSISTANT_OPERATIONS_ENABLED', false);
   }
 
   private get isProd(): boolean {

@@ -14,6 +14,8 @@ import { AiRetentionService } from './ai-retention.service.js';
 import { AiAnalyticsController } from './ai-analytics.controller.js';
 import { AiAnalyticsService } from './ai-analytics.service.js';
 import { GuestStrategy } from './strategies/guest.strategy.js';
+import { PublicStrategy } from './strategies/public.strategy.js';
+import { LinkedReadOnlyStrategy } from './strategies/linked-read-only.strategy.js';
 import { ClientStrategy } from './strategies/client.strategy.js';
 import { ProviderStrategy } from './strategies/provider.strategy.js';
 import { AdminStrategy } from './strategies/admin.strategy.js';
@@ -34,8 +36,11 @@ import { RolesGuard } from '../auth/roles.guard.js';
  *   • ScheduleModule  (forRoot en app.module) — @Cron de retención.
  *   • JwtAuthGuard    — vía import directo en el controller.
  *
- * No exporta nada: ningún otro módulo depende de la IA. Si este módulo
- * se quita de app.module, Servi compila y funciona igual.
+ * Exporta SOLO lo que el asistente de WhatsApp (F2) reusa en modo lectura:
+ * `AiAssistantService` (vía la ruta pública `chatPublicReadOnly`) y
+ * `AiQuotaService` (contadores atómicos). La dependencia es unidireccional:
+ * la IA no importa ni conoce el módulo de WhatsApp. Si este módulo se quita de
+ * app.module, el resto de Servi compila y funciona igual.
  */
 @Module({
   controllers: [AiAssistantController, AiAnalyticsController],
@@ -54,6 +59,8 @@ import { RolesGuard } from '../auth/roles.guard.js';
     AiAnalyticsService,
     // Estrategias de Contexto (persona) — inyectadas en AiAssistantService.
     GuestStrategy,
+    PublicStrategy,
+    LinkedReadOnlyStrategy,
     ClientStrategy,
     ProviderStrategy,
     AdminStrategy,
@@ -67,5 +74,6 @@ import { RolesGuard } from '../auth/roles.guard.js';
     AiLearningPublisherService,
     RolesGuard,
   ],
+  exports: [AiAssistantService, AiQuotaService],
 })
 export class AiAssistantModule {}

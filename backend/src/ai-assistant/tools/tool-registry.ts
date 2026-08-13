@@ -41,6 +41,20 @@ export const ALL_TOOLS: readonly AiToolDef[] = [
  */
 const TOOLS_BY_PERSONA: Record<AiPersonaType, readonly string[]> = {
   [AiPersonaType.GUEST]: [],
+  // Canal externo anónimo (WhatsApp F2): SOLO catálogo público. Sin tools de
+  // cuenta, proveedor, admin, pagos ni referidos, y sin recommend_actions
+  // (depende del userId del solicitante).
+  [AiPersonaType.PUBLIC]: [
+    'search_providers',
+    'search_categories',
+    'explain_feature',
+  ],
+  // Un vínculo F3 solo aporta contexto de rol; jamás amplía capacidades.
+  [AiPersonaType.LINKED]: [
+    'search_providers',
+    'search_categories',
+    'explain_feature',
+  ],
   [AiPersonaType.CLIENT]: [
     'search_providers',
     'search_categories',

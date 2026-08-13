@@ -62,6 +62,8 @@ model User {
   serviceRequests       ServiceRequest[]
   penalty               UserPenalty?
   aiMemory              AiUserMemory?
+  whatsappLinkChallenges WhatsappLinkChallenge[]
+  whatsappLinkedContacts WhatsappLinkedContact[]
   reportsMade           UserReport[]       @relation("UserReportsMade")
   reportsReceived       UserReport[]       @relation("UserReportsReceived")
 
@@ -1235,9 +1237,14 @@ model WhatsappInboundMessage {
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
   processedAt   DateTime?
+  /// Confirmación operativa de un fallo. Nunca habilita reintentos: no se
+  /// conserva el mensaje ni el chat de origen.
+  dlqAcknowledgedAt       DateTime?
+  dlqAcknowledgedByUserId Int?
 
   @@unique([sessionId, messageIdHash])
   @@index([status])
+  @@index([status, dlqAcknowledgedAt])
   @@map("whatsapp_inbound_message")
 }
 
@@ -1260,6 +1267,60 @@ model WhatsappContactPreference {
   @@map("whatsapp_contact_preference")
 }
 
+/// Código efímero para que un usuario autenticado autorice vincular SU cuenta
+/// a un chat WhatsApp. El código solo se persiste como HMAC, expira pronto y
+/// se consume una vez. No contiene teléfono/JID ni texto de mensajes.
+model WhatsappLinkChallenge {
+  id          Int       @id @default(autoincrement())
+  sessionId   String
+  codeHash    String
+  userId      Int
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, codeHash])
+  @@index([sessionId, userId, expiresAt])
+  @@map("whatsapp_link_challenge")
+}
+
+/// Vínculo actual entre un contacto opaco de WhatsApp y una cuenta Servi.
+/// Ambas unicidades garantizan: un contacto no se roba entre cuentas y un
+/// usuario conserva como máximo un contacto por sesión OpenWA.
+model WhatsappLinkedContact {
+  id          Int       @id @default(autoincrement())
+  sessionId   String
+  contactHash String
+  userId      Int
+  linkedAt    DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, contactHash])
+  @@unique([sessionId, userId])
+  @@index([userId])
+  @@map("whatsapp_linked_contact")
+}
+
+/// Handover operativo por contacto opaco. No replica chats, mensajes, JID ni
+/// teléfono: el operador trabaja el caso por el canal autorizado de Servi.
+model WhatsappHandover {
+  id                   Int                     @id @default(autoincrement())
+  sessionId            String
+  contactHash          String
+  status               WhatsappHandoverStatus @default(OPEN)
+  requestedAt          DateTime                @default(now())
+  acknowledgedAt       DateTime?
+  acknowledgedByUserId Int?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  @@unique([sessionId, contactHash])
+  @@index([status, requestedAt])
+  @@map("whatsapp_handover")
+}
+
 enum WhatsappInboundStatus {
   /// Clave creada (guard de idempotencia); aún sin decidir salida.
   RECEIVED
@@ -1271,4 +1332,9 @@ enum WhatsappInboundStatus {
   SUPPRESSED
   /// La llamada de envío falló; se guarda solo errorCode seguro. Sin reintento.
   FAILED
+}
+
+enum WhatsappHandoverStatus {
+  OPEN
+  ACKNOWLEDGED
 }

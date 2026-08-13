@@ -9,6 +9,7 @@ import {
 export type PolicyDecision =
   | { kind: 'opt_out' } // STOP/DETENER: persistir baja, NO enviar.
   | { kind: 'handover'; reply: string } // HUMANO: pausar bot + 1 confirmación.
+  | { kind: 'link'; code: string } // F3: consume OTP efímero de vínculo.
   | { kind: 'faq'; reply: string } // Respuesta pública de Servi.
   | { kind: 'reject'; reply: string }; // Fuera de alcance: rechazo corto.
 
@@ -30,6 +31,10 @@ const HANDOVER_TOKENS = [
   'hablar con alguien',
 ];
 
+// Diez símbolos base32 sin caracteres ambiguos = 50 bits. El texto debe ser
+// EXACTAMENTE `VINCULAR <código>`; nada más entra al flujo de escritura F3.
+const LINK_COMMAND = /^vincular[ \t]+([a-hjkmnp-z2-9]{10})$/i;
+
 // Rango de marcas diacríticas combinantes (acentos) a eliminar tras NFD.
 const COMBINING_MARKS = new RegExp('[\\u0300-\\u036f]', 'g');
 
@@ -44,6 +49,11 @@ export function normalizeText(text: string): string {
     .toLowerCase()
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function linkCodeFrom(text: string): string | null {
+  const match = text.trim().match(LINK_COMMAND);
+  return match ? match[1].toUpperCase() : null;
 }
 
 function includesToken(normalized: string, tokens: readonly string[]): boolean {
@@ -73,14 +83,19 @@ export class WhatsappPolicyService {
       return { kind: 'handover', reply: HUMAN_HANDOVER_REPLY };
     }
 
-    // 3. FAQ pública de Servi (primera coincidencia gana).
+    // 3. Vínculo F3. STOP/HUMANO ya ganaron; solo el comando exacto puede
+    // consumir un challenge. El código nunca se persiste ni se loguea aquí.
+    const code = linkCodeFrom(text);
+    if (code) return { kind: 'link', code };
+
+    // 4. FAQ pública de Servi (primera coincidencia gana).
     for (const entry of SERVI_FAQ) {
       if (includesToken(normalized, entry.keywords)) {
         return { kind: 'faq', reply: entry.answer };
       }
     }
 
-    // 4. Fuera de alcance de Servi: rechazo corto.
+    // 5. Fuera de alcance de Servi: rechazo corto.
     return { kind: 'reject', reply: OUT_OF_SCOPE_REPLY };
   }
 }

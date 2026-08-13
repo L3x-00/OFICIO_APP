@@ -4,6 +4,10 @@ import { WhatsappAssistantService } from './whatsapp-assistant.service.js';
 import { WhatsappPolicyService } from './whatsapp-policy.service.js';
 import { OpenWaSendError } from './openwa.client.js';
 import { HUMAN_HANDOVER_REPLY, OUT_OF_SCOPE_REPLY } from './whatsapp-faq.js';
+import {
+  LINK_FAILURE_REPLY,
+  LINK_SUCCESS_REPLY,
+} from './whatsapp-link.service.js';
 
 const SECRET = 'webhook-secret';
 const SESSION = 'servi-session-1';
@@ -191,6 +195,33 @@ describe('WhatsappAssistantService', () => {
     );
   });
 
+  it('HUMANO pausa y registra un handover opaco cuando F4 está encendida', async () => {
+    const operations = {
+      recordHandover: jest.fn().mockResolvedValue(undefined),
+    };
+    const withOperations = new WhatsappAssistantService(
+      prisma,
+      config,
+      new WhatsappPolicyService(),
+      openwa as any,
+      undefined,
+      undefined,
+      operations as any,
+    );
+    const [raw, sig] = bodyAndSig(payload({ body: 'HUMANO' }));
+
+    await expect(withOperations.handleWebhook(raw, sig)).resolves.toEqual({
+      status: 200,
+    });
+
+    expect(operations.recordHandover).toHaveBeenCalledWith(
+      prisma,
+      SESSION,
+      expect.any(String),
+    );
+    expect(openwa.sendText).toHaveBeenCalledTimes(1);
+  });
+
   it('duplicado / concurrencia (P2002) → 204 y NO reenvía', async () => {
     prisma.whatsappInboundMessage.create.mockRejectedValueOnce({
       code: 'P2002',
@@ -271,6 +302,186 @@ describe('WhatsappAssistantService', () => {
     expect(openwa.sendText).toHaveBeenCalledTimes(1);
     const [, , , text] = openwa.sendText.mock.calls[0];
     expect(text).toBe(OUT_OF_SCOPE_REPLY);
+  });
+
+  describe('F2 — fallback a Ofi (solo lectura)', () => {
+    let aiBridge: { tryAnswer: jest.Mock };
+    let withAi: WhatsappAssistantService;
+
+    beforeEach(() => {
+      aiBridge = { tryAnswer: jest.fn().mockResolvedValue(null) };
+      withAi = new WhatsappAssistantService(
+        prisma,
+        config,
+        new WhatsappPolicyService(),
+        openwa as any,
+        aiBridge as any,
+      );
+    });
+
+    it('consulta Servi reconocida + IA con respuesta → envía la respuesta de Ofi', async () => {
+      aiBridge.tryAnswer.mockResolvedValue('Ofi puede ayudarte con Servi.');
+      const [raw, sig] = bodyAndSig(
+        payload({ body: 'quiero buscar gasfiteros en El Tambo' }),
+      );
+      await expect(withAi.handleWebhook(raw, sig)).resolves.toEqual({
+        status: 200,
+      });
+      const [, , , text] = openwa.sendText.mock.calls[0];
+      expect(text).toBe('Ofi puede ayudarte con Servi.');
+      // A la IA solo va el texto; el contacto va como HMAC, nunca el teléfono.
+      const [sentText, contactHash] = aiBridge.tryAnswer.mock.calls[0];
+      expect(sentText).toBe('quiero buscar gasfiteros en El Tambo');
+      expect(contactHash).not.toContain('51999888777');
+    });
+
+    it('fuera de alcance → rechazo determinista sin tocar la IA', async () => {
+      const [raw, sig] = bodyAndSig(payload({ body: 'quien gano la copa' }));
+      await expect(withAi.handleWebhook(raw, sig)).resolves.toEqual({
+        status: 200,
+      });
+      const [, , , text] = openwa.sendText.mock.calls[0];
+      expect(text).toBe(OUT_OF_SCOPE_REPLY);
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+    });
+
+    it('FAQ conocida + Ofi sin respuesta → conserva fallback determinista', async () => {
+      const [raw, sig] = bodyAndSig(payload({ body: '¿cómo me registro?' }));
+      await expect(withAi.handleWebhook(raw, sig)).resolves.toEqual({
+        status: 200,
+      });
+      expect(aiBridge.tryAnswer).toHaveBeenCalledTimes(1);
+    });
+
+    it('STOP y HUMANO nunca llegan a la IA', async () => {
+      const [rawStop, sigStop] = bodyAndSig(payload({ body: 'STOP' }));
+      await withAi.handleWebhook(rawStop, sigStop);
+      const [rawHum, sigHum] = bodyAndSig(
+        payload({ id: 'otro-id', body: 'quiero un humano' }),
+      );
+      await withAi.handleWebhook(rawHum, sigHum);
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+    });
+
+    it('contacto dado de baja → no responde ni consulta la IA', async () => {
+      prisma.whatsappContactPreference.findUnique.mockResolvedValue({
+        optedOutAt: new Date(),
+        humanHandoverAt: null,
+      });
+      const [raw, sig] = bodyAndSig(payload({ body: 'una duda cualquiera' }));
+      await expect(withAi.handleWebhook(raw, sig)).resolves.toEqual({
+        status: 204,
+      });
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+      expect(openwa.sendText).not.toHaveBeenCalled();
+    });
+
+    it('duplicado (P2002) → no consulta la IA ni reenvía', async () => {
+      prisma.whatsappInboundMessage.create.mockRejectedValueOnce({
+        code: 'P2002',
+      });
+      const [raw, sig] = bodyAndSig(payload({ body: 'una duda cualquiera' }));
+      await expect(withAi.handleWebhook(raw, sig)).resolves.toEqual({
+        status: 204,
+      });
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+      expect(openwa.sendText).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('F3 — vínculo seguro y contexto vivo', () => {
+    let aiBridge: { tryAnswer: jest.Mock; tryAnswerLinked: jest.Mock };
+    let links: { consumeCode: jest.Mock; resolveIdentity: jest.Mock };
+    let withF3: WhatsappAssistantService;
+
+    beforeEach(() => {
+      aiBridge = {
+        tryAnswer: jest.fn().mockResolvedValue(null),
+        tryAnswerLinked: jest.fn().mockResolvedValue(null),
+      };
+      links = {
+        consumeCode: jest.fn().mockResolvedValue(false),
+        resolveIdentity: jest.fn().mockResolvedValue(null),
+      };
+      withF3 = new WhatsappAssistantService(
+        prisma,
+        config,
+        new WhatsappPolicyService(),
+        openwa as any,
+        aiBridge as any,
+        links as any,
+      );
+    });
+
+    it('VINCULAR válido consume una vez y responde confirmación', async () => {
+      links.consumeCode.mockResolvedValue(true);
+      const [raw, sig] = bodyAndSig(payload({ body: 'VINCULAR ABCDEFGHJK' }));
+
+      await expect(withF3.handleWebhook(raw, sig)).resolves.toEqual({
+        status: 200,
+      });
+      expect(links.consumeCode).toHaveBeenCalledWith(
+        expect.any(String),
+        'ABCDEFGHJK',
+      );
+      expect(openwa.sendText.mock.calls[0][3]).toBe(LINK_SUCCESS_REPLY);
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+      expect(aiBridge.tryAnswerLinked).not.toHaveBeenCalled();
+    });
+
+    it('VINCULAR inválido usa respuesta genérica sin llamar a Ofi', async () => {
+      const [raw, sig] = bodyAndSig(payload({ body: 'VINCULAR ABCDEFGHJK' }));
+
+      await withF3.handleWebhook(raw, sig);
+
+      expect(openwa.sendText.mock.calls[0][3]).toBe(LINK_FAILURE_REPLY);
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+      expect(aiBridge.tryAnswerLinked).not.toHaveBeenCalled();
+    });
+
+    it('STOP y HUMANO no consumen vínculo', async () => {
+      const [rawStop, sigStop] = bodyAndSig(
+        payload({ body: 'STOP VINCULAR ABCDEFGHJK' }),
+      );
+      await withF3.handleWebhook(rawStop, sigStop);
+      const [rawHuman, sigHuman] = bodyAndSig(
+        payload({ id: 'f3-human', body: 'humano VINCULAR ABCDEFGHJK' }),
+      );
+      await withF3.handleWebhook(rawHuman, sigHuman);
+
+      expect(links.consumeCode).not.toHaveBeenCalled();
+    });
+
+    it('vínculo vivo usa ruta Ofi vinculada, no persona pública', async () => {
+      links.resolveIdentity.mockResolvedValue({
+        role: 'PROVEEDOR',
+        providerType: 'OFICIO',
+      });
+      aiBridge.tryAnswerLinked.mockResolvedValue('Respuesta segura de Ofi');
+      const [raw, sig] = bodyAndSig(
+        payload({ body: 'quiero buscar un gasfitero' }),
+      );
+
+      await withF3.handleWebhook(raw, sig);
+
+      expect(aiBridge.tryAnswerLinked).toHaveBeenCalledWith(
+        'quiero buscar un gasfitero',
+        expect.any(String),
+        { role: 'PROVEEDOR', providerType: 'OFICIO' },
+      );
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+    });
+
+    it('sin vínculo no puede llamar la ruta personalizada', async () => {
+      const [raw, sig] = bodyAndSig(
+        payload({ body: 'quiero un electricista' }),
+      );
+
+      await withF3.handleWebhook(raw, sig);
+
+      expect(aiBridge.tryAnswerLinked).not.toHaveBeenCalled();
+      expect(aiBridge.tryAnswer).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('fallo de envío → marca FAILED con código seguro y no reintenta (200)', async () => {

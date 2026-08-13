@@ -2,6 +2,7 @@ import { createHmac } from 'node:crypto';
 import {
   hashContact,
   hashInboundMessageId,
+  hashLinkCode,
   verifyOpenWaSignature,
 } from './whatsapp-signature.js';
 
@@ -71,5 +72,11 @@ describe('hashContact', () => {
     const value = hashInboundMessageId('true_51999888777@c.us_ABCDEF', 'k');
     expect(value).not.toContain('51999888777');
     expect(value).not.toBe(hashContact('true_51999888777@c.us_ABCDEF', 'k'));
+  });
+
+  it('separa el HMAC de código del HMAC de contacto', () => {
+    const codeHash = hashLinkCode('session', 'ABCDEFGHJK', 'k');
+    expect(codeHash).not.toContain('ABCDEFGHJK');
+    expect(codeHash).not.toBe(hashContact('ABCDEFGHJK', 'k'));
   });
 });

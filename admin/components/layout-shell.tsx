@@ -104,6 +104,7 @@ function Topbar({ onMenuClick, mobileOpen }: TopbarProps) {
     '/marketplace/chats':         ['Marketplace', 'Chats'],
     '/operations/queue':          ['Operaciones', 'Verificación y Validación'],
     '/operations/payments':       ['Operaciones', 'Pagos y Solicitudes'],
+    '/operations/whatsapp':       ['Operaciones', 'WhatsApp Servi'],
     '/verification':              ['Operaciones', 'Verificación'],
     '/trust-validation':          ['Operaciones', 'Validación de Confianza'],
     '/plan-requests':             ['Operaciones', 'Solicitudes de Plan'],

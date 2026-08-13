@@ -61,4 +61,34 @@ describe('WhatsappAssistantController', () => {
     expect(res.status).not.toHaveBeenCalled();
     expect(res.send).not.toHaveBeenCalled();
   });
+
+  it('genera código de vínculo solo para el userId del JWT', async () => {
+    const links = {
+      createLinkCode: jest
+        .fn()
+        .mockResolvedValue({ code: 'ABCDEFGHJK', expiresAt: new Date() }),
+    };
+    const controller = new WhatsappAssistantController({} as any, links as any);
+
+    const out = await controller.createLinkCode({
+      user: { userId: 42 },
+    } as any);
+
+    expect(links.createLinkCode).toHaveBeenCalledWith(42);
+    expect(out.instruction).toContain('VINCULAR ABCDEFGHJK');
+  });
+
+  it('estado y desvínculo no exponen contacto', async () => {
+    const links = {
+      isLinked: jest.fn().mockResolvedValue(true),
+      unlink: jest.fn().mockResolvedValue(true),
+    };
+    const controller = new WhatsappAssistantController({} as any, links as any);
+    const req = { user: { userId: 42 } } as any;
+
+    await expect(controller.linkStatus(req)).resolves.toEqual({ linked: true });
+    await expect(controller.unlink(req)).resolves.toEqual({ ok: true });
+    expect(links.isLinked).toHaveBeenCalledWith(42);
+    expect(links.unlink).toHaveBeenCalledWith(42);
+  });
 });
