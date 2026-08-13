@@ -26,6 +26,7 @@ export enum AiPersonaType {
   CLIENT = 'CLIENT',
   PROVIDER = 'PROVIDER',
   PUBLIC = 'PUBLIC',
+  LINKED = 'LINKED',
 }
 
 /**

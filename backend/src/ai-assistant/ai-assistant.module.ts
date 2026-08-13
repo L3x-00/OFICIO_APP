@@ -15,6 +15,7 @@ import { AiAnalyticsController } from './ai-analytics.controller.js';
 import { AiAnalyticsService } from './ai-analytics.service.js';
 import { GuestStrategy } from './strategies/guest.strategy.js';
 import { PublicStrategy } from './strategies/public.strategy.js';
+import { LinkedReadOnlyStrategy } from './strategies/linked-read-only.strategy.js';
 import { ClientStrategy } from './strategies/client.strategy.js';
 import { ProviderStrategy } from './strategies/provider.strategy.js';
 import { AdminStrategy } from './strategies/admin.strategy.js';
@@ -59,6 +60,7 @@ import { RolesGuard } from '../auth/roles.guard.js';
     // Estrategias de Contexto (persona) — inyectadas en AiAssistantService.
     GuestStrategy,
     PublicStrategy,
+    LinkedReadOnlyStrategy,
     ClientStrategy,
     ProviderStrategy,
     AdminStrategy,

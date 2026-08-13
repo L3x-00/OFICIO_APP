@@ -1,6 +1,20 @@
-import { Controller, Headers, Post, Req, Res } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Headers,
+  Optional,
+  Post,
+  Req,
+  Res,
+  ServiceUnavailableException,
+  UseGuards,
+} from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { JwtAuthGuard } from '../auth/jwt.guard.js';
+import type { AuthenticatedRequest } from '../common/interfaces/auth-request.js';
+import { WhatsappLinkService } from './whatsapp-link.service.js';
 import { WhatsappAssistantService } from './whatsapp-assistant.service.js';
 
 /**
@@ -22,7 +36,10 @@ import { WhatsappAssistantService } from './whatsapp-assistant.service.js';
  */
 @Controller('whatsapp-assistant')
 export class WhatsappAssistantController {
-  constructor(private readonly service: WhatsappAssistantService) {}
+  constructor(
+    private readonly service: WhatsappAssistantService,
+    @Optional() private readonly links?: WhatsappLinkService,
+  ) {}
 
   @Post('webhook')
   async webhook(
@@ -32,5 +49,38 @@ export class WhatsappAssistantController {
   ): Promise<void> {
     const outcome = await this.service.handleWebhook(req.rawBody, signature);
     res.status(outcome.status).send();
+  }
+
+  /** F3: el código nace solo desde la cuenta autenticada, nunca WhatsApp. */
+  @Post('link-code')
+  @UseGuards(JwtAuthGuard)
+  async createLinkCode(@Req() req: AuthenticatedRequest) {
+    const challenge = await this.links?.createLinkCode(req.user.userId);
+    if (!challenge) {
+      throw new ServiceUnavailableException(
+        'El vínculo de WhatsApp no está disponible.',
+      );
+    }
+    return {
+      code: challenge.code,
+      expiresAt: challenge.expiresAt,
+      instruction: `Escribe VINCULAR ${challenge.code} en el WhatsApp oficial de Servi.`,
+    };
+  }
+
+  /** Estado opaco: no devuelve teléfono, JID, hash ni datos de cuenta. */
+  @Get('link')
+  @UseGuards(JwtAuthGuard)
+  async linkStatus(@Req() req: AuthenticatedRequest) {
+    const linked = (await this.links?.isLinked(req.user.userId)) ?? false;
+    return { linked };
+  }
+
+  /** La cuenta autenticada puede quitar únicamente su propio vínculo. */
+  @Delete('link')
+  @UseGuards(JwtAuthGuard)
+  async unlink(@Req() req: AuthenticatedRequest) {
+    const ok = (await this.links?.unlink(req.user.userId)) ?? false;
+    return { ok };
   }
 }

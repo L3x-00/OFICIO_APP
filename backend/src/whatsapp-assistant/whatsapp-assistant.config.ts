@@ -25,6 +25,11 @@ import { ConfigService } from '@nestjs/config';
  *   WHATSAPP_ASSISTANT_AI_TIMEOUT_MS=12000
  *   WHATSAPP_ASSISTANT_AI_MAX_INPUT_CHARS=600
  *   WHATSAPP_ASSISTANT_AI_MAX_REPLY_CHARS=900
+ *
+ * F3 (vínculo posterior de cuenta), opt-in e independiente de F2:
+ *   WHATSAPP_ASSISTANT_LINK_ENABLED=true|false   (default false)
+ *   WHATSAPP_ASSISTANT_LINK_SECRET=...           (HMAC del código)
+ *   WHATSAPP_ASSISTANT_LINK_TTL_MINUTES=10
  */
 @Injectable()
 export class WhatsappAssistantConfig {
@@ -101,6 +106,32 @@ export class WhatsappAssistantConfig {
   /** Longitud máxima del texto que se envía por WhatsApp. */
   get aiMaxReplyChars(): number {
     return this.int('WHATSAPP_ASSISTANT_AI_MAX_REPLY_CHARS', 900);
+  }
+
+  // ── F3: vínculo de número ↔ cuenta ──────────────────────────
+
+  /** Switch del vínculo. No altera F1/F2 si queda apagado. */
+  get linkEnabled(): boolean {
+    return this.bool('WHATSAPP_ASSISTANT_LINK_ENABLED', false);
+  }
+
+  /** Secreto exclusivo para HMAC de códigos de vínculo. */
+  get linkSecret(): string {
+    return this.str('WHATSAPP_ASSISTANT_LINK_SECRET');
+  }
+
+  /** Caducidad corta del código; máximo 30 min aun si se configura más. */
+  get linkTtlMs(): number {
+    return (
+      Math.min(this.int('WHATSAPP_ASSISTANT_LINK_TTL_MINUTES', 10), 30) * 60_000
+    );
+  }
+
+  /** F3 solo opera con flag, sesión y secreto explícitos. */
+  get linkOperational(): boolean {
+    return (
+      this.linkEnabled && Boolean(this.sessionId) && Boolean(this.linkSecret)
+    );
   }
 
   private get isProd(): boolean {

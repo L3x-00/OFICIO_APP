@@ -47,6 +47,25 @@ describe('WhatsappPolicyService', () => {
     });
   });
 
+  it('STOP y HUMANO tienen prioridad sobre VINCULAR', () => {
+    expect(policy.decide('STOP VINCULAR ABCDEFGHJK')).toEqual({
+      kind: 'opt_out',
+    });
+    expect(policy.decide('humano VINCULAR ABCDEFGHJK')).toEqual({
+      kind: 'handover',
+      reply: HUMAN_HANDOVER_REPLY,
+    });
+  });
+
+  it('solo acepta el comando exacto de vínculo', () => {
+    expect(policy.decide('VINCULAR ABCDEFGHJK')).toEqual({
+      kind: 'link',
+      code: 'ABCDEFGHJK',
+    });
+    expect(policy.decide('por favor VINCULAR ABCDEFGHJK').kind).toBe('reject');
+    expect(policy.decide('VINCULAR ABCDEFGHJK gracias').kind).toBe('reject');
+  });
+
   it('FAQ de Servi → respuesta pública', () => {
     const cases: [string, string][] = [
       ['¿cómo me registro?', 'registr'],

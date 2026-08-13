@@ -62,6 +62,8 @@ model User {
   serviceRequests       ServiceRequest[]
   penalty               UserPenalty?
   aiMemory              AiUserMemory?
+  whatsappLinkChallenges WhatsappLinkChallenge[]
+  whatsappLinkedContacts WhatsappLinkedContact[]
   reportsMade           UserReport[]       @relation("UserReportsMade")
   reportsReceived       UserReport[]       @relation("UserReportsReceived")
 
@@ -1258,6 +1260,42 @@ model WhatsappContactPreference {
 
   @@unique([sessionId, contactHash])
   @@map("whatsapp_contact_preference")
+}
+
+/// Código efímero para que un usuario autenticado autorice vincular SU cuenta
+/// a un chat WhatsApp. El código solo se persiste como HMAC, expira pronto y
+/// se consume una vez. No contiene teléfono/JID ni texto de mensajes.
+model WhatsappLinkChallenge {
+  id          Int       @id @default(autoincrement())
+  sessionId   String
+  codeHash    String
+  userId      Int
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, codeHash])
+  @@index([sessionId, userId, expiresAt])
+  @@map("whatsapp_link_challenge")
+}
+
+/// Vínculo actual entre un contacto opaco de WhatsApp y una cuenta Servi.
+/// Ambas unicidades garantizan: un contacto no se roba entre cuentas y un
+/// usuario conserva como máximo un contacto por sesión OpenWA.
+model WhatsappLinkedContact {
+  id          Int       @id @default(autoincrement())
+  sessionId   String
+  contactHash String
+  userId      Int
+  linkedAt    DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, contactHash])
+  @@unique([sessionId, userId])
+  @@index([userId])
+  @@map("whatsapp_linked_contact")
 }
 
 enum WhatsappInboundStatus {

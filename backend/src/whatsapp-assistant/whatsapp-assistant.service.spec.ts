@@ -4,6 +4,10 @@ import { WhatsappAssistantService } from './whatsapp-assistant.service.js';
 import { WhatsappPolicyService } from './whatsapp-policy.service.js';
 import { OpenWaSendError } from './openwa.client.js';
 import { HUMAN_HANDOVER_REPLY, OUT_OF_SCOPE_REPLY } from './whatsapp-faq.js';
+import {
+  LINK_FAILURE_REPLY,
+  LINK_SUCCESS_REPLY,
+} from './whatsapp-link.service.js';
 
 const SECRET = 'webhook-secret';
 const SESSION = 'servi-session-1';
@@ -355,6 +359,101 @@ describe('WhatsappAssistantService', () => {
       });
       expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
       expect(openwa.sendText).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('F3 — vínculo seguro y contexto vivo', () => {
+    let aiBridge: { tryAnswer: jest.Mock; tryAnswerLinked: jest.Mock };
+    let links: { consumeCode: jest.Mock; resolveIdentity: jest.Mock };
+    let withF3: WhatsappAssistantService;
+
+    beforeEach(() => {
+      aiBridge = {
+        tryAnswer: jest.fn().mockResolvedValue(null),
+        tryAnswerLinked: jest.fn().mockResolvedValue(null),
+      };
+      links = {
+        consumeCode: jest.fn().mockResolvedValue(false),
+        resolveIdentity: jest.fn().mockResolvedValue(null),
+      };
+      withF3 = new WhatsappAssistantService(
+        prisma,
+        config,
+        new WhatsappPolicyService(),
+        openwa as any,
+        aiBridge as any,
+        links as any,
+      );
+    });
+
+    it('VINCULAR válido consume una vez y responde confirmación', async () => {
+      links.consumeCode.mockResolvedValue(true);
+      const [raw, sig] = bodyAndSig(payload({ body: 'VINCULAR ABCDEFGHJK' }));
+
+      await expect(withF3.handleWebhook(raw, sig)).resolves.toEqual({
+        status: 200,
+      });
+      expect(links.consumeCode).toHaveBeenCalledWith(
+        expect.any(String),
+        'ABCDEFGHJK',
+      );
+      expect(openwa.sendText.mock.calls[0][3]).toBe(LINK_SUCCESS_REPLY);
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+      expect(aiBridge.tryAnswerLinked).not.toHaveBeenCalled();
+    });
+
+    it('VINCULAR inválido usa respuesta genérica sin llamar a Ofi', async () => {
+      const [raw, sig] = bodyAndSig(payload({ body: 'VINCULAR ABCDEFGHJK' }));
+
+      await withF3.handleWebhook(raw, sig);
+
+      expect(openwa.sendText.mock.calls[0][3]).toBe(LINK_FAILURE_REPLY);
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+      expect(aiBridge.tryAnswerLinked).not.toHaveBeenCalled();
+    });
+
+    it('STOP y HUMANO no consumen vínculo', async () => {
+      const [rawStop, sigStop] = bodyAndSig(
+        payload({ body: 'STOP VINCULAR ABCDEFGHJK' }),
+      );
+      await withF3.handleWebhook(rawStop, sigStop);
+      const [rawHuman, sigHuman] = bodyAndSig(
+        payload({ id: 'f3-human', body: 'humano VINCULAR ABCDEFGHJK' }),
+      );
+      await withF3.handleWebhook(rawHuman, sigHuman);
+
+      expect(links.consumeCode).not.toHaveBeenCalled();
+    });
+
+    it('vínculo vivo usa ruta Ofi vinculada, no persona pública', async () => {
+      links.resolveIdentity.mockResolvedValue({
+        role: 'PROVEEDOR',
+        providerType: 'OFICIO',
+      });
+      aiBridge.tryAnswerLinked.mockResolvedValue('Respuesta segura de Ofi');
+      const [raw, sig] = bodyAndSig(
+        payload({ body: 'quiero buscar un gasfitero' }),
+      );
+
+      await withF3.handleWebhook(raw, sig);
+
+      expect(aiBridge.tryAnswerLinked).toHaveBeenCalledWith(
+        'quiero buscar un gasfitero',
+        expect.any(String),
+        { role: 'PROVEEDOR', providerType: 'OFICIO' },
+      );
+      expect(aiBridge.tryAnswer).not.toHaveBeenCalled();
+    });
+
+    it('sin vínculo no puede llamar la ruta personalizada', async () => {
+      const [raw, sig] = bodyAndSig(
+        payload({ body: 'quiero un electricista' }),
+      );
+
+      await withF3.handleWebhook(raw, sig);
+
+      expect(aiBridge.tryAnswerLinked).not.toHaveBeenCalled();
+      expect(aiBridge.tryAnswer).toHaveBeenCalledTimes(1);
     });
   });
 

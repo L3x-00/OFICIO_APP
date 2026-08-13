@@ -4,6 +4,7 @@ import { WhatsappAssistantService } from './whatsapp-assistant.service.js';
 import { WhatsappAssistantConfig } from './whatsapp-assistant.config.js';
 import { WhatsappPolicyService } from './whatsapp-policy.service.js';
 import { WhatsappAiService } from './whatsapp-ai.service.js';
+import { WhatsappLinkService } from './whatsapp-link.service.js';
 import { OpenWaClient } from './openwa.client.js';
 import { AiAssistantModule } from '../ai-assistant/ai-assistant.module.js';
 
@@ -26,6 +27,7 @@ import { AiAssistantModule } from '../ai-assistant/ai-assistant.module.js';
     WhatsappAssistantConfig,
     WhatsappPolicyService,
     WhatsappAiService,
+    WhatsappLinkService,
     OpenWaClient,
   ],
 })

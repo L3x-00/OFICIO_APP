@@ -3,6 +3,7 @@ import { AiAssistantService } from '../ai-assistant/ai-assistant.service.js';
 import { AiQuotaService } from '../ai-assistant/ai-quota.service.js';
 import { secondsUntilPeruMidnight } from '../ai-assistant/ai-assistant.helpers.js';
 import { WhatsappAssistantConfig } from './whatsapp-assistant.config.js';
+import type { LinkedWhatsappIdentity } from './whatsapp-link.service.js';
 
 /** Prefijo del contador por contacto (el contacto ya viene como HMAC). */
 const CONTACT_PREFIX = 'wa:ai:daily:';
@@ -46,6 +47,34 @@ export class WhatsappAiService {
    * del contacto alcanzado, IA bloqueada/caída o respuesta vacía).
    */
   async tryAnswer(text: string, contactHash: string): Promise<string | null> {
+    return this.tryAnswerWith(text, contactHash, (message) =>
+      this.ai?.chatPublicReadOnly(message, {
+        timeoutMs: this.config.aiTimeoutMs,
+      }),
+    );
+  }
+
+  /**
+   * F3: mismo puente y cuota del canal, con contexto de rol/tipo ya resuelto
+   * desde BD. No se pasa userId, contacto ni ninguna capacidad de cuenta a Ofi.
+   */
+  async tryAnswerLinked(
+    text: string,
+    contactHash: string,
+    identity: LinkedWhatsappIdentity,
+  ): Promise<string | null> {
+    return this.tryAnswerWith(text, contactHash, (message) =>
+      this.ai?.chatLinkedReadOnly(message, identity, {
+        timeoutMs: this.config.aiTimeoutMs,
+      }),
+    );
+  }
+
+  private async tryAnswerWith(
+    text: string,
+    contactHash: string,
+    ask: (message: string) => Promise<{ reply: string } | null> | undefined,
+  ): Promise<string | null> {
     if (!this.config.aiEnabled || !this.ai) return null;
 
     const message = text.trim();
@@ -57,9 +86,7 @@ export class WhatsappAiService {
 
     let result: { reply: string } | null;
     try {
-      result = await this.ai.chatPublicReadOnly(message, {
-        timeoutMs: this.config.aiTimeoutMs,
-      });
+      result = (await ask(message)) ?? null;
     } catch {
       // `chatPublicReadOnly` no debería lanzar; si lo hace, cae a F1.
       // Nunca se loguea el texto ni el contacto.

@@ -1,10 +1,12 @@
-# Integración WhatsApp ↔ OpenWA — F1–F2
+# Integración WhatsApp ↔ OpenWA — F1–F3
 
-**Estado:** F1 determinista y F2 de Ofi público solo lectura implementados en
+**Estado:** F1 determinista, F2 de Ofi público y F3 de vínculo seguro
+implementados en
 `backend/src/whatsapp-assistant`, ambos **APAGADOS por defecto**. El master
 switch `WHATSAPP_ASSISTANT_ENABLED=false` deja el webhook en `204`, sin BD,
 envíos ni secretos. Aun con F1 encendido, F2 requiere su propio opt-in
 `WHATSAPP_ASSISTANT_AI_ENABLED=true`.
+F3 requiere además SQL manual y `WHATSAPP_ASSISTANT_LINK_ENABLED=true`.
 
 **Reparto de responsabilidades:** OpenWA (`D:\OpenWA-Service`) permanece
 **genérico** (sesiones, envío, webhooks). Servi contiene la **identidad, las
@@ -13,7 +15,7 @@ mete lógica de negocio en OpenWA.
 
 ---
 
-## 1. Alcance de F1 y F2
+## 1. Alcance de F1, F2 y F3
 
 - Entrada: webhook `message.received` de OpenWA hacia Servi.
 - Salida: a lo sumo **una** respuesta por mensaje, vía `POST send-text` de OpenWA.
@@ -39,6 +41,16 @@ mete lógica de negocio en OpenWA.
     datos de contacto.
   - Un tema fuera de Servi **nunca llega a IA**. Si Ofi está apagada, lenta,
     bloqueada o sin presupuesto, se conserva la FAQ determinista de F1.
+- F3 permite vínculo posterior, nunca implícito: el usuario autenticado pide un
+  código de 10 símbolos desde Servi y escribe exactamente `VINCULAR CÓDIGO` en
+  el WhatsApp oficial. El código dura 10 min por defecto, se guarda solo como
+  HMAC y se consume una sola vez. `STOP` y `HUMANO` siempre ganan al comando.
+  - Se conserva un vínculo actual por `sessionId + userId` y un dueño por
+    `sessionId + contactHash`; otro usuario jamás puede tomar un contacto.
+  - El rol, actividad y tipo se resuelven de `users/providers` en **cada**
+    inbound. ADMIN se degrada a USUARIO. El vínculo no guarda rol ni permisos.
+  - Para Ofi, un chat vinculado sigue siendo lectura de catálogo público:
+    no historial, memoria, cuenta, pagos, perfil, referidos, admin ni escritura.
 
 ## 2. Contrato real de OpenWA usado
 
@@ -76,13 +88,26 @@ Ninguna lleva valores reales en `.env.example`. Requeridas **solo al activar**:
 Opcionales de F2. F1 no cambia si faltan o si `WHATSAPP_ASSISTANT_AI_ENABLED`
 permanece en `false`:
 
-| Variable | Descripción |
-| --- | --- |
-| `WHATSAPP_ASSISTANT_AI_ENABLED` | Opt-in de Ofi público. `false` por defecto. Requiere además `AI_ENABLED=true` de Ofi. |
-| `WHATSAPP_ASSISTANT_AI_DAILY_PER_CONTACT` | Máximo diario por contacto HMAC. Default `10`; Redis caído = F2 no llama a IA. |
-| `WHATSAPP_ASSISTANT_AI_TIMEOUT_MS` | Deadline por mensaje. Default `12000`; al vencer responde fallback F1. |
-| `WHATSAPP_ASSISTANT_AI_MAX_INPUT_CHARS` | Tope de texto a Ofi. Default `600`. |
-| `WHATSAPP_ASSISTANT_AI_MAX_REPLY_CHARS` | Tope de respuesta WhatsApp. Default `900`. |
+| Variable                                  | Descripción                                                                           |
+| ----------------------------------------- | ------------------------------------------------------------------------------------- |
+| `WHATSAPP_ASSISTANT_AI_ENABLED`           | Opt-in de Ofi público. `false` por defecto. Requiere además `AI_ENABLED=true` de Ofi. |
+| `WHATSAPP_ASSISTANT_AI_DAILY_PER_CONTACT` | Máximo diario por contacto HMAC. Default `10`; Redis caído = F2 no llama a IA.        |
+| `WHATSAPP_ASSISTANT_AI_TIMEOUT_MS`        | Deadline por mensaje. Default `12000`; al vencer responde fallback F1.                |
+| `WHATSAPP_ASSISTANT_AI_MAX_INPUT_CHARS`   | Tope de texto a Ofi. Default `600`.                                                   |
+| `WHATSAPP_ASSISTANT_AI_MAX_REPLY_CHARS`   | Tope de respuesta WhatsApp. Default `900`.                                            |
+
+Opcionales de F3. El link no funciona sin las tres condiciones: SQL manual,
+switch y secreto. El fallo siempre es genérico para no revelar cuentas/códigos:
+
+| Variable                              | Descripción                                                            |
+| ------------------------------------- | ---------------------------------------------------------------------- |
+| `WHATSAPP_ASSISTANT_LINK_ENABLED`     | Opt-in de generación/consumo de vínculo. `false` por defecto.          |
+| `WHATSAPP_ASSISTANT_LINK_SECRET`      | Secreto distinto de HMAC webhook/contacto; mínimo 32 bytes aleatorios. |
+| `WHATSAPP_ASSISTANT_LINK_TTL_MINUTES` | Expiración de desafío. Default `10`, máximo efectivo `30`.             |
+
+Rutas privadas F3 (todas con JWT y `userId` solo del token):
+`POST /whatsapp-assistant/link-code`, `GET /whatsapp-assistant/link`,
+`DELETE /whatsapp-assistant/link`. Nunca devuelven teléfono, JID o hash.
 
 ## 4. Persistencia mínima (privacidad)
 
@@ -138,6 +163,11 @@ F0 se hace **una vez, a mano** en OpenWA (Servi no configura OpenWA remoto):
 4. Solo tras validar F1: para F2, asegurar `AI_ENABLED=true`, completar los
    límites opcionales y poner `WHATSAPP_ASSISTANT_AI_ENABLED=true`. Si F2 falla,
    apagar solo este segundo switch conserva F1.
+5. Solo tras validar F1/F2: aplicar manualmente
+   `backend/prisma/sql/whatsapp_assistant_links.sql`, completar
+   `WHATSAPP_ASSISTANT_LINK_SECRET` y habilitar
+   `WHATSAPP_ASSISTANT_LINK_ENABLED=true`. No activar F3 si ese SQL no está
+   aplicado; no usar `migrate deploy` ni `db push` contra producción.
 
 ## 8. Pruebas
 
@@ -148,6 +178,9 @@ F0 se hace **una vez, a mano** en OpenWA (Servi no configura OpenWA remoto):
 - F2 agrega: no IA con flag apagado, cuota HMAC fail-closed, texto sin PII de
   transporte, límites de entrada/salida, fallback F1 y rechazo fuera de Servi
   sin llamada a Ofi.
+- F3 agrega: código efímero HMAC, vencimiento/uso único, no takeover,
+  STOP/HUMANO antes de vínculo, rol ADMIN degradado y contexto vinculado sin
+  tools de cuenta.
 - Smoke manual (staging): con el flag encendido, enviar a la sesión de Servi
   desde otro número:
   - un texto de FAQ → recibe respuesta pública.
@@ -164,3 +197,6 @@ conservar); no es necesario tocar Supabase para desactivar.
 
 Para revertir solo F2, poner `WHATSAPP_ASSISTANT_AI_ENABLED=false`: F1 sigue
 activa, determinista y sin llamadas a Ofi.
+
+Para revertir solo F3, poner `WHATSAPP_ASSISTANT_LINK_ENABLED=false`: F1/F2
+siguen; los vínculos y desafíos quedan inertes sin borrar historial ni datos.

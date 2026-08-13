@@ -56,6 +56,18 @@ export function hashInboundMessageId(
   return hashOpaqueIdentifier('message-id\0', messageId, secret);
 }
 
+/**
+ * HMAC del código efímero F3. Dominio independiente: nunca se reutiliza el
+ * secreto ni el hash de contacto para una credencial de vínculo.
+ */
+export function hashLinkCode(
+  sessionId: string,
+  code: string,
+  secret: string,
+): string {
+  return hashOpaqueIdentifier(`link-code\\0${sessionId}\\0`, code, secret);
+}
+
 function hashOpaqueIdentifier(
   domain: string,
   identifier: string,

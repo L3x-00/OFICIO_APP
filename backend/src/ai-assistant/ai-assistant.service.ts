@@ -46,6 +46,7 @@ import {
 } from './strategies/ai-context.strategy.js';
 import { GuestStrategy } from './strategies/guest.strategy.js';
 import { PublicStrategy } from './strategies/public.strategy.js';
+import { LinkedReadOnlyStrategy } from './strategies/linked-read-only.strategy.js';
 import { ClientStrategy } from './strategies/client.strategy.js';
 import { ProviderStrategy } from './strategies/provider.strategy.js';
 import { AdminStrategy } from './strategies/admin.strategy.js';
@@ -194,6 +195,9 @@ export class AiAssistantService {
     @Optional()
     @Inject(PublicStrategy)
     private readonly publicStrategy?: PublicStrategy,
+    @Optional()
+    @Inject(LinkedReadOnlyStrategy)
+    private readonly linkedReadOnlyStrategy?: LinkedReadOnlyStrategy,
   ) {}
 
   /** Lazy init del SDK moderno @google/genai. */
@@ -570,6 +574,48 @@ export class AiAssistantService {
     message: string,
     options: { timeoutMs?: number } = {},
   ): Promise<{ reply: string } | null> {
+    return this.chatExternalReadOnly(
+      message,
+      PUBLIC_CALLER,
+      AiPersonaType.PUBLIC,
+      options,
+    );
+  }
+
+  /**
+   * Variante F3 para un contacto previamente vinculado. El identificador real
+   * nunca llega a Ofi: solo rol/tipo ya resueltos desde BD y acotados a texto.
+   * ADMIN se degrada de nuevo aquí como defensa en profundidad.
+   */
+  async chatLinkedReadOnly(
+    message: string,
+    context: {
+      role: AiUserRole;
+      providerType?: 'OFICIO' | 'PROFESIONAL' | 'NEGOCIO' | null;
+    },
+    options: { timeoutMs?: number } = {},
+  ): Promise<{ reply: string } | null> {
+    const role: AiUserRole =
+      context.role === 'PROVEEDOR' ? 'PROVEEDOR' : 'USUARIO';
+    const caller: AiCaller = {
+      userId: 0,
+      role,
+      providerType: context.providerType ?? null,
+    };
+    return this.chatExternalReadOnly(
+      message,
+      caller,
+      AiPersonaType.LINKED,
+      options,
+    );
+  }
+
+  private async chatExternalReadOnly(
+    message: string,
+    caller: AiCaller,
+    persona: AiPersonaType.PUBLIC | AiPersonaType.LINKED,
+    options: { timeoutMs?: number } = {},
+  ): Promise<{ reply: string } | null> {
     const text = typeof message === 'string' ? message.trim() : '';
     if (!text) return null;
 
@@ -598,7 +644,13 @@ export class AiAssistantService {
       const client = this.getClient();
       if (!client) return null;
 
-      return await this.runPublicGeneration(client, san.cleaned, options);
+      return await this.runPublicGeneration(
+        client,
+        caller,
+        persona,
+        san.cleaned,
+        options,
+      );
     } catch (e) {
       // Blindaje final: la ruta pública nunca propaga un error al canal.
       this.logger.warn(
@@ -618,6 +670,8 @@ export class AiAssistantService {
    */
   private async runPublicGeneration(
     client: GoogleGenAI,
+    caller: AiCaller,
+    persona: AiPersonaType.PUBLIC | AiPersonaType.LINKED,
     cleanedMessage: string,
     options: { timeoutMs?: number },
   ): Promise<{ reply: string } | null> {
@@ -629,10 +683,10 @@ export class AiAssistantService {
 
     const pending = this.callGemini(
       client,
-      PUBLIC_CALLER,
+      caller,
       cleanedMessage,
       [], // sin historial: cada mensaje es autónomo.
-      AiPersonaType.PUBLIC,
+      persona,
       providerSink,
       categorySink,
     );
@@ -1246,6 +1300,16 @@ export class AiAssistantService {
       parts.push('', memoryBlock);
     }
 
+    if (persona === AiPersonaType.LINKED) {
+      parts.push(
+        '',
+        'CONTEXTO SEGURO DEL CANAL VINCULADO:',
+        `- Rol resuelto por Servi: ${caller.role}.`,
+        `- Tipo de proveedor resuelto: ${caller.providerType ?? 'ninguno'}.`,
+        '- Este contexto no habilita herramientas ni lectura/escritura de cuenta.',
+      );
+    }
+
     if (knowledge.trim().length > 0) {
       parts.push(
         '',
@@ -1306,6 +1370,8 @@ export class AiAssistantService {
         return this.guestStrategy;
       case AiPersonaType.PUBLIC:
         return this.publicStrategy;
+      case AiPersonaType.LINKED:
+        return this.linkedReadOnlyStrategy;
       case AiPersonaType.CLIENT:
       default:
         return this.clientStrategy;

@@ -14,17 +14,24 @@ function buildConfig(overrides: Record<string, unknown> = {}) {
 function buildQuota(overrides: Record<string, unknown> = {}) {
   return {
     available: true,
-    incrementWithLimit: jest.fn().mockResolvedValue({ allowed: true, count: 1 }),
+    incrementWithLimit: jest
+      .fn()
+      .mockResolvedValue({ allowed: true, count: 1 }),
     ...overrides,
   } as any;
 }
 
 describe('WhatsappAiService', () => {
-  let ai: { chatPublicReadOnly: jest.Mock };
+  let ai: { chatPublicReadOnly: jest.Mock; chatLinkedReadOnly: jest.Mock };
 
   beforeEach(() => {
     ai = {
-      chatPublicReadOnly: jest.fn().mockResolvedValue({ reply: 'Hola desde Ofi' }),
+      chatPublicReadOnly: jest
+        .fn()
+        .mockResolvedValue({ reply: 'Hola desde Ofi' }),
+      chatLinkedReadOnly: jest
+        .fn()
+        .mockResolvedValue({ reply: 'Hola vinculado' }),
     };
   });
 
@@ -130,6 +137,24 @@ describe('WhatsappAiService', () => {
     ai.chatPublicReadOnly.mockRejectedValue(new Error('boom'));
     const svc = new WhatsappAiService(buildConfig(), ai as any, buildQuota());
     await expect(svc.tryAnswer('consulta', 'hash')).resolves.toBeNull();
+  });
+
+  it('vínculo solo pasa rol/tipo, nunca userId ni contacto, a Ofi', async () => {
+    const svc = new WhatsappAiService(buildConfig(), ai as any, buildQuota());
+    await expect(
+      svc.tryAnswerLinked('busco gasfitero', 'contact-hmac', {
+        role: 'PROVEEDOR',
+        providerType: 'OFICIO',
+      }),
+    ).resolves.toBe('Hola vinculado');
+    expect(ai.chatLinkedReadOnly).toHaveBeenCalledWith(
+      'busco gasfitero',
+      { role: 'PROVEEDOR', providerType: 'OFICIO' },
+      { timeoutMs: 12000 },
+    );
+    expect(JSON.stringify(ai.chatLinkedReadOnly.mock.calls[0])).not.toContain(
+      'contact-hmac',
+    );
   });
 });
 
