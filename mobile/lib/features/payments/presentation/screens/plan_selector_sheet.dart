@@ -35,9 +35,14 @@ const _kPlanLabels = {
 };
 
 class PlanSelectorSheet extends StatefulWidget {
-  const PlanSelectorSheet._();
+  const PlanSelectorSheet._({this.initialPlan});
 
-  static Future<bool?> show(BuildContext context) {
+  /// Si se pasa (ej. desde Ajustes al tocar una tarjeta de plan), el sheet
+  /// hace auto-scroll a esa tarjeta al abrir para evitar la sensación de
+  /// "toqué un plan y me muestra todos otra vez".
+  final String? initialPlan;
+
+  static Future<bool?> show(BuildContext context, {String? initialPlan}) {
     // PaymentsProvider debe envolver al sheet — el Consumer interno
     // crashea (ProviderNotFoundException → pantalla blanca) si no
     // está en el árbol. Antes solo se proveía al navegar a Yape o
@@ -48,7 +53,7 @@ class PlanSelectorSheet extends StatefulWidget {
       backgroundColor: Colors.transparent,
       builder: (_) => ChangeNotifierProvider(
         create: (_) => PaymentsProvider(),
-        child: const PlanSelectorSheet._(),
+        child: PlanSelectorSheet._(initialPlan: initialPlan),
       ),
     );
   }
@@ -61,11 +66,25 @@ class _PlanSelectorSheetState extends State<PlanSelectorSheet>
     with WidgetsBindingObserver {
   String? _pendingMercadoPagoPlan;
   bool _checkoutWentToBackground = false;
+  final GlobalKey _initialPlanKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Auto-scroll a la tarjeta del plan tocado (si se abrió con initialPlan).
+    if (widget.initialPlan != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final ctx = _initialPlanKey.currentContext;
+        if (ctx == null) return;
+        Scrollable.ensureVisible(
+          ctx,
+          alignment: 0.1,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOut,
+        );
+      });
+    }
   }
 
   @override
@@ -303,6 +322,9 @@ class _PlanSelectorSheetState extends State<PlanSelectorSheet>
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: _PlanCard(
+                        key: plan == widget.initialPlan
+                            ? _initialPlanKey
+                            : null,
                         planKey: plan,
                         label: label,
                         price: price,
@@ -337,6 +359,7 @@ class _PlanCard extends StatelessWidget {
   final bool isCheckoutProcessing;
 
   const _PlanCard({
+    super.key,
     required this.planKey,
     required this.label,
     required this.price,

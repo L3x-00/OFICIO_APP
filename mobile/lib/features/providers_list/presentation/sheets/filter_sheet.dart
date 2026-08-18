@@ -100,6 +100,8 @@ class _FilterSheetState extends State<FilterSheet> {
         latitude: _radarLat!,
         longitude: _radarLng!,
         radiusKm: _radarRadiusKm,
+        // El radar ahora también respeta la disponibilidad elegida en el sheet.
+        availability: _availability,
       );
     } else {
       widget.prov.applyFilters(
@@ -135,6 +137,7 @@ class _FilterSheetState extends State<FilterSheet> {
 
   bool get _hasLocalChanges =>
       _radarMode != widget.prov.nearbyActive ||
+      (_radarMode && _radarRadiusKm != widget.prov.nearbyRadiusKm) ||
       _availability != widget.prov.selectedAvailability ||
       _verifiedOnly != widget.prov.verifiedOnly ||
       _sortBy != widget.prov.sortBy ||
@@ -303,9 +306,13 @@ class _FilterSheetState extends State<FilterSheet> {
                       department: _dept,
                       initialRadiusKm: _radarRadiusKm,
                       onChanged: (lat, lng, km) {
-                        _radarLat = lat;
-                        _radarLng = lng;
-                        _radarRadiusKm = km;
+                        // setState para que el indicador de cambios del botón
+                        // único reaccione al mover el radio o el punto.
+                        setState(() {
+                          _radarLat = lat;
+                          _radarLng = lng;
+                          _radarRadiusKm = km;
+                        });
                       },
                     ),
                   ],

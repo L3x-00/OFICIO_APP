@@ -288,6 +288,23 @@ describe('ProvidersService (unit)', () => {
         }),
       );
     });
+
+    it('respeta la disponibilidad activa en el where de hidratación', async () => {
+      // El radar honra el filtro de disponibilidad del sheet, igual que findAll.
+      prisma.$queryRaw.mockResolvedValue([{ id: 1, dist_m: 500 }]);
+      prisma.provider.findMany.mockResolvedValue([
+        { id: 1, phone: '999', subscription: { plan: 'PREMIUM' }, images: [] },
+      ]);
+      await service.getNearby(-12, -77, 5, { availability: 'DISPONIBLE' });
+      expect(prisma.provider.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: { in: [1] },
+            availability: 'DISPONIBLE',
+          }),
+        }),
+      );
+    });
   });
 
   describe('getCategories()', () => {

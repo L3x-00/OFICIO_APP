@@ -205,7 +205,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       subtitle:
           'Gasfiteros y electricistas, abogados y doctores verificados, o tu negocio local. Todos con reseñas reales.',
       accentColor: AppColors.primary,
-      backgroundImage: 'assets/images/onboarding/slide-3-tarjeta-oficio.webp',
+      // Fondo neutro de proveedores: la card interior rota entre oficio,
+      // profesional y negocio, así que un fondo específico de un tipo
+      // desentonaba con los otros dos.
+      backgroundImage: 'assets/images/onboarding/slide-2-proveedores.webp',
       visual: SlideProviderShowcase(),
     ),
     SlideData(
