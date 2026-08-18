@@ -89,4 +89,35 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     },
   );
+
+  testWidgets(
+    'en el panel del proveedor (providerType != null) Ofi se muestra aunque '
+    'el toggle esté apagado',
+    (tester) async {
+      final auth = _FakeAuth();
+      final prov = ProvidersProvider();
+      // Toggle apagado ANTES de montar: en la home ocultaría a Ofi.
+      await prov.setOfiFabVisible(false);
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<AuthProvider>.value(value: auth),
+            ChangeNotifierProvider<ProvidersProvider>.value(value: prov),
+          ],
+          child: MaterialApp(
+            theme: AppThemeColors.buildLight(),
+            // providerType != null ⇒ contexto de panel del proveedor.
+            home: const Scaffold(body: AiAssistantFab(providerType: 'OFICIO')),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // En el panel el toggle no aplica: Ofi sigue disponible.
+      expect(find.byType(OfiAvatar), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 }
