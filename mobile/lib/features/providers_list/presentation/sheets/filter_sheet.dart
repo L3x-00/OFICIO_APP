@@ -44,6 +44,14 @@ class _FilterSheetState extends State<FilterSheet> {
   String? _dist;
   bool _gpsLoading = false;
 
+  // Modo "Buscar por radio" (radar). Cuando está ON, el botón único del sheet
+  // dispara applyNearby(lat,lng,km) en vez de applyFilters. El mapa reporta su
+  // centro/radio actuales vía onChanged.
+  late bool _radarMode;
+  double? _radarLat;
+  double? _radarLng;
+  late double _radarRadiusKm;
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +59,8 @@ class _FilterSheetState extends State<FilterSheet> {
     _verifiedOnly = widget.prov.verifiedOnly;
     _sortBy = widget.prov.sortBy;
     _locationCtrl = TextEditingController(text: widget.prov.location);
+    _radarMode = widget.prov.nearbyActive;
+    _radarRadiusKm = widget.prov.nearbyRadiusKm;
 
     // Preload de la ubicación del usuario: si ya tiene filtro estructurado
     // en el provider, usamos ese. Si no, caemos al perfil registrado.
@@ -81,18 +91,29 @@ class _FilterSheetState extends State<FilterSheet> {
     super.dispose();
   }
 
+  // Botón único: un solo "Aplicar" cubre TODOS los cambios del sheet.
+  // Si el modo radar está activo y ya hay un punto resuelto, dispara la
+  // búsqueda por radio; si no, aplica los filtros estructurados.
   void _apply() {
-    widget.prov.applyFilters(
-      availability: _availability,
-      verifiedOnly: _verifiedOnly,
-      sortBy: _sortBy,
-      location: _locationCtrl.text.trim(),
-      category: null, // 👈 Forzamos a null
-      parentCategory: null, // 👈 Forzamos a null
-      department: _dept,
-      province: _prov,
-      district: _dist,
-    );
+    if (_radarMode && _radarLat != null && _radarLng != null) {
+      widget.prov.applyNearby(
+        latitude: _radarLat!,
+        longitude: _radarLng!,
+        radiusKm: _radarRadiusKm,
+      );
+    } else {
+      widget.prov.applyFilters(
+        availability: _availability,
+        verifiedOnly: _verifiedOnly,
+        sortBy: _sortBy,
+        location: _locationCtrl.text.trim(),
+        category: null, // 👈 Forzamos a null
+        parentCategory: null, // 👈 Forzamos a null
+        department: _dept,
+        province: _prov,
+        district: _dist,
+      );
+    }
     Navigator.pop(context);
   }
 
@@ -105,12 +126,15 @@ class _FilterSheetState extends State<FilterSheet> {
       _dept = null;
       _prov = null;
       _dist = null;
+      // Limpiar también apaga el modo radar → vuelve al listado estructurado.
+      _radarMode = false;
     });
     // Aplicar inmediatamente para que los servicios también se limpien
     _apply();
   }
 
   bool get _hasLocalChanges =>
+      _radarMode != widget.prov.nearbyActive ||
       _availability != widget.prov.selectedAvailability ||
       _verifiedOnly != widget.prov.verifiedOnly ||
       _sortBy != widget.prov.sortBy ||
@@ -258,31 +282,33 @@ class _FilterSheetState extends State<FilterSheet> {
                     }),
                     onDistrictChanged: (v) => setState(() => _dist = v),
                     onExpandToDepartment: () {
+                      // Solo ajusta el estado; el botón único aplica al final.
                       setState(() {
                         _prov = null;
                         _dist = null;
                         _locationCtrl.clear();
                       });
-                      _apply();
                     },
                   ),
 
-                  // BÚSQUEDA POR RADIO (mapa radar) — independiente de los
-                  // filtros estructurados: dispara GET /providers/nearby.
-                  FilterRadarMap(
-                    district: _dist,
-                    province: _prov,
-                    department: _dept,
-                    initialRadiusKm: widget.prov.nearbyRadiusKm,
-                    onSearch: (lat, lng, km) {
-                      widget.prov.applyNearby(
-                        latitude: lat,
-                        longitude: lng,
-                        radiusKm: km,
-                      );
-                      Navigator.pop(context);
-                    },
-                  ),
+                  // BÚSQUEDA POR RADIO (mapa radar) — opt-in por toggle. Con el
+                  // toggle ON, el botón único dispara GET /providers/nearby con
+                  // el centro/radio que el mapa reporta vía onChanged.
+                  _buildRadarToggle(c),
+                  if (_radarMode) ...[
+                    const SizedBox(height: 4),
+                    FilterRadarMap(
+                      district: _dist,
+                      province: _prov,
+                      department: _dept,
+                      initialRadiusKm: _radarRadiusKm,
+                      onChanged: (lat, lng, km) {
+                        _radarLat = lat;
+                        _radarLng = lng;
+                        _radarRadiusKm = km;
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -343,6 +369,55 @@ class _FilterSheetState extends State<FilterSheet> {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Toggle "Buscar por radio": alterna entre filtros estructurados y la
+  // búsqueda por radio. Al encenderlo aparece el mapa radar; el botón único
+  // del sheet respeta este modo.
+  Widget _buildRadarToggle(AppThemeColors c) {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: c.bgCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: _radarMode
+              ? AppColors.primary.withValues(alpha: 0.4)
+              : c.border,
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.radar_rounded, color: AppColors.primary, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Buscar por radio',
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  'Proveedores dentro de un radio en el mapa',
+                  style: TextStyle(color: c.textMuted, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: _radarMode,
+            activeThumbColor: AppColors.primary,
+            onChanged: (v) => setState(() => _radarMode = v),
           ),
         ],
       ),
