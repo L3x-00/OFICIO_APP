@@ -19,7 +19,8 @@ const String _kWebUrl =
     'https://www.oficioapp.org.pe'; // 👈 CAMBIA ESTO por tu web real
 const String _kTiktokHandle = 'ofiapp.pe';
 const String _kInstagramHandle = 'ofiapp.pe';
-const String _kFacebookHandle = 'ofiapp.pe';
+// Enlace directo a la página oficial de Facebook (share link, no handle).
+const String _kFacebookUrl = 'https://www.facebook.com/share/1PtKTQ95DA/';
 
 /// Sección "Contáctanos" colapsable al final del perfil del cliente.
 ///
@@ -114,7 +115,7 @@ class _ContactUsSectionState extends State<ContactUsSection>
       _Channel(
         svg: 'assets/icons/facebook.svg',
         label: 'Facebook',
-        url: 'https://facebook.com/$_kFacebookHandle',
+        url: _kFacebookUrl,
       ),
     ];
 
