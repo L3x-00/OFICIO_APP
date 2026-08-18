@@ -60,7 +60,7 @@ Servi es un marketplace de servicios locales diseñado para conectar a personas 
 📱 Descarga en Android (Google Play): https://play.google.com/store/apps/details?id=com.oficioapp.mobile
 🌐 Página Web (Para clientes y registro de proveedores): https://www.oficioapp.org.pe/
 🍏 iOS (iPhone): Muy pronto disponible (por ahora usar la web).
-FACEBBOK (PAGINA): https://www.facebook.com/share/1GFPWnH1n3/
+FACEBOOK (PAGINA): https://www.facebook.com/share/1PtKTQ95DA/
 3.3 Los Tres Mundos de Servi (Tipos de Perfiles)
 Un mismo usuario, con una sola cuenta, puede ser cliente y proveedor a la vez. Servi maneja 3 categorías:
 

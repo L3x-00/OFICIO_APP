@@ -46,7 +46,7 @@ const exploreLinks = [
 
 const socialLinks = [
   { href: 'https://www.tiktok.com/@ofiapp.pe', src: '/images/social/tiktok.svg', alt: 'TikTok' },
-  { href: 'https://www.facebook.com/profile.php?id=61585849044376', src: '/images/social/facebook.svg', alt: 'Facebook' },
+  { href: 'https://www.facebook.com/share/1PtKTQ95DA/', src: '/images/social/facebook.svg', alt: 'Facebook' },
   { href: 'https://www.instagram.com/ofiapp.pe/', src: '/images/social/instagram.svg', alt: 'Instagram' },
   { href: 'https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com', src: '/images/social/gmail.svg', alt: 'Gmail' },
 ];

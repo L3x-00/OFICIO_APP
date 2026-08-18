@@ -14,7 +14,8 @@ const SUPPORT_WHATSAPP =
 const SOCIAL = {
   tiktok: process.env.SOCIAL_TIKTOK_URL ?? 'https://www.tiktok.com/@ofiapp.pe',
   facebook:
-    process.env.SOCIAL_FACEBOOK_URL ?? 'https://www.facebook.com/ofiapp.pe',
+    process.env.SOCIAL_FACEBOOK_URL ??
+    'https://www.facebook.com/share/1PtKTQ95DA/',
   instagram:
     process.env.SOCIAL_INSTAGRAM_URL ?? 'https://www.instagram.com/ofiapp.pe',
 };
