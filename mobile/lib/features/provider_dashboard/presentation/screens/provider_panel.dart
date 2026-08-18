@@ -110,9 +110,10 @@ class _ProviderPanelState extends State<ProviderPanel> {
         child: Scaffold(
           backgroundColor: c.bg,
           // FAB ámbar de Ofi — abre el chat con el perfil activo como contexto.
-          floatingActionButton: AiAssistantFab(
-            providerType: widget.providerType ?? auth.activeProfileType,
-          ),
+          // `activeType` nunca es null: garantiza que Ofi SIEMPRE se muestre en
+          // el panel del proveedor (el toggle "Mostrar Ofi" solo aplica a la
+          // pantalla principal, donde el FAB va sin providerType).
+          floatingActionButton: AiAssistantFab(providerType: activeType),
           appBar: _PanelAppBar(
             activeType: activeType,
             individualType: individualType,
