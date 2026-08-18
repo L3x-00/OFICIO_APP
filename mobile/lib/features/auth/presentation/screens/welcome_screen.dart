@@ -4,8 +4,7 @@ import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/theme/app_theme_colors.dart';
 import '../widgets/welcome/slide_data.dart';
 import '../widgets/welcome/slide_welcome_intro.dart';
-import '../widgets/welcome/slide_types_grid.dart';
-import '../widgets/welcome/slide_provider_card.dart';
+import '../widgets/welcome/slide_provider_showcase.dart';
 import '../widgets/welcome/slide_testimonials.dart';
 import '../widgets/welcome/slide_ofi_assistant.dart';
 import '../widgets/welcome/welcome_top_bar.dart';
@@ -14,7 +13,7 @@ import '../widgets/welcome/welcome_slide_text.dart';
 import '../widgets/welcome/welcome_page_indicators.dart';
 import '../widgets/welcome/welcome_action_buttons.dart';
 
-/// Pantalla de bienvenida con carrusel onboarding (7 slides).
+/// Pantalla de bienvenida con carrusel onboarding (4 slides).
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
@@ -34,7 +33,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   late final PageController _pageController;
   Timer? _autoAdvanceTimer;
 
-  static const int _totalSlides = 7;
+  static const int _totalSlides = 4;
 
   @override
   void initState() {
@@ -65,7 +64,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     _autoAdvanceTimer = Timer.periodic(const Duration(seconds: 4), (t) {
       if (!mounted) return;
       // Se detiene en el último slide en vez de rebobinar: dar la vuelta
-      // barría las 6 páginas intermedias en 600 ms (estrobo de las 7 fotos)
+      // barría las páginas intermedias en 600 ms (estrobo de las fotos)
       // y volteaba el CTA "Explorar Servicios" → "Siguiente" bajo el dedo
       // del usuario. Si desliza a mano, _onPageChanged rearma el timer.
       if (_currentPage >= _totalSlides - 1) {
@@ -196,81 +195,18 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     SlideData(
       title: 'Bienvenido a Servi',
       subtitle:
-          'Conecta con profesionales, oficios y negocios reales cerca de ti — sin comisiones ni intermediarios.',
+          'Oficios, profesionales y negocios reales cerca de ti — sin comisiones ni intermediarios.',
       accentColor: AppColors.primary,
       backgroundImage: 'assets/images/onboarding/slide-1-presentación.webp',
       visual: SlideWelcomeIntro(),
     ),
     SlideData(
-      title: 'Todo en un solo lugar',
+      title: 'Para cada necesidad',
       subtitle:
-          'Oficios, profesionales y negocios cerca de ti. Encuentra lo que buscas en segundos.',
-      accentColor: AppColors.amber,
-      backgroundImage: 'assets/images/onboarding/slide-2-proveedores.webp',
-      visual: SlideTypesGrid(),
-    ),
-    SlideData(
-      title: 'Tu oficio, tu libertad',
-      subtitle:
-          'Gasfiteros, electricistas, carpinteros y más. Recibe clientes directo, sin pagar comisiones.',
-      accentColor: AppColors.oficioAccent,
+          'Gasfiteros y electricistas, abogados y doctores verificados, o tu negocio local. Todos con reseñas reales.',
+      accentColor: AppColors.primary,
       backgroundImage: 'assets/images/onboarding/slide-3-tarjeta-oficio.webp',
-      visual: SlideProviderCard(
-        name: 'Carlos Mendoza',
-        category: 'Gasfitero',
-        avatarInitials: 'CM',
-        rating: 4.8,
-        reviews: 31,
-        badgeLabel: 'Disponible',
-        badgeIcon: Icons.circle,
-        badgeColor: AppColors.available,
-        accent: AppColors.oficioAccent,
-        tags: [
-          'Instalación de tuberías',
-          'Reparación de fugas',
-          'Mantenimiento',
-        ],
-      ),
-    ),
-    SlideData(
-      title: 'Confianza con respaldo',
-      subtitle:
-          'Abogados, doctores e ingenieros verificados, con reseñas reales de tu comunidad.',
-      accentColor: AppColors.profesionalAccent,
-      backgroundImage:
-          'assets/images/onboarding/slide-4-tarjeta-profesional.webp',
-      visual: SlideProviderCard(
-        name: 'Dra. María Fernández',
-        category: 'Abogada',
-        avatarInitials: 'MF',
-        rating: 4.9,
-        reviews: 47,
-        badgeLabel: 'Verificado',
-        badgeIcon: Icons.verified_rounded,
-        badgeColor: AppColors.verified,
-        accent: AppColors.profesionalAccent,
-        tags: ['Derecho civil', 'Derecho laboral', 'Asesoría legal'],
-        miniTags: [(icon: Icons.shield_rounded, label: 'Confiable')],
-      ),
-    ),
-    SlideData(
-      title: 'Tu vitrina digital',
-      subtitle:
-          'Restaurantes, ferreterías y tiendas locales. Muestra tu catálogo a miles de clientes.',
-      accentColor: AppColors.negocioAccent,
-      backgroundImage: 'assets/images/onboarding/slide-5-tarjeta-negocio.webp',
-      visual: SlideProviderCard(
-        name: 'Ferretería El Constructor',
-        category: 'Ferretería',
-        avatarInitials: 'FC',
-        rating: 4.7,
-        reviews: 58,
-        badgeLabel: 'Abierto',
-        badgeIcon: Icons.circle,
-        badgeColor: AppColors.available,
-        accent: AppColors.negocioAccent,
-        tags: ['Cemento', 'Ladrillos', 'Herramientas'],
-      ),
+      visual: SlideProviderShowcase(),
     ),
     SlideData(
       title: 'Lo que dicen de Servi',

@@ -13,16 +13,17 @@ import '../../../../../core/theme/app_theme_colors.dart';
 ///
 /// `flutter_map` con tiles CartoDB Dark Matter centrado en el GPS del usuario
 /// (o en el distrito seleccionado en los dropdowns, animando al cambiarlo). Un
-/// Slider 1–50 km dibuja el radio en tiempo real; "Buscar en este radio" llama
-/// `GET /providers/nearby` vía [onSearch] (lat, lng, km). Tap en el mapa mueve
-/// el centro — útil cuando el usuario quiere otra zona.
+/// Slider 1–50 km dibuja el radio en tiempo real. Cada cambio de centro o radio
+/// se reporta al sheet vía [onChanged] (lat, lng, km) — NO tiene botón propio:
+/// el único "Aplicar" del sheet decide si dispara `GET /providers/nearby`. Tap
+/// en el mapa mueve el centro — útil cuando el usuario quiere otra zona.
 class FilterRadarMap extends StatefulWidget {
   final String? district;
   final String? province;
   final String? department;
   final double initialRadiusKm;
   final void Function(double latitude, double longitude, double radiusKm)
-  onSearch;
+  onChanged;
 
   const FilterRadarMap({
     super.key,
@@ -30,7 +31,7 @@ class FilterRadarMap extends StatefulWidget {
     this.province,
     this.department,
     this.initialRadiusKm = 5,
-    required this.onSearch,
+    required this.onChanged,
   });
 
   @override
@@ -55,9 +56,16 @@ class _FilterRadarMapState extends State<FilterRadarMap>
     // Arranca con el radio persistido (UX #2.4) — acotado al rango del slider.
     _radiusKm = widget.initialRadiusKm.clamp(1, 50).toDouble();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Reporta el centro/radio inicial (fallback) para que el sheet tenga un
+      // punto válido aunque el GPS/distrito aún no resuelva.
+      _emit();
       _resolveCenter(useGps: true);
     });
   }
+
+  /// Reporta el centro y radio actuales al sheet contenedor.
+  void _emit() =>
+      widget.onChanged(_center.latitude, _center.longitude, _radiusKm);
 
   @override
   void didUpdateWidget(covariant FilterRadarMap old) {
@@ -83,6 +91,7 @@ class _FilterRadarMapState extends State<FilterRadarMap>
     target ??= await _districtCenter();
     if (target == null || !mounted) return;
     setState(() => _center = target!);
+    _emit();
     _animateTo(target);
   }
 
@@ -215,7 +224,10 @@ class _FilterRadarMapState extends State<FilterRadarMap>
                     interactionOptions: const InteractionOptions(
                       flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                     ),
-                    onTap: (_, latlng) => setState(() => _center = latlng),
+                    onTap: (_, latlng) {
+                      setState(() => _center = latlng);
+                      _emit();
+                    },
                   ),
                   children: [
                     TileLayer(
@@ -301,7 +313,10 @@ class _FilterRadarMapState extends State<FilterRadarMap>
                 activeColor: AppColors.primary,
                 label: '${_radiusKm.round()} km',
                 onChanged: (v) => setState(() => _radiusKm = v),
-                onChangeEnd: (v) => _map.move(_center, _zoomForRadius(v)),
+                onChangeEnd: (v) {
+                  _map.move(_center, _zoomForRadius(v));
+                  _emit();
+                },
               ),
             ),
             SizedBox(
@@ -317,20 +332,6 @@ class _FilterRadarMapState extends State<FilterRadarMap>
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton.icon(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-            onPressed: () =>
-                widget.onSearch(_center.latitude, _center.longitude, _radiusKm),
-            icon: const Icon(Icons.search_rounded, size: 18),
-            label: Text('Buscar en ${_radiusKm.round()} km a la redonda'),
-          ),
         ),
       ],
     );
