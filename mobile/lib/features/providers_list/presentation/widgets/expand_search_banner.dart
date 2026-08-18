@@ -119,9 +119,9 @@ class ExpandSearchBanner extends StatelessWidget {
           ],
         ),
         content: Text(
-          'Verás los negocios de $department y los profesionales de '
-          'todo el Perú.\n\nUn negocio lejano no te es útil, pero un '
-          'profesional sí puede atenderte a distancia.',
+          'Al pulsar "Aplicar" verás los negocios de $department y los '
+          'profesionales de todo el Perú.\n\nUn negocio lejano no te es útil, '
+          'pero un profesional sí puede atenderte a distancia.',
           style: const TextStyle(fontSize: 13, height: 1.5),
         ),
         actions: [

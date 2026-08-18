@@ -242,9 +242,10 @@ class _PlanCardState extends State<PlanCard> {
 
     // Abre el selector de plan completo — ofrece MercadoPago (tarjeta /
     // PagoEfectivo / Yape) y Yape por comprobante. Antes saltaba directo a
-    // Yape y ocultaba MercadoPago. Al cerrarse, recarga el dashboard para
-    // hidratar el chip "Revisión pendiente" desde el backend.
-    await PlanSelectorSheet.show(context);
+    // Yape y ocultaba MercadoPago. `initialPlan` hace auto-scroll a la tarjeta
+    // que tocó el usuario. Al cerrarse, recarga el dashboard para hidratar el
+    // chip "Revisión pendiente" desde el backend.
+    await PlanSelectorSheet.show(context, initialPlan: widget.plan.id);
     if (mounted) await dash.loadDashboard();
   }
 

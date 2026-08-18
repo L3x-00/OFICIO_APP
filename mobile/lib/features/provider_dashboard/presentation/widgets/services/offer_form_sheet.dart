@@ -9,6 +9,7 @@ import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/theme/app_theme_colors.dart';
 import '../../../../../core/utils/plan_limits.dart';
 import '../../../../auth/presentation/providers/auth_provider.dart';
+import '../../panel_provider_type.dart';
 import '../../../../payments/presentation/screens/plan_selector_sheet.dart';
 import '../../../../trust_validation/presentation/screens/trust_validation_form_screen.dart';
 import '../../../domain/models/offer_post_model.dart';
@@ -51,7 +52,7 @@ class OfferFormSheet extends StatefulWidget {
     OfferPostModel? existing,
   }) {
     final c = context.colors;
-    final type = isNegocio ? 'NEGOCIO' : 'OFICIO';
+    final type = resolvePanelType(context, isNegocio: isNegocio);
 
     // ── Gate 1: Trust — solo proveedores validados publican ofertas ──
     final trustStatus =
@@ -326,7 +327,7 @@ class _OfferFormSheetState extends State<OfferFormSheet> {
     }
 
     // ── CREATE MODE ──
-    final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
+    final type = resolvePanelType(context, isNegocio: widget.isNegocio);
     final ok = await widget.offersProvider.createOffer(
       title: _titleCtrl.text.trim(),
       description: _descCtrl.text.trim(),

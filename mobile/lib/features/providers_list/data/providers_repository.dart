@@ -112,6 +112,7 @@ class ProvidersRepository {
     String? parentCategorySlug,
     String? type,
     String? search,
+    String? availability,
   }) async {
     try {
       final response = await _dio.get(
@@ -126,6 +127,8 @@ class ProvidersRepository {
             'parentCategorySlug': parentCategorySlug,
           if (type != null && type.isNotEmpty) 'type': type,
           if (search != null && search.isNotEmpty) 'search': search,
+          if (availability != null && availability.isNotEmpty)
+            'availability': availability,
         },
       );
       final list = (response.data as List)

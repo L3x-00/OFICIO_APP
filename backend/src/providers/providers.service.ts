@@ -604,6 +604,7 @@ export class ProvidersService {
       parentCategorySlug?: string;
       type?: string;
       search?: string;
+      availability?: string;
     } = {},
   ) {
     if (
@@ -666,6 +667,11 @@ export class ProvidersService {
       };
     }
     if (normalizedType) hydrateWhere.type = normalizedType as any;
+    // Disponibilidad: mismo filtro que `findAll` para que el radar respete el
+    // estado activo (DISPONIBLE / OCUPADO / etc.) además de la cercanía.
+    if (filters.availability) {
+      hydrateWhere.availability = filters.availability as AvailabilityStatus;
+    }
     if (filters.search && filters.search.trim().length > 0) {
       const q = filters.search.trim();
       hydrateWhere.OR = [

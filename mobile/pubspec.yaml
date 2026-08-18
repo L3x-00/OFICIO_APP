@@ -1,7 +1,7 @@
 name: mobile
 description: "Marketplace de Servicios Locales"
 publish_to: 'none'
-version: 2.0.0+142
+version: 2.0.0+143
 
 
 environment:
@@ -84,6 +84,15 @@ dependencies:
   gal: ^2.3.0
   flutter_custom_tabs: ^2.5.0
 
+  # Splash nativo (Android 12+). DEBE ir en `dependencies`, no en
+  # `dev_dependencies`: declara un plugin Android (FlutterNativeSplashPlugin)
+  # que el GeneratedPluginRegistrant registra siempre, pero Flutter 3.41.x
+  # excluye el módulo nativo de las dev_dependencies en el build de RELEASE
+  # → "package net.jonhanson.flutter_native_splash does not exist" al generar
+  # el .aab. Como dependencia normal su módulo sí se compila. La config del
+  # splash vive en la sección `flutter_native_splash:` de abajo.
+  flutter_native_splash: ^2.4.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -98,7 +107,6 @@ dev_dependencies:
   # build_runner ya estaba arriba; mockito necesita @GenerateMocks
   # + `dart run build_runner build` para generar los .mocks.dart.
   mockito: ^5.4.4
-  flutter_native_splash: ^2.4.5 #por tema de despliegue en google console
 
 # ── Configuración de ícono de app ───────────────────────────
 flutter_launcher_icons:

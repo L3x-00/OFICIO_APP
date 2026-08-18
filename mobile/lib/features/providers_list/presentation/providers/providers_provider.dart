@@ -13,6 +13,10 @@ import '../../domain/models/provider_model.dart';
 
 enum ViewMode { lista, detalles, mosaicos, contenido }
 
+/// Centinela para el parámetro `availability` de [ProvidersProvider.applyNearby]:
+/// distingue "no lo modifiques" (default) de "aplícalo, incluso null".
+const Object _keepAvailability = Object();
+
 /// Estado global de la lista de proveedores
 class ProvidersProvider extends ChangeNotifier {
   final ProvidersRepository _repo = ProvidersRepository();
@@ -421,6 +425,9 @@ class ProvidersProvider extends ChangeNotifier {
     required double latitude,
     required double longitude,
     required double radiusKm,
+    // Snapshot de disponibilidad desde el sheet (null = sin filtro). El
+    // centinela distingue "no lo toques" (restoreSession) de "aplícalo".
+    Object? availability = _keepAvailability,
   }) async {
     _isLoading = true;
     _hasError = false;
@@ -430,6 +437,9 @@ class ProvidersProvider extends ChangeNotifier {
     _nearbyLat = latitude;
     _nearbyLng = longitude;
     _nearbyRadiusKm = radiusKm;
+    if (!identical(availability, _keepAvailability)) {
+      _selectedAvailability = availability as String?;
+    }
     notifyListeners();
 
     final result = await _repo.getNearby(
@@ -443,6 +453,7 @@ class ProvidersProvider extends ChangeNotifier {
           : null,
       type: _selectedType,
       search: _searchQuery.isNotEmpty ? _searchQuery : null,
+      availability: _selectedAvailability,
     );
     result.when(
       success: (list) => _providers = list,
