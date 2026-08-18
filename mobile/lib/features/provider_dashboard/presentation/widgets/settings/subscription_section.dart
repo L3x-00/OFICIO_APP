@@ -1,9 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/shared/widgets/app_snack_bar.dart';
 import 'package:provider/provider.dart';
 import '../../../../../core/constants/app_colors.dart';
+import '../../../../../core/errors/app_exception.dart';
 import '../../../../../core/theme/app_theme_colors.dart';
-import '../../../../payments/presentation/screens/yape_payment_screen.dart';
+import '../../../../payments/presentation/screens/plan_selector_sheet.dart';
 import '../../../data/dashboard_repository.dart';
 import '../../../domain/models/dashboard_profile_model.dart';
 import '../../providers/dashboard_provider.dart';
@@ -238,19 +240,12 @@ class _PlanCardState extends State<PlanCard> {
       return;
     }
 
-    final ok = await YapePaymentScreen.show(
-      context,
-      plan: widget.plan.id,
-      providerType: dash.currentProviderType,
-    );
-    if (ok == true && mounted) {
-      // Marca local + recarga del dashboard para que la pill "Revisión
-      // pendiente" aparezca al instante sin esperar al próximo refresh.
-      dash.markPaymentPending(widget.plan.id);
-      context.showInfoSnack(
-        'Comprobante enviado. Te notificaremos cuando se valide.',
-      );
-    }
+    // Abre el selector de plan completo — ofrece MercadoPago (tarjeta /
+    // PagoEfectivo / Yape) y Yape por comprobante. Antes saltaba directo a
+    // Yape y ocultaba MercadoPago. Al cerrarse, recarga el dashboard para
+    // hidratar el chip "Revisión pendiente" desde el backend.
+    await PlanSelectorSheet.show(context);
+    if (mounted) await dash.loadDashboard();
   }
 
   @override
@@ -587,7 +582,13 @@ class _CancelPlanButtonState extends State<CancelPlanButton> {
       );
     } catch (e) {
       if (!mounted) return;
-      context.showErrorSnack('No se pudo cancelar: $e');
+      // El interceptor envuelve el error en una AppException tipada con
+      // mensaje amigable; interpolar `$e` mostraba el DioException crudo
+      // (texto con símbolos) en la pantalla.
+      final msg = e is DioException && e.error is AppException
+          ? (e.error as AppException).message
+          : 'No pudimos cancelar tu plan. Inténtalo de nuevo.';
+      context.showErrorSnack(msg);
     } finally {
       if (mounted) setState(() => _loading = false);
     }

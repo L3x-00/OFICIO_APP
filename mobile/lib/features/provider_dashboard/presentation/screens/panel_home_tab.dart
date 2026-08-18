@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../showcase/showcase_data.dart';
 import 'provider_panel.dart' show kPanelTabServicios, kPanelTabMensajes;
+import '../panel_provider_type.dart';
 import '../../../showcase/showcase_overlay.dart';
 import '../../../chat/domain/models/chat_room_model.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
@@ -41,7 +42,8 @@ class PanelHomeTab extends StatefulWidget {
 }
 
 class _PanelHomeTabState extends State<PanelHomeTab> {
-  String get _providerType => widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
+  String get _providerType =>
+      resolvePanelType(context, isNegocio: widget.isNegocio);
 
   @override
   void initState() {

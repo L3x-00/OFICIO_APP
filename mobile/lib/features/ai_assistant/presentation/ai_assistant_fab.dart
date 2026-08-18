@@ -69,22 +69,21 @@ class _AiAssistantFabState extends State<AiAssistantFab> {
   /// Verifica si el FAB debe mostrarse según el contexto del usuario.
   ///
   /// - Invitados: siempre visible (el toggle no aplica).
-  /// - Proveedores (OFICIO/PROFESIONAL/NEGOCIO): siempre visible en su panel.
-  /// - Clientes puros: respeta el toggle de Perfil > Preferencias, leído
-  ///   reactivamente de [ProvidersProvider] (misma preferencia persistida
-  ///   en SharedPreferences bajo la key `ofi_fab_visible`).
+  /// - Panel del proveedor (`providerType != null`): siempre visible; el
+  ///   toggle no oculta a Ofi dentro del panel.
+  /// - Pantalla principal (`providerType == null`, cliente o proveedor
+  ///   navegando): respeta el toggle de Perfil > Preferencias, leído
+  ///   reactivamente de [ProvidersProvider] (preferencia persistida en
+  ///   SharedPreferences bajo la key `ofi_fab_visible`).
   bool _shouldShow(BuildContext context) {
     try {
       final auth = context.read<AuthProvider>();
       // Invitado → siempre visible.
       if (!auth.isAuthenticated) return true;
-      // Proveedor → el toggle no aplica (Ofi se muestra en su panel).
-      if (auth.hasOficioProfile ||
-          auth.hasProfessionalProfile ||
-          auth.hasNegocioProfile) {
-        return true;
-      }
-      // Cliente puro → leer preferencia reactiva.
+      // Dentro del panel del proveedor Ofi siempre está disponible.
+      if (widget.providerType != null) return true;
+      // Pantalla principal → respeta la preferencia (aplica también a
+      // proveedores mientras navegan la home como clientes).
       return context.watch<ProvidersProvider>().ofiFabVisible;
     } catch (_) {
       // Ante cualquier error (ej. Provider no encontrado), mostramos Ofi.
