@@ -420,12 +420,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               ThemeToggleRow(theme: theme),
               CategoryFilterToggleRow(prov: prov),
-              // Toggle visibilidad del asistente Ofi.
-              // Solo para clientes puros (sin perfil de proveedor).
-              if (!auth.hasOficioProfile &&
-                  !auth.hasProfessionalProfile &&
-                  !auth.hasNegocioProfile)
-                OfiVisibilityToggleRow(prov: prov),
+              // Toggle visibilidad del asistente Ofi. Visible para todos; la
+              // preferencia controla el FAB de la pantalla principal. En el
+              // panel del proveedor Ofi sigue disponible siempre.
+              OfiVisibilityToggleRow(prov: prov),
               SectionItem(
                 icon: Icons.devices_rounded,
                 label: 'Cuentas guardadas en este dispositivo',

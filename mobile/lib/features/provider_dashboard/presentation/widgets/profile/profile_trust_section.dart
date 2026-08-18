@@ -21,7 +21,12 @@ class ProfileTrustSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final auth = context.watch<AuthProvider>();
-    final type = isNegocio ? 'NEGOCIO' : 'OFICIO';
+    // El panel individual puede ser OFICIO o PROFESIONAL (XOR). Hardcodear
+    // 'OFICIO' hacía que un PROFESIONAL leyera providerDataFor('OFICIO') = null
+    // y la sección cayera a "solicitar" pese a estar ya validado.
+    final type = isNegocio
+        ? 'NEGOCIO'
+        : (auth.hasProfessionalProfile ? 'PROFESIONAL' : 'OFICIO');
     final trustStatus =
         auth.providerDataFor(type)?['trustStatus'] as String? ?? 'NONE';
     final isTrusted =

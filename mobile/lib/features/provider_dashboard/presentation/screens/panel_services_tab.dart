@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/plan_limits.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../payments/presentation/screens/plan_selector_sheet.dart';
+import '../panel_provider_type.dart';
 import '../../../showcase/showcase_data.dart';
 import '../../../showcase/showcase_overlay.dart';
 import '../providers/dashboard_provider.dart';
@@ -51,7 +52,7 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
     // hay que cargarlas (el endpoint responde 404 con el flag apagado).
     if (kOfertasEnabled) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
+        final type = resolvePanelType(context, isNegocio: widget.isNegocio);
         context.read<OfferPostsProvider>().load(type: type);
       });
     }
@@ -80,7 +81,7 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
     return AdminTabShowcase(
       tab: AdminTab.services,
       userId: auth.user?.id,
-      providerType: widget.isNegocio ? 'NEGOCIO' : 'OFICIO',
+      providerType: resolvePanelType(context, isNegocio: widget.isNegocio),
       isApproved: dash.profile?.isVerified ?? false,
       steps: servicesSteps,
       child: Scaffold(
@@ -90,7 +91,10 @@ class _PanelServicesTabState extends State<PanelServicesTab> {
             color: AppColors.amber,
             backgroundColor: c.bgCard,
             onRefresh: () async {
-              final type = widget.isNegocio ? 'NEGOCIO' : 'OFICIO';
+              final type = resolvePanelType(
+                context,
+                isNegocio: widget.isNegocio,
+              );
               await dash.loadDashboard(providerType: type);
             },
             child: CustomScrollView(
