@@ -36,26 +36,27 @@ export default function WhatsAppButton() {
 
   return (
     <motion.div
-      className="fixed bottom-36 right-4 sm:bottom-24 sm:right-6 z-[99999]"
+      className="fixed bottom-5 left-4 sm:left-6 z-[99990]"
       onMouseEnter={() => { setIsHovering(true); setShowTooltip(false); }}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {/* Globo de Chat / Tooltip Automático */}
+      {/* Globo de Chat / Tooltip Automático (a la derecha, ahora que el botón
+          vive en la esquina inferior izquierda) */}
       <AnimatePresence>
         {showTooltip && (
           <motion.div
-            initial={{ opacity: 0, x: 10, scale: 0.9 }}
+            initial={{ opacity: 0, x: -10, scale: 0.9 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 10, scale: 0.9 }}
+            exit={{ opacity: 0, x: -10, scale: 0.9 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap pointer-events-none"
+            className="absolute left-full ml-3 top-1/2 -translate-y-1/2 whitespace-nowrap pointer-events-none"
           >
             <div className="relative glass rounded-xl p-3 border border-emerald-500/20 shadow-glow-sm">
               <p className="text-white/90 text-xs font-display font-medium">
                 Recibe información personalizada
               </p>
-              {/* Flecha del globo apuntando a la derecha (hacia el botón) */}
-              <div className="absolute right-0 top-1/2 translate-x-1 -translate-y-1/2 w-2 h-2 glass border-r-0 border-t border-b border-emerald-500/20 -rotate-45" />
+              {/* Flecha del globo apuntando a la izquierda (hacia el botón) */}
+              <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 glass border-l-0 border-t border-b border-emerald-500/20 rotate-45" />
             </div>
           </motion.div>
         )}
