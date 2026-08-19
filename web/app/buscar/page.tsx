@@ -329,11 +329,73 @@ const AVAIL_META: Record<
   CON_DEMORA: { dot: 'bg-rose-400', label: 'Con demora' },
 };
 
+/**
+ * Carrusel automático de la foto de portada: si el proveedor tiene varias
+ * imágenes, rota entre ellas con un crossfade suave. `startDelay` (derivado
+ * del id) escalona el arranque para que no todas las tarjetas cambien a la vez.
+ */
+function CardImageCarousel({
+  images,
+  alt,
+  startDelay,
+}: {
+  images: string[];
+  alt: string;
+  startDelay: number;
+}) {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (images.length <= 1) return;
+    let interval: ReturnType<typeof setInterval>;
+    const kickoff = setTimeout(() => {
+      interval = setInterval(() => setIdx((i) => (i + 1) % images.length), 3600);
+    }, startDelay);
+    return () => {
+      clearTimeout(kickoff);
+      if (interval) clearInterval(interval);
+    };
+  }, [images.length, startDelay]);
+
+  return (
+    <>
+      <AnimatePresence initial={false}>
+        <motion.img
+          key={idx}
+          src={images[idx]}
+          alt={alt}
+          loading="lazy"
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ opacity: { duration: 0.7, ease: 'easeInOut' }, scale: { duration: 4 } }}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </AnimatePresence>
+      {images.length > 1 && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+          {images.map((_, i) => (
+            <span
+              key={i}
+              className={`h-1 rounded-full transition-all duration-300 ${
+                i === idx ? 'w-3.5 bg-white' : 'w-1 bg-white/50'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 function ProviderCard({ provider }: { provider: PublicProvider }) {
-  const cover =
-    provider.images?.find((i) => i.isCover)?.url ??
-    provider.images?.[0]?.url ??
-    '/images/logo/servi.png';
+  // Portada primero, luego el resto → carrusel automático suave.
+  const imageUrls = (() => {
+    const imgs = provider.images ?? [];
+    const cover = imgs.filter((i) => i.isCover).map((i) => i.url);
+    const rest = imgs.filter((i) => !i.isCover).map((i) => i.url);
+    const all = [...cover, ...rest].filter(Boolean);
+    return all.length ? all : ['/images/logo/servi.png'];
+  })();
   const avail = provider.availability ? AVAIL_META[provider.availability] : null;
   const rating = provider.averageRating ?? 0;
   const reviews = provider.totalReviews ?? 0;
@@ -349,14 +411,12 @@ function ProviderCard({ provider }: { provider: PublicProvider }) {
       className="group block rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-dark-card overflow-hidden hover:border-primary/30 dark:hover:border-primary/30 hover:shadow-lg dark:hover:shadow-glow-sm transition-all duration-300"
     >
       <div className="relative aspect-[5/3] bg-gray-100 dark:bg-dark-card overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={cover}
+        <CardImageCarousel
+          images={imageUrls}
           alt={provider.businessName}
-          loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          startDelay={(provider.id % 6) * 500}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />
         {provider.category?.name && (
           <span className="absolute top-2 left-2 text-[11px] bg-black/50 text-white/90 px-2 py-0.5 rounded-full backdrop-blur-sm">
             {provider.category.name}

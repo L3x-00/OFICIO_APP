@@ -38,7 +38,7 @@ export default function FloatingFaqButton() {
         initial={{ opacity: 0, x: -40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as const, delay: 1 }}
-        className="fixed left-4 top-1/2 -translate-y-1/2 z-40 group"
+        className="fixed bottom-[84px] left-4 sm:left-6 z-[99990] group"
         onMouseEnter={() => { setIsHovering(true); setShowTooltip(false); }}
         onMouseLeave={() => setIsHovering(false)}
       >
