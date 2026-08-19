@@ -11,6 +11,7 @@ import {
   CheckCircle,
   Eye,
   MessageCircle,
+  Star,
 } from 'lucide-react';
 import {
   Area,
@@ -56,6 +57,11 @@ export default function PanelEstadisticasPage() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPaid, setIsPaid] = useState(false);
+  // Las reseñas NO vienen en el endpoint de analytics (solo clics/vistas): su
+  // fuente real es el perfil (provider.totalReviews / averageRating), igual que
+  // en el móvil. Antes la card mostraba 0 aunque el proveedor tuviera reseñas.
+  const [reviewCount, setReviewCount] = useState(0);
+  const [avgRating, setAvgRating] = useState(0);
   const [range, setRange] = useState<'7' | '30' | '90'>('7');
   const { activeType } = useProfileType();
   const chart = useChartTheme();
@@ -67,6 +73,8 @@ export default function PanelEstadisticasPage() {
       try {
         const prov = await api.getMyProfile(activeType ?? undefined);
         if (cancelled) return;
+        setReviewCount(prov.totalReviews ?? 0);
+        setAvgRating(prov.averageRating ?? 0);
         const plan = prov.subscription?.plan || 'GRATIS';
         setIsPaid(plan === 'ESTANDAR' || plan === 'PREMIUM');
         if (plan !== 'GRATIS') {
@@ -229,9 +237,9 @@ export default function PanelEstadisticasPage() {
           bg="bg-amber/10"
         />
         <SummaryCard
-          icon={CheckCircle}
-          label="Reseñas"
-          value={analytics?.totalReviews ?? 0}
+          icon={Star}
+          label={avgRating > 0 ? `Reseñas · ${avgRating.toFixed(1)}★` : 'Reseñas'}
+          value={reviewCount}
           color="text-purple-400"
           bg="bg-purple-400/10"
         />
