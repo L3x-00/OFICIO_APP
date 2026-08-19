@@ -40,7 +40,13 @@ async function refreshAccessToken(): Promise<string | null> {
 
 export async function apiFetch<T = unknown>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  // `skipAuthRedirect`: en endpoints de autenticación (login/social-login) un
+  // 401 significa "credenciales inválidas", NO "sesión expirada". Sin esto, el
+  // handler global hacía clearSession()+redirect duro a /login → la página se
+  // recargaba y el usuario perdía lo que había escrito. Con el flag, el 401 se
+  // devuelve como error normal para que el formulario muestre el aviso.
+  opts: { skipAuthRedirect?: boolean } = {}
 ): Promise<T> {
   const token = getAccessToken();
   const headers: Record<string, string> = {
@@ -53,7 +59,7 @@ export async function apiFetch<T = unknown>(
 
   let res = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
 
-  if (res.status === 401 && getRefreshToken()) {
+  if (res.status === 401 && !opts.skipAuthRedirect && getRefreshToken()) {
     const newToken = await refreshAccessToken();
     if (newToken) {
       headers["Authorization"] = `Bearer ${newToken}`;
@@ -61,7 +67,7 @@ export async function apiFetch<T = unknown>(
     }
   }
 
-  if (res.status === 401) {
+  if (res.status === 401 && !opts.skipAuthRedirect) {
     clearSession();
     if (typeof window !== "undefined") {
       window.location.href = "/login";
@@ -464,10 +470,14 @@ function buildUserFromFlat(raw: FlatLoginResponse, fallbackEmail: string): User 
 
 export const api = {
   async login(email: string, password: string): Promise<LoginResponse> {
-    const raw = await apiFetch<FlatLoginResponse>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
+    const raw = await apiFetch<FlatLoginResponse>(
+      "/auth/login",
+      {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      },
+      { skipAuthRedirect: true },
+    );
     return {
       accessToken:  raw.accessToken,
       refreshToken: raw.refreshToken,
@@ -486,10 +496,14 @@ export const api = {
   async socialLogin(
     idToken: string,
   ): Promise<LoginResponse & { isNewUser: boolean }> {
-    const raw = await apiFetch<SocialLoginResponse>("/auth/social-login", {
-      method: "POST",
-      body: JSON.stringify({ idToken }),
-    });
+    const raw = await apiFetch<SocialLoginResponse>(
+      "/auth/social-login",
+      {
+        method: "POST",
+        body: JSON.stringify({ idToken }),
+      },
+      { skipAuthRedirect: true },
+    );
 
     // Perfil completo (role/id/ubicación) con el token recién emitido. Header
     // explícito porque la sesión aún no se guardó en localStorage.
