@@ -159,6 +159,18 @@ export interface Provider {
   professionalMigration?: ProfessionalMigration | null;
   credentialVerified?: boolean;
   /**
+   * Datos de la cuenta (User) asociada al proveedor — los devuelve
+   * `GET /provider-profile/me`. Se usa como fallback: p. ej. el teléfono de
+   * registro (`user.phone`) cuando el proveedor no fijó un teléfono propio.
+   */
+  user?: {
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    avatarUrl?: string;
+  };
+  /**
    * JSON con servicios/productos del provider. El móvil guarda
    * `services: [{ id, name, description, price, imageUrl, phone }]`
    * acá. El web lo lee para mostrar productos en /panel/servicios.

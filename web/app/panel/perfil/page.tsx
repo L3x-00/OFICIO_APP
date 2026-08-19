@@ -101,7 +101,10 @@ function PanelPerfilContent() {
         setProvider(prov);
         setBusinessName(prov.businessName || '');
         setDescription(prov.description || '');
-        setPhone(prov.phone || '');
+        // Fallback al teléfono de la cuenta (registro) si el proveedor no fijó
+        // uno propio — antes el campo salía vacío aunque el usuario tuviera
+        // teléfono. Al guardar, se persiste en el proveedor.
+        setPhone(prov.phone || prov.user?.phone || '');
         setWhatsapp(prov.whatsapp || '');
         setAddress(prov.address || '');
         setScheduleJson((prov as unknown as { scheduleJson?: Record<string, string> }).scheduleJson || {});
