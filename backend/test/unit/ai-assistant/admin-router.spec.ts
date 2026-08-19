@@ -306,8 +306,17 @@ describe('AiAssistantService — router determinístico admin', () => {
     expect(isSupportRequest('ayuda')).toBe(true);
     expect(isSupportRequest('Necesito ayuda con mi cuenta')).toBe(true);
     expect(isSupportRequest('Quiero contactar soporte')).toBe(true);
+    // Frases nuevas: pedir el canal/dato de contacto de Servi → soporte
+    // (antes caían al modelo y el guardrail redactaba el número/correo).
+    expect(isSupportRequest('¿Cuál es el número de soporte?')).toBe(true);
+    expect(isSupportRequest('quiero hablar con un asistente o soporte')).toBe(true);
+    expect(isSupportRequest('¿Cómo me comunico con ustedes?')).toBe(true);
+    expect(isSupportRequest('¿Tienen un correo de contacto de Servi?')).toBe(true);
+    expect(isSupportRequest('Quiero hablar con un humano')).toBe(true);
+    // Negativos: no capturar búsquedas ni contacto con un proveedor.
     expect(isSupportRequest('¿Cómo contacto a un proveedor?')).toBe(false);
     expect(isSupportRequest('Ayúdame a buscar un electricista')).toBe(false);
+    expect(isSupportRequest('busco un asistente del hogar')).toBe(false);
     expect(isSupportRequest('Hola Ofi')).toBe(false);
 
     const actions = buildSupportActions('Tengo un problema con mi pago');

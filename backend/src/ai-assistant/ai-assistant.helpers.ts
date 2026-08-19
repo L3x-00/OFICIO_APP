@@ -99,7 +99,9 @@ export function respCacheKey(
 
 const SUPPORT_WHATSAPP = 'https://wa.me/51930759515';
 const SUPPORT_EMAIL = 'soporteofiapp@gmail.com';
-const SALES_EMAIL = 'ronla.angarita31@gmail.com';
+// Ventas/planes usa el mismo correo oficial (antes un correo personal). El
+// asunto distinto ya lo diferencia; así no se expone una cuenta personal.
+const SALES_EMAIL = 'soporteofiapp@gmail.com';
 
 /** Detecta peticiones explícitas de ayuda o contacto con soporte Servi. */
 export function isSupportRequest(message: string): boolean {
@@ -117,7 +119,51 @@ export function isSupportRequest(message: string): boolean {
       'hablar con alguien',
       'atencion al cliente',
       'servicio al cliente',
+      // Pedir el canal/dato de contacto de Servi (no de un proveedor): antes
+      // caía al modelo y el guardrail redactaba el número/correo como
+      // [DATO PRIVADO]. Estas frases entregan los canales oficiales directo.
+      'numero de soporte',
+      'correo de soporte',
+      'telefono de soporte',
+      'whatsapp de soporte',
+      'datos de contacto',
+      'informacion de contacto',
+      'medios de contacto',
+      'canal de contacto',
+      'canales de contacto',
+      'canal oficial',
+      'canales oficiales',
+      'hablar con un humano',
+      'hablar con una persona',
+      'hablar con un agente',
+      'hablar con un asesor',
+      'agente humano',
+      'asistente humano',
+      'atencion humana',
+      'persona real',
+      'como me comunico',
+      'como los contacto',
+      'quiero comunicarme',
+      'quiero contactarlos',
+      'contactar con servi',
+      'contacto de servi',
+      'contactar a servi',
     ].some((term) => m.includes(term))
+  ) {
+    return true;
+  }
+
+  // Intención de contacto CON Servi (verbo de contacto + destinatario Servi),
+  // excluyendo explícitamente "proveedor" para no capturar "¿cómo contacto a
+  // un proveedor?" ni búsquedas.
+  if (
+    !m.includes('proveedor') &&
+    ['contact', 'comunicar', 'numero', 'correo', 'whatsapp', 'telefono'].some(
+      (t) => m.includes(t),
+    ) &&
+    ['servi', 'ustedes', 'soporte', 'ofi', 'equipo', 'atencion'].some((t) =>
+      m.includes(t),
+    )
   ) {
     return true;
   }
