@@ -6,7 +6,7 @@ import LayoutShell from '@/components/layout-shell';
 import RevealProvider from '@/components/reveal-provider';
 import WhatsAppButton from '@/components/whatsapp-button';
 import ThemeProvider from '@/components/theme/theme-provider';
-import { Toaster } from 'sonner';
+import ThemedToaster from '@/components/themed-toaster';
 import FloatingFaqButton from '@/components/floating-faq-button';
 import AiChatWidget from '@/components/ai-chat-widget';
 import FirstVisitModal from '@/components/modals/first-visit-modal';
@@ -88,23 +88,7 @@ export default function RootLayout({
           <RevealProvider />
           <Navbar />
           <LayoutShell>{children}</LayoutShell>
-          <Toaster
-            position="bottom-right"
-            theme="dark"
-            richColors
-            closeButton
-            duration={4000}
-            toastOptions={{
-              style: {
-                background: 'rgba(10, 14, 26, 0.85)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                color: '#FFFFFF',
-                backdropFilter: 'blur(14px)',
-                WebkitBackdropFilter: 'blur(14px)',
-              },
-              className: 'shadow-glass',
-            }}
-          />
+          <ThemedToaster />
           <WhatsAppButton />
           <FloatingFaqButton /> {/* 👈 Botón flotante de FAQ (izquierda) */}
           <AiChatWidget /> {/* 👈 Chatbot Ofi site-wide (FASE 4 #1) */}
