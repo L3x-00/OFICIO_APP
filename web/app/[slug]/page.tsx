@@ -12,6 +12,7 @@ import {
   Smartphone,
   Phone,
   GraduationCap,
+  Crown,
 } from 'lucide-react';
 import { SOCIAL_DEFS, SCHEDULE_DAYS, buildSocialUrl } from '@/lib/social-utils';
 import { PROFILE_TYPE_META, type ProfileType } from '@/lib/types';
@@ -279,8 +280,8 @@ export default async function PublicProfilePage({
               )}
 
               {profile.plan === 'PREMIUM' && (
-                <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400">
-                  ⭐ Premium
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                  <Crown size={12} /> Premium
                 </span>
               )}
 

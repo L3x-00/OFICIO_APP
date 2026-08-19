@@ -191,7 +191,7 @@ export default function Footer() {
                 </li>
                 <li>
                   <a
-                    href="https://mail.google.com/mail/?view=cm&fs=1&to=ronla.angarita31@gmail.com"
+                    href="https://mail.google.com/mail/?view=cm&fs=1&to=soporteofiapp@gmail.com"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-600 dark:text-white/50 text-[13px] hover:text-primary dark:hover:text-primary-light transition-colors duration-200"
