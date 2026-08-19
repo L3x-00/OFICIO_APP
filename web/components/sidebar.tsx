@@ -40,9 +40,25 @@ const tabs = [
   // { label: 'Referidos',    icon: Gift,          href: '/panel/referidos' },
 ];
 
+const SIDEBAR_COLLAPSED_KEY = 'servi_sidebar_collapsed';
+
 export default function Sidebar() {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  // Estado persistido: antes el sidebar volvía a expandirse en cada navegación
+  // o recarga. Se arranca expandido (evita mismatch de hidratación) y se aplica
+  // la preferencia guardada tras montar.
+  const [collapsed, setCollapsedState] = useState(false);
+  useEffect(() => {
+    if (localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1') setCollapsedState(true);
+  }, []);
+  const setCollapsed = (v: boolean) => {
+    setCollapsedState(v);
+    try {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, v ? '1' : '0');
+    } catch {
+      /* almacenamiento no disponible → solo estado en memoria */
+    }
+  };
   const profileCtx = useProfileTypeOptional();
 
   const showSwitcher = !!profileCtx && profileCtx.availableTypes.length > 0;
