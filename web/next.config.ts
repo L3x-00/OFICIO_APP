@@ -51,22 +51,53 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
+    // Host del backend (API REST + WebSocket) para el allowlist de connect-src.
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL || "https://oficio-backend.onrender.com";
+    const apiWs = apiUrl.replace(/^https:/, "wss:").replace(/^http:/, "ws:");
+
+    // CSP en modo Report-Only (igual criterio que el panel admin): reporta
+    // violaciones sin bloquear, para poder afinar la política antes de
+    // aplicarla en modo enforcing. img-src amplio (las imágenes no ejecutan
+    // código) cubre R2/CDN/tiles del radar; connect-src acotado al backend.
+    const csp = [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "object-src 'none'",
+      "frame-ancestors 'none'",
+      "form-action 'self'",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data:",
+      "style-src 'self' 'unsafe-inline'",
+      // Next.js inyecta scripts de arranque/hidratación inline → 'unsafe-inline'.
+      "script-src 'self' 'unsafe-inline'",
+      `connect-src 'self' ${apiUrl} ${apiWs}`,
+      "frame-src 'self'",
+      "upgrade-insecure-requests",
+    ].join("; ");
+
     return [
       {
         source: "/(.*)",
         headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // El sitio solo usa geolocalización (búsqueda por radio). El resto de
+          // APIs sensibles quedan denegadas.
           {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
+            key: "Permissions-Policy",
+            value:
+              "geolocation=(self), camera=(), microphone=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), interest-cohort=()",
           },
+          // HSTS conservador: 1 año, solo este host (sin includeSubDomains ni
+          // preload para no afectar otros subdominios). Los navegadores solo lo
+          // honran sobre https; en http/localhost se ignora.
           {
-            key: "X-Frame-Options",
-            value: "DENY",
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000",
           },
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
+          { key: "Content-Security-Policy-Report-Only", value: csp },
         ],
       },
     ];
