@@ -19,6 +19,7 @@ import {
   Gift,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Suspense } from 'react';
 import { getSocket } from '@/lib/socket';
 import { AccountMenu } from '@/components/account-menu';
@@ -63,8 +64,16 @@ type ClientSection = 'favorites' | 'notifications' | 'settings' | 'referrals';
 function ClienteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Deep-link `?tab=`: antes solo se reconocía `referidos` → cualquier otro
+  // valor (p. ej. una notificación que enlaza a `tab=notificaciones`) caía a
+  // "favoritos". Ahora se mapea cada sección.
+  const tabParam = searchParams.get('tab');
   const initialTab: ClientSection =
-    REFERRALS_ENABLED && searchParams.get('tab') === 'referidos'
+    tabParam === 'notificaciones' || tabParam === 'notifications'
+      ? 'notifications'
+      : tabParam === 'ajustes' || tabParam === 'settings'
+      ? 'settings'
+      : REFERRALS_ENABLED && tabParam === 'referidos'
       ? 'referrals'
       : 'favorites';
   const [user, setUser] = useState<UserType | null>(null);
@@ -137,6 +146,30 @@ function ClienteContent() {
     socket.on('notification', onNotif);
     return () => { socket.off('notification', onNotif); };
   }, []);
+
+  // ── Marcar notificaciones como leídas al abrir la pestaña ────
+  // Antes el badge de "no leídas" nunca se limpiaba: la vista jamás llamaba
+  // al endpoint. Al entrar a la pestaña (con pendientes) se marca todo leído
+  // en el server (por userId) y se refleja localmente.
+  useEffect(() => {
+    if (activeSection !== 'notifications' || unreadCount === 0) return;
+    api.markAllNotificationsRead().catch(() => {});
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    setUnreadCount(0);
+  }, [activeSection, unreadCount]);
+
+  // Quitar de favoritos (optimista, con reversión si falla el toggle).
+  const handleRemoveFavorite = async (providerId: number) => {
+    const prev = favorites;
+    setFavorites((f) => f.filter((x) => x.id !== providerId));
+    try {
+      await api.toggleFavorite(providerId);
+      toast.success('Quitado de favoritos');
+    } catch {
+      setFavorites(prev);
+      toast.error('No se pudo quitar de favoritos');
+    }
+  };
 
   if (loading) {
     return (
@@ -255,7 +288,7 @@ function ClienteContent() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            {activeSection === 'favorites' && <FavoritesSection items={favorites} />}
+            {activeSection === 'favorites' && <FavoritesSection items={favorites} onRemove={handleRemoveFavorite} />}
             {activeSection === 'notifications' && <NotificationsSection items={notifications} />}
             {REFERRALS_ENABLED && activeSection === 'referrals' && <ReferralPanel />}
             {activeSection === 'settings' && <SettingsSection user={user} />}
@@ -376,7 +409,13 @@ function TabButton({
 
 /* ── Favoritos ─────────────────────────────────────────────── */
 
-function FavoritesSection({ items }: { items: FavoriteItem[] }) {
+function FavoritesSection({
+  items,
+  onRemove,
+}: {
+  items: FavoriteItem[];
+  onRemove: (providerId: number) => void;
+}) {
   if (items.length === 0) {
     return (
       <div className="glass rounded-xl p-12 text-center">
@@ -395,50 +434,68 @@ function FavoritesSection({ items }: { items: FavoriteItem[] }) {
 
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {items.map((fav) => {
-        // El backend devuelve provider aplanado: leemos los campos
-        // directamente de `fav` (no de `fav.provider`).
-        const cover = fav.images?.[0]?.url;
-        return (
-          <div
-            key={fav.id}
-            className="group glass glass-hover rounded-xl overflow-hidden"
-          >
-            <div className="aspect-video bg-dark-card relative">
-              {cover ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={cover}
-                  alt={fav.businessName}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-white/20">
-                  <Briefcase size={32} strokeWidth={1.5} />
-                </div>
-              )}
-              <button
-                className="absolute top-2 right-2 w-8 h-8 rounded-full glass flex items-center justify-center text-rose-400 hover:bg-rose-500/20 transition-colors"
-                aria-label="Quitar de favoritos"
+      <AnimatePresence mode="popLayout">
+        {items.map((fav) => {
+          // El backend devuelve provider aplanado: leemos los campos
+          // directamente de `fav` (no de `fav.provider`). `fav.id` es el id
+          // del PROVIDER → sirve para el enlace y el toggle de favorito.
+          const cover = fav.images?.[0]?.url;
+          return (
+            <motion.div
+              key={fav.id}
+              layout
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <Link
+                href={`/${fav.id}`}
+                className="group block glass glass-hover rounded-xl overflow-hidden focus-visible:ring-2 focus-visible:ring-primary/50"
               >
-                <Heart size={14} className="fill-rose-400" />
-              </button>
-            </div>
-            <div className="p-4">
-              <h3 className="font-display font-semibold text-white text-[14px] truncate">{fav.businessName}</h3>
-              {fav.category?.name && (
-                <p className="text-white/40 text-[12px] truncate mt-0.5">{fav.category.name}</p>
-              )}
-              {typeof fav.averageRating === 'number' && fav.averageRating > 0 && (
-                <div className="flex items-center gap-1 mt-2 text-white text-[12.5px] font-display font-semibold tabular-nums">
-                  <Star size={12} className="text-amber fill-amber" />
-                  {fav.averageRating.toFixed(1)}
+                <div className="aspect-video bg-dark-card relative">
+                  {cover ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={cover}
+                      alt={fav.businessName}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white/20">
+                      <Briefcase size={32} strokeWidth={1.5} />
+                    </div>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      // No navegar al quitar: el botón vive dentro del Link.
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onRemove(fav.id);
+                    }}
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full glass flex items-center justify-center text-rose-400 hover:bg-rose-500/20 hover:scale-110 active:scale-95 transition-all"
+                    aria-label={`Quitar ${fav.businessName} de favoritos`}
+                  >
+                    <Heart size={14} className="fill-rose-400" />
+                  </button>
                 </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
+                <div className="p-4">
+                  <h3 className="font-display font-semibold text-white text-[14px] truncate group-hover:text-primary-light transition-colors">{fav.businessName}</h3>
+                  {fav.category?.name && (
+                    <p className="text-white/40 text-[12px] truncate mt-0.5">{fav.category.name}</p>
+                  )}
+                  {typeof fav.averageRating === 'number' && fav.averageRating > 0 && (
+                    <div className="flex items-center gap-1 mt-2 text-white text-[12.5px] font-display font-semibold tabular-nums">
+                      <Star size={12} className="text-amber fill-amber" />
+                      {fav.averageRating.toFixed(1)}
+                    </div>
+                  )}
+                </div>
+              </Link>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
     </div>
   );
 }
@@ -463,10 +520,13 @@ function NotificationsSection({ items }: { items: NotificationItem[] }) {
   }
 
   return (
-    <div className="glass rounded-xl divide-y divide-white/5">
-      {items.map((n) => (
-        <div
+    <div className="glass rounded-xl divide-y divide-white/5 overflow-hidden">
+      {items.map((n, i) => (
+        <motion.div
           key={n.id}
+          initial={{ opacity: 0, x: -12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, delay: Math.min(i * 0.04, 0.4), ease: [0.16, 1, 0.3, 1] }}
           className={`flex items-start gap-3 p-4 transition-colors ${
             n.isRead ? '' : 'bg-primary/5'
           } hover:bg-white/[0.02]`}
@@ -492,7 +552,7 @@ function NotificationsSection({ items }: { items: NotificationItem[] }) {
           {!n.isRead && (
             <span className="w-2 h-2 rounded-full bg-primary-light mt-3 flex-shrink-0 shadow-glow-sm animate-pulse-soft" />
           )}
-        </div>
+        </motion.div>
       ))}
     </div>
   );

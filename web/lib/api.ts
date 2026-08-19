@@ -798,6 +798,15 @@ export const api = {
   },
 
   /**
+   * Alterna un favorito (`POST /favorites/:providerId`, toggle server-side).
+   * `providerId` = el `id` aplanado que devuelve getFavorites (es el id del
+   * PROVIDER). En el hub del cliente se usa para QUITAR de favoritos.
+   */
+  async toggleFavorite(providerId: number): Promise<void> {
+    await apiFetch(`/favorites/${providerId}`, { method: "POST" });
+  },
+
+  /**
    * Listado público de proveedores (sin auth) para la landing.
    * Usa fetch directo porque apiFetch antepone Authorization si hay token,
    * pero este endpoint es público.
