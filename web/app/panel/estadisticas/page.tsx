@@ -25,6 +25,7 @@ import {
 } from 'recharts';
 import { useProfileType } from '@/lib/profile-type-context';
 import { getSocket } from '@/lib/socket';
+import { useChartTheme } from '@/lib/chart-theme';
 import type { Analytics } from '@/lib/types';
 
 const PREMIUM_PERKS = [
@@ -57,6 +58,7 @@ export default function PanelEstadisticasPage() {
   const [isPaid, setIsPaid] = useState(false);
   const [range, setRange] = useState<'7' | '30' | '90'>('7');
   const { activeType } = useProfileType();
+  const chart = useChartTheme();
 
   useEffect(() => {
     let cancelled = false;
@@ -246,20 +248,14 @@ export default function PanelEstadisticasPage() {
                   <stop offset="95%" stopColor="#E07B39" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis dataKey="date" stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} />
-              <YAxis stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
+              <XAxis dataKey="date" stroke={chart.axis} fontSize={11} tickLine={false} />
+              <YAxis stroke={chart.axis} fontSize={11} tickLine={false} axisLine={false} />
               <Tooltip
-                contentStyle={{
-                  backgroundColor: 'rgba(10, 14, 26, 0.95)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '12px',
-                  boxShadow: '0 8px 32px 0 rgba(5, 6, 15, 0.5)',
-                  color: '#fff',
-                }}
+                contentStyle={chart.tooltip}
+                labelStyle={chart.tooltipLabel}
                 itemStyle={{ color: '#FFB347' }}
-                cursor={{ stroke: '#E07B39', strokeOpacity: 0.3 }}
+                cursor={{ stroke: chart.cursorStroke }}
               />
               <Area
                 type="monotone"
@@ -293,19 +289,13 @@ export default function PanelEstadisticasPage() {
                   <stop offset="95%" stopColor="#E07B39" stopOpacity={0.4}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis dataKey="date" stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} />
-              <YAxis stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
+              <XAxis dataKey="date" stroke={chart.axis} fontSize={11} tickLine={false} />
+              <YAxis stroke={chart.axis} fontSize={11} tickLine={false} axisLine={false} />
               <Tooltip
-                contentStyle={{
-                  backgroundColor: 'rgba(10, 14, 26, 0.95)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '12px',
-                  boxShadow: '0 8px 32px 0 rgba(5, 6, 15, 0.5)',
-                  color: '#fff',
-                }}
-                cursor={{ fill: 'rgba(224,123,57,0.06)' }}
+                contentStyle={chart.tooltip}
+                labelStyle={chart.tooltipLabel}
+                cursor={{ fill: chart.cursorFill }}
               />
               <Bar dataKey="whatsapp" fill="url(#colorWhatsapp)" radius={[6, 6, 0, 0]} />
               <Bar dataKey="calls" fill="url(#colorCalls)" radius={[6, 6, 0, 0]} />
@@ -366,8 +356,14 @@ function ChartCard({
 
 function EmptyChart() {
   return (
-    <div className="h-[260px] flex items-center justify-center">
-      <p className="text-white/30 text-sm">Sin datos disponibles</p>
+    <div className="h-[260px] flex flex-col items-center justify-center text-center">
+      <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mb-3">
+        <TrendingUp size={22} className="text-white/30" />
+      </div>
+      <p className="text-white/50 text-sm font-medium">Aún no hay datos que mostrar</p>
+      <p className="text-white/30 text-xs mt-1 max-w-[220px]">
+        En cuanto tu perfil reciba visitas y contactos, verás aquí su evolución.
+      </p>
     </div>
   );
 }
