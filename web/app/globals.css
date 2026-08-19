@@ -648,6 +648,19 @@ html.light .bg-dark-premium\/80 { background-color: rgba(251, 247, 238, 0.85) !i
 html.light .bg-dark-surface { background-color: #FFFFFF !important; }
 html.light .bg-dark-card    { background-color: #FFFFFF !important; }
 html.light .bg-dark-input   { background-color: #FBF8F0 !important; }
+/* Variantes con opacidad — antes NO se invertían (solo la clase base), así que
+   los modales (Yape/MercadoPago, onboarding de planes) que usan
+   `bg-dark-surface/95` etc. seguían oscuros en modo claro. */
+html.light .bg-dark-surface\/95 { background-color: rgba(255, 255, 255, 0.97) !important; }
+html.light .bg-dark-surface\/90 { background-color: rgba(255, 255, 255, 0.92) !important; }
+html.light .bg-dark-surface\/80 { background-color: rgba(255, 255, 255, 0.85) !important; }
+html.light .bg-dark-surface\/60 { background-color: rgba(255, 255, 255, 0.70) !important; }
+html.light .bg-dark-surface\/40 { background-color: rgba(255, 255, 255, 0.55) !important; }
+html.light .bg-dark-surface\/20 { background-color: rgba(255, 255, 255, 0.40) !important; }
+html.light .bg-dark-card\/90    { background-color: rgba(255, 255, 255, 0.92) !important; }
+html.light .bg-dark-card\/80    { background-color: rgba(255, 255, 255, 0.85) !important; }
+html.light .bg-dark-card\/70    { background-color: rgba(255, 255, 255, 0.78) !important; }
+html.light .bg-dark-card\/50    { background-color: rgba(255, 255, 255, 0.60) !important; }
 
 /* 3. Tipografía (text-white → ink) - Proporcional */
 html.light .text-white          { color: #14141C !important; }
