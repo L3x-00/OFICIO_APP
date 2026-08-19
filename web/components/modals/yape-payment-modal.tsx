@@ -91,7 +91,9 @@ export default function YapePaymentModal({ isOpen, onClose, plan, planLabel, amo
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+        // z alto: este modal puede abrirse ENCIMA del de planes del onboarding
+        // (z-[100000]); con z-50 quedaba oculto detrás. z-[100010] lo garantiza.
+        <div className="fixed inset-0 z-[100010] flex items-end sm:items-center justify-center p-4">
           {/* Fondo oscuro difuminado */}
           <motion.div
             initial={{ opacity: 0 }}

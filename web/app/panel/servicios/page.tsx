@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { Plus, ArrowUpRight, Package, X, Sparkles } from 'lucide-react';
+import { Plus, ArrowUpRight, Package, X, Save, Pencil, Trash2, Loader2, ImagePlus } from 'lucide-react';
 import { useProfileType } from '@/lib/profile-type-context';
-import type { Provider } from '@/lib/types';
+import type { Provider, ProviderService } from '@/lib/types';
 
 // ========== ANIMACIONES CON TIPADO CORRECTO ==========
 const containerVariants = {
@@ -49,7 +49,13 @@ export default function PanelServiciosPage() {
   const [serviceName, setServiceName] = useState('');
   const [serviceDesc, setServiceDesc] = useState('');
   const [servicePrice, setServicePrice] = useState('');
+  const [serviceUnit, setServiceUnit] = useState('');
+  const [serviceImage, setServiceImage] = useState<string | undefined>(undefined);
+  const [pickedFile, setPickedFile] = useState<File | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isNegocio = provider?.type === 'NEGOCIO';
   const { activeType } = useProfileType();
@@ -74,23 +80,119 @@ export default function PanelServiciosPage() {
   }, [activeType]);
 
   const plan = provider?.subscription?.plan || 'GRATIS';
-  const maxItems = plan === 'PREMIUM' ? Infinity : plan === 'ESTANDAR' ? 6 : 3;
-  // Servicios reales del provider — vienen embebidos en
-  // `scheduleJson.services` (mismo shape que persiste el mobile).
-  // Antes el contador estaba hardcoded a 0 y nunca se renderizaban los
-  // ítems con sus fotos.
+  // Límites (espejo de mobile/core/utils/plan_limits.dart): OFICIO GRATIS 1,
+  // NEGOCIO GRATIS 3, ambos ESTANDAR 6, PREMIUM ilimitado. El backend NO
+  // gatea (scheduleJson es opaco): este límite es la verdad operativa.
+  const maxItems =
+    plan === 'PREMIUM' ? Infinity : plan === 'ESTANDAR' ? 6 : isNegocio ? 3 : 1;
+  // Servicios reales del provider — embebidos en `scheduleJson.services`
+  // (mismo shape que persiste el mobile: ServiceItem).
   const items = provider?.scheduleJson?.services ?? [];
   const currentItems = items.length;
   const isAtLimit = currentItems >= maxItems;
   const progressPct = maxItems === Infinity ? 0 : Math.min((currentItems / maxItems) * 100, 100);
 
-  const handleSave = () => {
-    toast.success('Servicio guardado (simulado)');
-    setShowModal(false);
+  const resetForm = () => {
     setServiceName('');
     setServiceDesc('');
     setServicePrice('');
+    setServiceUnit('');
+    setServiceImage(undefined);
+    setPickedFile(null);
     setEditingId(null);
+  };
+
+  const openNew = () => {
+    resetForm();
+    setShowModal(true);
+  };
+
+  const openEdit = (item: ProviderService) => {
+    setEditingId(item.id);
+    setServiceName(item.name);
+    setServiceDesc(item.description ?? '');
+    setServicePrice(item.price != null ? String(item.price) : '');
+    setServiceUnit(item.unit ?? '');
+    setServiceImage(item.imageUrl);
+    setPickedFile(null);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    resetForm();
+  };
+
+  // Persiste la lista completa vía PATCH /me (scheduleJson.services),
+  // preservando el resto del scheduleJson (p.ej. horario).
+  const persist = async (nextServices: ProviderService[]) => {
+    const updated = await api.saveServices(
+      nextServices,
+      provider?.scheduleJson,
+      activeType ?? undefined,
+    );
+    setProvider(updated);
+  };
+
+  const handleSave = async () => {
+    const name = serviceName.trim();
+    if (!name) {
+      toast.error(`Ingresa el nombre del ${isNegocio ? 'producto' : 'servicio'}`);
+      return;
+    }
+    setSaving(true);
+    try {
+      let imageUrl = serviceImage;
+      if (pickedFile) {
+        imageUrl = await api.uploadProviderPhoto(pickedFile);
+      }
+      const priceNum = parseFloat(servicePrice);
+      const item: ProviderService = {
+        id: editingId ?? String(Date.now()),
+        name,
+        description: serviceDesc.trim() || undefined,
+        price: Number.isFinite(priceNum) ? priceNum : undefined,
+        unit: serviceUnit.trim() || undefined,
+        imageUrl: imageUrl || undefined,
+      };
+      const next = editingId
+        ? items.map((s) => (s.id === editingId ? { ...s, ...item } : s))
+        : [...items, item];
+      await persist(next);
+      toast.success(editingId ? 'Cambios guardados' : `${isNegocio ? 'Producto' : 'Servicio'} añadido`);
+      closeModal();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error al guardar');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (item: ProviderService) => {
+    setDeletingId(item.id);
+    try {
+      await persist(items.filter((s) => s.id !== item.id));
+      toast.success('Eliminado');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error al eliminar');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handlePickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('La imagen debe pesar menos de 5 MB');
+      return;
+    }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error('Solo se permiten JPG, PNG o WebP');
+      return;
+    }
+    setPickedFile(file);
+    setServiceImage(URL.createObjectURL(file));
   };
 
   if (loading) {
@@ -121,7 +223,7 @@ export default function PanelServiciosPage() {
           </p>
         </div>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={openNew}
           disabled={isAtLimit}
           className="btn-primary press-effect px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -207,12 +309,30 @@ export default function PanelServiciosPage() {
                     {item.description}
                   </p>
                 )}
+                {item.price != null && (
+                  <p className="text-primary-light font-bold text-sm mt-1">
+                    S/. {item.price.toFixed(2)}
+                    {item.unit && <span className="text-white/40 font-normal"> · {item.unit}</span>}
+                  </p>
+                )}
               </div>
-              {isNegocio && item.price != null && (
-                <span className="text-primary-light font-bold text-sm bg-primary/10 px-3 py-1 rounded-lg flex-shrink-0">
-                  S/. {item.price.toFixed(2)}
-                </span>
-              )}
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <button
+                  onClick={() => openEdit(item)}
+                  className="w-8 h-8 rounded-lg glass flex items-center justify-center text-white/50 hover:text-white hover:bg-white/[0.06] transition-colors"
+                  aria-label="Editar"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  onClick={() => handleDelete(item)}
+                  disabled={deletingId === item.id}
+                  className="w-8 h-8 rounded-lg glass flex items-center justify-center text-rose-400/70 hover:text-rose-400 hover:bg-rose/10 transition-colors disabled:opacity-50"
+                  aria-label="Eliminar"
+                >
+                  {deletingId === item.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                </button>
+              </div>
             </motion.div>
           ))}
         </motion.div>
@@ -235,7 +355,7 @@ export default function PanelServiciosPage() {
             todo lo que ofreces.
           </p>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={openNew}
             className="btn-primary press-effect px-6 py-2.5 rounded-xl text-sm font-semibold inline-flex items-center gap-2"
           >
             <Plus size={16} />
@@ -253,21 +373,21 @@ export default function PanelServiciosPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/60 backdrop-blur-md"
-              onClick={() => setShowModal(false)}
+              onClick={closeModal}
             />
             <motion.div
               variants={modalVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="relative glass rounded-2xl p-6 w-full max-w-md shadow-glow-lg border border-white/10"
+              className="relative glass rounded-2xl p-6 w-full max-w-md shadow-glow-lg border border-white/10 max-h-[92vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-lg font-bold text-white font-display">
                   {editingId ? 'Editar' : 'Añadir'} {isNegocio ? 'producto' : 'servicio'}
                 </h2>
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={closeModal}
                   className="w-8 h-8 rounded-full glass flex items-center justify-center text-white/50 hover:text-white transition-colors"
                 >
                   <X size={18} />
@@ -275,6 +395,34 @@ export default function PanelServiciosPage() {
               </div>
 
               <div className="space-y-4">
+                {/* Imagen (opcional) */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative w-full h-28 rounded-xl border border-dashed border-white/15 bg-white/[0.03] hover:border-primary/40 overflow-hidden flex items-center justify-center text-white/40 hover:text-primary-light transition-colors group"
+                >
+                  {serviceImage ? (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={serviceImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                      <span className="relative z-10 bg-black/50 backdrop-blur-sm rounded-lg px-2.5 py-1 text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                        Cambiar imagen
+                      </span>
+                    </>
+                  ) : (
+                    <span className="flex items-center gap-2 text-sm">
+                      <ImagePlus size={18} /> Añadir imagen (opcional)
+                    </span>
+                  )}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handlePickFile}
+                />
+
                 <InputField
                   label="Nombre"
                   value={serviceName}
@@ -292,10 +440,10 @@ export default function PanelServiciosPage() {
                     placeholder="Describe brevemente lo que ofreces..."
                   />
                 </div>
-                {isNegocio && (
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-white/50 text-xs font-medium mb-2 uppercase tracking-wider">
-                      Precio
+                      Precio (opcional)
                     </label>
                     <div className="relative">
                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm font-semibold">
@@ -312,20 +460,27 @@ export default function PanelServiciosPage() {
                       />
                     </div>
                   </div>
-                )}
+                  <InputField
+                    label="Unidad"
+                    value={serviceUnit}
+                    onChange={setServiceUnit}
+                  />
+                </div>
                 <div className="flex gap-3 justify-end pt-2">
                   <button
-                    onClick={() => setShowModal(false)}
-                    className="btn-ghost press-effect px-4 py-2 text-sm font-medium"
+                    onClick={closeModal}
+                    disabled={saving}
+                    className="btn-ghost press-effect px-4 py-2 text-sm font-medium disabled:opacity-50"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleSave}
-                    className="btn-primary press-effect px-6 py-2 rounded-xl text-sm font-semibold flex items-center gap-2"
+                    disabled={saving}
+                    className="btn-primary press-effect px-6 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 disabled:opacity-60"
                   >
-                    <Sparkles size={14} />
-                    Guardar
+                    {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                    {saving ? 'Guardando...' : 'Guardar'}
                   </button>
                 </div>
               </div>

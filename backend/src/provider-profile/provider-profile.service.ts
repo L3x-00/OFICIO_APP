@@ -626,6 +626,36 @@ export class ProviderProfileService {
     return { success: true };
   }
 
+  /**
+   * Marca una imagen existente como portada del proveedor. Invariante: una
+   * sola portada por proveedor — desmarca cualquier otra en la misma
+   * transacción. La columna `isCover` ya existe (no requiere SQL).
+   */
+  async setCoverImage(userId: number, imageId: number, type?: string) {
+    const provider = await this.findProviderByUser(userId, type);
+    const img = await this.prisma.providerImage.findFirst({
+      where: { id: imageId, providerId: provider.id },
+    });
+    if (!img) throw new NotFoundException('Imagen no encontrada');
+
+    await this.prisma.$transaction([
+      this.prisma.providerImage.updateMany({
+        where: {
+          providerId: provider.id,
+          isCover: true,
+          id: { not: imageId },
+        },
+        data: { isCover: false },
+      }),
+      this.prisma.providerImage.update({
+        where: { id: imageId },
+        data: { isCover: true },
+      }),
+    ]);
+
+    return { success: true };
+  }
+
   // ── OBTENER MIS ANALÍTICAS ────────────────────────────────
   async getMyAnalytics(userId: number, days = 30, type?: string) {
     const provider = await this.findProviderByUser(userId, type);
