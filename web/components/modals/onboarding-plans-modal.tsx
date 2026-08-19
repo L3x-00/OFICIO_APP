@@ -88,6 +88,8 @@ export default function OnboardingPlansModal({ isOpen, providerType, onClose, on
         <motion.div
           initial={{ opacity: 0, y: 40, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 40, scale: 0.96 }}
+          transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
           className="relative w-full max-w-lg bg-dark-surface/95 backdrop-blur-xl border border-white/10 rounded-t-3xl sm:rounded-2xl max-h-[92vh] overflow-y-auto shadow-glow-lg"
         >
           <div className="sticky top-0 z-10 flex items-center justify-between p-5 border-b border-white/5 bg-dark-surface/90 backdrop-blur-lg">
@@ -111,6 +113,14 @@ export default function OnboardingPlansModal({ isOpen, providerType, onClose, on
             </button>
           </div>
 
+          <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: step === 'method' ? 28 : -28 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: step === 'method' ? -28 : 28 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          >
           {step === 'plans' ? (
             <div className="p-5 space-y-3">
               {PLANS.map((p) => (
@@ -170,6 +180,8 @@ export default function OnboardingPlansModal({ isOpen, providerType, onClose, on
               </p>
             </div>
           )}
+          </motion.div>
+          </AnimatePresence>
         </motion.div>
       </div>
 
