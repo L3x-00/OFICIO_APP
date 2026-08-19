@@ -86,7 +86,7 @@ export default function UserManual() {
               <Headphones size={14} />
               Soporte técnico
             </a>
-            <a href="mailto:ronla.angarita31@gmail.com" className="btn btn-ghost btn-sm press-effect">
+            <a href="mailto:soporteofiapp@gmail.com" className="btn btn-ghost btn-sm press-effect">
               <Download size={14} />
               Ventas y planes
             </a>

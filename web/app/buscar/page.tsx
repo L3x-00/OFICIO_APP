@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Search, MapPin, Star, Radar, Loader2, X, ChevronDown } from 'lucide-react';
+import { Search, MapPin, Star, Radar, Loader2, X, ChevronDown, ShieldCheck, SearchX } from 'lucide-react';
 import {
   api,
   type PublicProvider,
@@ -233,11 +233,25 @@ function BuscarPageInner() {
               </button>
             </div>
             {searching ? (
-              <LoaderRow />
+              <ResultsSkeleton />
             ) : results.length === 0 ? (
-              <p className="text-gray-400 dark:text-white/40 text-sm py-12 text-center">
-                No encontramos proveedores para esta búsqueda.
-              </p>
+              <div className="py-14 flex flex-col items-center text-center">
+                <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mb-4">
+                  <SearchX size={26} className="text-gray-400 dark:text-white/40" />
+                </div>
+                <p className="text-gray-700 dark:text-white/80 text-sm font-semibold">
+                  Sin resultados para esta búsqueda
+                </p>
+                <p className="text-gray-500 dark:text-white/40 text-sm mt-1 max-w-xs">
+                  Prueba con otra categoría, amplía el radio en el mapa o revisa la ortografía.
+                </p>
+                <button
+                  onClick={clearResults}
+                  className="btn btn-glass press-effect mt-5 text-sm font-semibold inline-flex items-center gap-1.5"
+                >
+                  <X size={14} /> Limpiar búsqueda
+                </button>
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {results.map((p) => (
@@ -304,11 +318,23 @@ function BuscarPageInner() {
 }
 
 // ── Tarjeta de proveedor ──
+// Estado de disponibilidad → punto de color + etiqueta (señal de confianza
+// para el cliente al elegir). Solo se muestra si el backend lo envía.
+const AVAIL_META: Record<
+  NonNullable<PublicProvider['availability']>,
+  { dot: string; label: string }
+> = {
+  DISPONIBLE: { dot: 'bg-emerald-400', label: 'Disponible' },
+  OCUPADO: { dot: 'bg-amber-400', label: 'Ocupado' },
+  CON_DEMORA: { dot: 'bg-rose-400', label: 'Con demora' },
+};
+
 function ProviderCard({ provider }: { provider: PublicProvider }) {
   const cover =
     provider.images?.find((i) => i.isCover)?.url ??
     provider.images?.[0]?.url ??
     '/images/logo/servi.png';
+  const avail = provider.availability ? AVAIL_META[provider.availability] : null;
   const rating = provider.averageRating ?? 0;
   const reviews = provider.totalReviews ?? 0;
   const location = [provider.locality?.district, provider.locality?.province]
@@ -341,10 +367,19 @@ function ProviderCard({ provider }: { provider: PublicProvider }) {
             {distance.toFixed(1)} km
           </span>
         )}
+        {avail && (
+          <span className="absolute bottom-2 left-2 inline-flex items-center gap-1.5 text-[11px] font-medium bg-black/55 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">
+            <span className={`w-1.5 h-1.5 rounded-full ${avail.dot}`} />
+            {avail.label}
+          </span>
+        )}
       </div>
       <div className="p-3">
         <div className="flex items-center gap-1.5">
           <p className="text-gray-900 dark:text-white font-semibold text-sm truncate">{provider.businessName}</p>
+          {provider.credentialVerified && (
+            <ShieldCheck size={14} className="shrink-0 text-emerald-500 dark:text-emerald-400" aria-label="Credenciales verificadas" />
+          )}
           {provider.type && (
             <span className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-white/60">
               {PROFILE_TYPE_META[provider.type].label}
@@ -419,10 +454,28 @@ function Carousel({ title, providers }: { title: string; providers: PublicProvid
   );
 }
 
-function LoaderRow() {
+// Skeleton que refleja la grilla de resultados — preserva el layout (evita CLS)
+// y comunica "cargando" mejor que un spinner suelto. aria-busy para lectores.
+function ResultsSkeleton() {
   return (
-    <div className="py-12 flex justify-center text-gray-400 dark:text-white/40">
-      <Loader2 className="animate-spin" />
+    <div
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+      aria-busy="true"
+      aria-label="Cargando resultados"
+    >
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-dark-card overflow-hidden"
+        >
+          <div className="aspect-[5/3] bg-gray-200/70 dark:bg-white/5 animate-pulse" />
+          <div className="p-3 space-y-2">
+            <div className="h-3.5 w-2/3 rounded bg-gray-200/70 dark:bg-white/5 animate-pulse" />
+            <div className="h-3 w-1/2 rounded bg-gray-200/70 dark:bg-white/5 animate-pulse" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
+
