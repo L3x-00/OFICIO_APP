@@ -8,7 +8,7 @@ import { api } from '@/lib/api';
 import { profileSchema } from '@/lib/validators';
 import { useProfileType } from '@/lib/profile-type-context';
 import {
-  Camera, Upload, Trash2, ChevronDown, ChevronUp, Plus,
+  Camera, Trash2, ChevronDown, Plus,
   Shield, CheckCircle, XCircle, Clock, Star, Loader2, Save,
   Crown, Package, Check,
 } from 'lucide-react';
@@ -233,6 +233,20 @@ function PanelPerfilContent() {
     setScheduleJson((prev) => ({ ...prev, [day]: value }));
   };
 
+  const handleSetAvailability = async (status: 'DISPONIBLE' | 'OCUPADO' | 'CON_DEMORA') => {
+    if (status === availability) return;
+    const prev = availability;
+    setAvailability(status); // optimista
+    setProvider((p) => (p ? { ...p, availability: status } : p));
+    try {
+      await api.setAvailability(status, activeType ?? undefined);
+    } catch {
+      setAvailability(prev);
+      setProvider((p) => (p ? { ...p, availability: prev } : p));
+      toast.error('Error al actualizar disponibilidad');
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -313,52 +327,97 @@ function PanelPerfilContent() {
         </p>
       </motion.div>
 
-      {/* Plan y suscripción */}
-      <div ref={planesRef}>
-        <motion.div variants={itemVariants} className="relative glass rounded-xl p-6 overflow-hidden border-primary/20 shadow-glow-md">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative flex items-center gap-4">
-            <div className={`w-14 h-14 ${currentPlanData?.iconBg} rounded-2xl flex items-center justify-center ring-1 ring-white/10`}>
-              {currentPlanData?.icon && <currentPlanData.icon className={currentPlanData.iconColor} size={26} />}
+      {/* Estado: plan + disponibilidad + verificación en una sola tarjeta
+          compacta (antes eran 3 secciones separadas → scroll largo). */}
+      <motion.div
+        ref={planesRef}
+        variants={itemVariants}
+        className="relative glass rounded-2xl overflow-hidden border border-white/10 shadow-glow-sm"
+      >
+        <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Fila 1 — plan actual + toggle "Cambiar plan" */}
+        <div className="relative flex items-center gap-3.5 p-5">
+          <div className={`w-12 h-12 ${currentPlanData?.iconBg} rounded-xl flex items-center justify-center ring-1 ring-white/10 shrink-0`}>
+            {currentPlanData?.icon && <currentPlanData.icon className={currentPlanData.iconColor} size={22} />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-white font-bold text-base font-display">
+                Plan {currentPlanData?.label || 'Gratis'}
+              </h2>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                  currentStatus === 'ACTIVA'
+                    ? 'bg-accent/10 text-accent border border-accent/20'
+                    : currentStatus === 'VENCIDA'
+                    ? 'bg-rose/10 text-rose-400 border border-rose/20'
+                    : 'bg-amber/10 text-amber border border-amber/20'
+                }`}
+              >
+                {currentStatus}
+              </span>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-white font-bold text-lg font-display">
-                  Plan {currentPlanData?.label || 'Gratis'}
-                </h2>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                    currentStatus === 'ACTIVA'
-                      ? 'bg-accent/10 text-accent border border-accent/20'
-                      : currentStatus === 'VENCIDA'
-                      ? 'bg-rose/10 text-rose-400 border border-rose/20'
-                      : 'bg-amber/10 text-amber border border-amber/20'
-                  }`}
-                >
-                  {currentStatus}
-                </span>
-              </div>
-              {provider?.subscription?.startDate && (
-                <p className="text-white/40 text-xs mt-0.5">
-                  Activo desde{' '}
-                  {new Date(provider.subscription.startDate).toLocaleDateString('es-PE', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
-                </p>
-              )}
+            {provider?.subscription?.startDate && (
+              <p className="text-white/40 text-xs mt-0.5 truncate">
+                Activo desde{' '}
+                {new Date(provider.subscription.startDate).toLocaleDateString('es-PE', {
+                  day: 'numeric', month: 'long', year: 'numeric',
+                })}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => setShowPlans((v) => !v)}
+            className="shrink-0 inline-flex items-center gap-1 text-primary-light text-xs font-semibold bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-full px-3 py-1.5 transition-colors press-effect"
+            aria-expanded={showPlans}
+          >
+            {showPlans ? 'Ocultar' : 'Cambiar plan'}
+            <ChevronDown size={13} className={`transition-transform duration-200 ${showPlans ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
+
+        {/* Fila 2 — disponibilidad (segmentado) + verificación (badge) */}
+        <div className="relative flex flex-wrap items-center gap-x-4 gap-y-3 px-5 pb-5 pt-4 border-t border-white/5">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-white/40 text-[10px] uppercase tracking-wider font-bold shrink-0">Estado</span>
+            <div className="flex bg-white/[0.04] border border-white/10 rounded-full p-0.5">
+              {(['DISPONIBLE', 'OCUPADO', 'CON_DEMORA'] as const).map((status) => {
+                const style = AVAIL_STYLES[status];
+                const isActive = availability === status;
+                return (
+                  <button
+                    key={status}
+                    onClick={() => handleSetAvailability(status)}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all duration-200 ${
+                      isActive ? `${style.bg} ${style.text}` : 'text-white/40 hover:text-white/70'
+                    }`}
+                  >
+                    {isActive && (
+                      <span className={`w-1.5 h-1.5 rounded-full bg-current ${status === 'DISPONIBLE' ? 'animate-pulse-soft' : ''}`} />
+                    )}
+                    {style.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </motion.div>
+          <div className="sm:ml-auto">
+            <VerificationBadge status={provider?.verificationStatus} />
+          </div>
+        </div>
 
-        <motion.div variants={itemVariants} className="mt-6">
-          <CollapsibleSection
-            title="Planes disponibles"
-            open={showPlans}
-            onToggle={() => setShowPlans(!showPlans)}
-          >
-            <div className="grid sm:grid-cols-3 gap-4">
+        {/* Grid de planes — colapsable desde "Cambiar plan" */}
+        <AnimatePresence initial={false}>
+          {showPlans && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden border-t border-white/5"
+            >
+              <div className="p-5 grid sm:grid-cols-3 gap-4">
               {plans.map((plan) => (
                 <div
                   key={plan.name}
@@ -424,10 +483,11 @@ function PanelPerfilContent() {
                   )}
                 </div>
               ))}
-            </div>
-          </CollapsibleSection>
-        </motion.div>
-      </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Avatar y galería */}
       <SectionCard title="Foto de perfil y galería" subtitle={`Sube hasta ${photoLimit} imágenes (JPG, PNG, WebP, máx. 5MB)`}>
@@ -534,80 +594,6 @@ function PanelPerfilContent() {
         />
       </SectionCard>
 
-      {/* Disponibilidad */}
-      <SectionCard title="Disponibilidad" subtitle="Comunica a los clientes tu estado actual">
-        <div className="grid grid-cols-3 gap-3">
-          {(['DISPONIBLE', 'OCUPADO', 'CON_DEMORA'] as const).map((status) => {
-            const style = AVAIL_STYLES[status];
-            const isActive = availability === status;
-            return (
-              <button
-                key={status}
-                onClick={async () => {
-                  try {
-                    await api.setAvailability(status, activeType ?? undefined);
-                    setAvailability(status);
-                    setProvider((prev) => prev ? { ...prev, availability: status } : prev);
-                    toast.success('Disponibilidad actualizada');
-                  } catch {
-                    toast.error('Error al actualizar disponibilidad');
-                  }
-                }}
-                className={`relative py-3 rounded-xl text-sm font-semibold transition-all duration-200 border ${
-                  isActive
-                    ? `${style.bg} ${style.text} ${style.border} shadow-glow-sm`
-                    : 'glass border-white/10 text-white/40 hover:text-white/70 hover:bg-white/[0.06]'
-                }`}
-              >
-                {isActive && (
-                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-current animate-pulse-soft" />
-                )}
-                {style.label}
-              </button>
-            );
-          })}
-        </div>
-      </SectionCard>
-
-      {/* Verificación */}
-      <SectionCard
-        title={
-          <span className="flex items-center gap-2">
-            <Shield className="text-accent" size={20} />
-            Verificación de confianza
-          </span>
-        }
-      >
-        {provider?.verificationStatus === 'APROBADO' && (
-          <div className="flex items-center gap-3 bg-accent/10 border border-accent/20 rounded-xl px-4 py-3">
-            <CheckCircle size={20} className="text-accent flex-shrink-0" />
-            <div>
-              <p className="text-accent text-sm font-semibold">Perfil verificado</p>
-              <p className="text-white/40 text-xs">Tu identidad ha sido validada.</p>
-            </div>
-          </div>
-        )}
-        {provider?.verificationStatus === 'PENDIENTE' && (
-          <div className="flex items-center gap-3 bg-amber/10 border border-amber/20 rounded-xl px-4 py-3">
-            <Clock size={20} className="text-amber flex-shrink-0 animate-pulse-soft" />
-            <div>
-              <p className="text-amber text-sm font-semibold">Verificación en revisión</p>
-              <p className="text-white/40 text-xs">Te notificaremos en 24-48 horas.</p>
-            </div>
-          </div>
-        )}
-        {provider?.verificationStatus === 'RECHAZADO' && (
-          <div className="flex items-start gap-3 bg-rose/10 border border-rose/20 rounded-xl px-4 py-3">
-            <XCircle size={20} className="text-rose-400 flex-shrink-0" />
-            <div>
-              <p className="text-rose-400 text-sm font-semibold">Verificación rechazada</p>
-              <p className="text-white/40 text-xs mt-0.5">
-                Tu solicitud fue rechazada. Contacta al soporte para más información.
-              </p>
-            </div>
-          </div>
-        )}
-      </SectionCard>
 
       {/* Información básica */}
       <SectionCard title="Información básica">
@@ -716,6 +702,36 @@ function PanelPerfilContent() {
         />
       )}
     </motion.div>
+  );
+}
+
+/** Badge compacto de verificación — reemplaza la antigua SectionCard entera. */
+function VerificationBadge({ status }: { status?: string }) {
+  if (status === 'APROBADO') {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-accent text-xs font-semibold bg-accent/10 border border-accent/20 rounded-full px-3 py-1.5">
+        <CheckCircle size={13} /> Verificado
+      </span>
+    );
+  }
+  if (status === 'PENDIENTE') {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-amber text-xs font-semibold bg-amber/10 border border-amber/20 rounded-full px-3 py-1.5">
+        <Clock size={13} className="animate-pulse-soft" /> En revisión
+      </span>
+    );
+  }
+  if (status === 'RECHAZADO') {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-rose-400 text-xs font-semibold bg-rose/10 border border-rose/20 rounded-full px-3 py-1.5">
+        <XCircle size={13} /> Rechazada
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 text-white/45 text-xs font-medium border border-white/10 rounded-full px-3 py-1.5">
+      <Shield size={13} /> Sin verificar
+    </span>
   );
 }
 
