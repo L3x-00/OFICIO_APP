@@ -164,16 +164,24 @@ export interface Provider {
    * acá. El web lo lee para mostrar productos en /panel/servicios.
    */
   scheduleJson?: {
-    services?: Array<{
-      id: string;
-      name: string;
-      description?: string;
-      price?: number;
-      imageUrl?: string;
-      phone?: string;
-    }>;
+    services?: ProviderService[];
     [key: string]: unknown;
   };
+}
+
+/**
+ * Servicio/producto del proveedor. Se persiste embebido en
+ * `scheduleJson.services` (mismo shape que el móvil `ServiceItem`). `unit` y
+ * `phone` son opcionales; el móvil los usa, el web los preserva al guardar.
+ */
+export interface ProviderService {
+  id: string;
+  name: string;
+  description?: string;
+  price?: number;
+  unit?: string;
+  imageUrl?: string;
+  phone?: string;
 }
 
 export interface Subscription {

@@ -11,6 +11,7 @@ import {
   ProfileType,
   Provider,
   ProviderImage,
+  ProviderService,
   PublicUserProfile,
   Review,
   User,
@@ -552,13 +553,61 @@ export const api = {
     });
   },
 
-  async uploadImage(file: File): Promise<ProviderImage> {
+  /**
+   * Cambia la disponibilidad (DISPONIBLE/OCUPADO/CON_DEMORA) por el endpoint
+   * dedicado `PATCH /me/availability`. NO usar `updateMyProfile`: el DTO de
+   * `PATCH /me` no incluye `availability` y lo rechaza con 400.
+   */
+  async setAvailability(
+    availability: "DISPONIBLE" | "OCUPADO" | "CON_DEMORA",
+    type?: ProfileType,
+  ): Promise<void> {
+    const qs = type ? `?type=${type}` : "";
+    await apiFetch(`/provider-profile/me/availability${qs}`, {
+      method: "PATCH",
+      body: JSON.stringify({ availability }),
+    });
+  },
+
+  /**
+   * Persiste servicios/productos del proveedor. Igual que el móvil
+   * (`dashboard_repository.saveServices`): se guardan embebidos en
+   * `scheduleJson.services` vía `PATCH /me` — el backend trata el JSON como
+   * opaco (sin migración). Preserva el resto del scheduleJson (horario).
+   */
+  async saveServices(
+    services: ProviderService[],
+    existingSchedule: Record<string, unknown> | undefined,
+    type?: ProfileType,
+  ): Promise<Provider> {
+    const scheduleJson = { ...(existingSchedule ?? {}), services };
+    return this.updateMyProfile({ scheduleJson }, type);
+  },
+
+  /**
+   * Sube una foto al storage y devuelve solo su URL pública, SIN vincularla a
+   * la galería. Para imágenes de servicios/productos, que viven embebidas en
+   * `scheduleJson.services` (no como ProviderImage).
+   */
+  async uploadProviderPhoto(file: File): Promise<string> {
     const formData = new FormData();
     formData.append("file", file);
     const { url } = await apiUpload<{ url: string }>("/upload/provider-photo", formData);
-    return apiFetch<ProviderImage>("/provider-profile/me/images", {
+    return url;
+  },
+
+  async uploadImage(
+    file: File,
+    type?: ProfileType,
+    isCover = false,
+  ): Promise<ProviderImage> {
+    const formData = new FormData();
+    formData.append("file", file);
+    const { url } = await apiUpload<{ url: string }>("/upload/provider-photo", formData);
+    const qs = type ? `?type=${type}` : "";
+    return apiFetch<ProviderImage>(`/provider-profile/me/images${qs}`, {
       method: "POST",
-      body: JSON.stringify({ url }),
+      body: JSON.stringify(isCover ? { url, isCover: true } : { url }),
     });
   },
 
@@ -595,9 +644,21 @@ export const api = {
     return normalizeAnalytics(raw);
   },
 
-  async deleteImage(imageId: number): Promise<void> {
-    return apiFetch(`/provider-profile/me/images/${imageId}`, {
+  async deleteImage(imageId: number, type?: ProfileType): Promise<void> {
+    const qs = type ? `?type=${type}` : "";
+    return apiFetch(`/provider-profile/me/images/${imageId}${qs}`, {
       method: "DELETE",
+    });
+  },
+
+  /**
+   * Marca una imagen existente como portada. Endpoint
+   * `PATCH /me/images/:id/cover` (el backend pone isCover=false en el resto).
+   */
+  async setCoverImage(imageId: number, type?: ProfileType): Promise<void> {
+    const qs = type ? `?type=${type}` : "";
+    await apiFetch(`/provider-profile/me/images/${imageId}/cover${qs}`, {
+      method: "PATCH",
     });
   },
 

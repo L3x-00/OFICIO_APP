@@ -251,6 +251,32 @@ describe('ProviderProfileService (unit)', () => {
     });
   });
 
+  describe('setCoverImage()', () => {
+    it('imagen inexistente → NotFound', async () => {
+      prisma.provider.findMany.mockResolvedValue([{ id: 5 }]);
+      prisma.providerImage.findFirst.mockResolvedValue(null);
+      await expect(service.setCoverImage(7, 99)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('éxito: marca la elegida como portada y desmarca el resto (única portada)', async () => {
+      prisma.provider.findMany.mockResolvedValue([{ id: 5 }]);
+      prisma.providerImage.findFirst.mockResolvedValue({ id: 9, providerId: 5 });
+      prisma.providerImage.update.mockResolvedValue({ id: 9, isCover: true });
+      const res = await service.setCoverImage(7, 9);
+      expect(prisma.providerImage.updateMany).toHaveBeenCalledWith({
+        where: { providerId: 5, isCover: true, id: { not: 9 } },
+        data: { isCover: false },
+      });
+      expect(prisma.providerImage.update).toHaveBeenCalledWith({
+        where: { id: 9 },
+        data: { isCover: true },
+      });
+      expect(res).toEqual({ success: true });
+    });
+  });
+
   describe('requestPlanUpgrade()', () => {
     it('plan inválido → BadRequest', async () => {
       await expect(service.requestPlanUpgrade(7, 'GRATIS')).rejects.toThrow(

@@ -183,7 +183,7 @@ function PanelPerfilContent() {
     }
     setUploading(true);
     try {
-      const img = await api.uploadImage(file);
+      const img = await api.uploadImage(file, activeType ?? undefined);
       setProvider((prev) =>
         prev ? { ...prev, images: [...prev.images, img] } : prev
       );
@@ -197,7 +197,7 @@ function PanelPerfilContent() {
 
   const handleDeleteImage = async (imageId: number) => {
     try {
-      await api.deleteImage(imageId);
+      await api.deleteImage(imageId, activeType ?? undefined);
       setProvider((prev) =>
         prev
           ? { ...prev, images: prev.images.filter((i) => i.id !== imageId) }
@@ -206,6 +206,23 @@ function PanelPerfilContent() {
       toast.success('Imagen eliminada');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error al eliminar');
+    }
+  };
+
+  const handleSetCover = async (imageId: number) => {
+    try {
+      await api.setCoverImage(imageId, activeType ?? undefined);
+      setProvider((prev) =>
+        prev
+          ? {
+              ...prev,
+              images: prev.images.map((i) => ({ ...i, isCover: i.id === imageId })),
+            }
+          : prev
+      );
+      toast.success('Portada actualizada');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error al cambiar portada');
     }
   };
 
@@ -224,11 +241,15 @@ function PanelPerfilContent() {
     );
   }
 
-  const imageCount = provider?.images?.length ?? 0;
-  const imageProgress = (imageCount / 5) * 100;
-
   const currentPlan = provider?.subscription?.plan || 'GRATIS';
   const currentStatus = provider?.subscription?.status || 'ACTIVA';
+  // Límite de fotos por plan (espejo del backend PHOTO_LIMITS).
+  const photoLimit = currentPlan === 'PREMIUM' ? 10 : currentPlan === 'ESTANDAR' ? 6 : 2;
+  const imageCount = provider?.images?.length ?? 0;
+  const imageProgress = Math.min((imageCount / photoLimit) * 100, 100);
+  // Portada real: la imagen marcada isCover; si ninguna, la primera.
+  const coverImageId = provider?.images?.find((i) => i.isCover)?.id ?? provider?.images?.[0]?.id;
+  const coverImageUrl = provider?.images?.find((i) => i.isCover)?.url ?? provider?.images?.[0]?.url;
   const plans = [
     {
       name: 'GRATIS' as const,
@@ -406,15 +427,15 @@ function PanelPerfilContent() {
       </div>
 
       {/* Avatar y galería */}
-      <SectionCard title="Foto de perfil y galería" subtitle="Sube hasta 5 imágenes (JPG, PNG, WebP, máx. 5MB)">
+      <SectionCard title="Foto de perfil y galería" subtitle={`Sube hasta ${photoLimit} imágenes (JPG, PNG, WebP, máx. 5MB)`}>
         <div className="flex items-center gap-5 mb-6">
           <div className="relative group">
             <div className="w-24 h-24 bg-gradient-primary rounded-2xl flex items-center justify-center text-white text-3xl font-extrabold shadow-glow-md ring-2 ring-primary/30">
               {provider?.businessName?.charAt(0)?.toUpperCase() || 'P'}
             </div>
-            {provider?.images?.[0]?.url && (
+            {coverImageUrl && (
               <img
-                src={provider.images[0].url}
+                src={coverImageUrl}
                 alt="Avatar"
                 className="absolute inset-0 w-24 h-24 rounded-2xl object-cover ring-2 ring-primary/30"
               />
@@ -437,15 +458,15 @@ function PanelPerfilContent() {
             {/* Progress galería */}
             <div className="mt-3">
               <div className="flex items-center justify-between text-xs mb-1.5">
-                <span className="text-white/40">Galería ({imageCount}/5)</span>
-                <span className={imageCount >= 4 ? 'text-amber font-semibold' : 'text-white/40'}>
-                  {imageCount >= 5 ? 'Completo' : `${5 - imageCount} restantes`}
+                <span className="text-white/40">Galería ({imageCount}/{photoLimit})</span>
+                <span className={imageCount >= photoLimit - 1 ? 'text-amber font-semibold' : 'text-white/40'}>
+                  {imageCount >= photoLimit ? 'Completo' : `${photoLimit - imageCount} restantes`}
                 </span>
               </div>
               <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ease-smooth ${
-                    imageCount >= 5 ? 'bg-amber' : 'bg-gradient-primary'
+                    imageCount >= photoLimit ? 'bg-amber' : 'bg-gradient-primary'
                   }`}
                   style={{ width: `${imageProgress}%` }}
                 />
@@ -455,17 +476,25 @@ function PanelPerfilContent() {
         </div>
 
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-          {provider?.images?.map((img, idx) => (
+          {provider?.images?.map((img) => (
             <div key={img.id} className="relative group rounded-xl overflow-hidden ring-1 ring-white/5 hover:ring-primary/30 transition-all duration-200">
               <img
                 src={img.url}
                 alt=""
                 className="w-full aspect-square object-cover transition-transform duration-300 group-hover:scale-110"
               />
-              {(img.isCover || idx === 0) && (
+              {img.id === coverImageId ? (
                 <span className="absolute bottom-1 left-1 bg-primary/95 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-lg">
                   <Star size={8} className="fill-white" /> Portada
                 </span>
+              ) : (
+                <button
+                  onClick={() => handleSetCover(img.id)}
+                  className="absolute bottom-1 left-1 bg-black/60 backdrop-blur-sm text-white/90 text-[9px] font-semibold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-primary/90"
+                  aria-label="Marcar como portada"
+                >
+                  <Star size={8} /> Portada
+                </button>
               )}
               <button
                 onClick={() => handleDeleteImage(img.id)}
@@ -476,7 +505,7 @@ function PanelPerfilContent() {
               </button>
             </div>
           ))}
-          {imageCount < 5 && (
+          {imageCount < photoLimit && (
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
@@ -513,7 +542,7 @@ function PanelPerfilContent() {
                 key={status}
                 onClick={async () => {
                   try {
-                    await api.updateMyProfile({ availability: status }, activeType ?? undefined);
+                    await api.setAvailability(status, activeType ?? undefined);
                     setAvailability(status);
                     setProvider((prev) => prev ? { ...prev, availability: status } : prev);
                     toast.success('Disponibilidad actualizada');

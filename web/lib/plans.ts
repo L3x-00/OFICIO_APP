@@ -43,7 +43,7 @@ export const PLANS: PlanInfo[] = [
     accent: '#3B82F6',
     features: [
       'Badge verificado azul',
-      'Hasta 4 fotos',
+      'Hasta 6 fotos',
       'Estadísticas básicas',
       'Mayor visibilidad en búsqueda',
     ],
@@ -57,7 +57,7 @@ export const PLANS: PlanInfo[] = [
     accent: '#F59E0B',
     features: [
       'Badge dorado Premium',
-      'Fotos ilimitadas',
+      'Hasta 10 fotos',
       'Estadísticas avanzadas',
       'Posición #1 garantizada',
       'Soporte prioritario 24/7',

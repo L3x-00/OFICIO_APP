@@ -147,6 +147,16 @@ export class ProviderProfileController {
     return this.service.deleteImage(req.user.userId, id, type);
   }
 
+  // PATCH /provider-profile/me/images/:id/cover?type=OFICIO|NEGOCIO — marca portada
+  @Patch('me/images/:id/cover')
+  setCoverImage(
+    @Request() req: AuthenticatedRequest,
+    @Param('id', ParseIntPipe) id: number,
+    @Query('type') type?: string,
+  ) {
+    return this.service.setCoverImage(req.user.userId, id, type);
+  }
+
   // POST /provider-profile/me/plan-request?type=OFICIO|NEGOCIO
   @Post('me/plan-request')
   requestPlanUpgrade(
