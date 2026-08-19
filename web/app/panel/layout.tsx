@@ -50,10 +50,12 @@ const PROFILE_META: Record<ProfileType, {
 };
 
 // ========== ANIMACIONES CON TIPADO CORRECTO ==========
+// Transición de página más ágil: antes exit 0.2s + enter 0.3s con `mode="wait"`
+// hacía que el contenido nuevo "demorara en mostrarse" al cambiar de sección.
 const pageVariants = {
-  initial: { opacity: 0, y: 8 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const } },
-  exit: { opacity: 0, y: -8, transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] as const } },
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] as const } },
+  exit: { opacity: 0, y: -4, transition: { duration: 0.12, ease: [0.16, 1, 0.3, 1] as const } },
 };
 
 export default function PanelLayout({ children }: { children: React.ReactNode }) {
