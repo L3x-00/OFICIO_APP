@@ -84,7 +84,7 @@ const iconVariants = {
 // Estrella:     dorado suave             → #D4B860  (tailwind: yellow-500)
 
 // ── Componente ─────────────────────────────────────────────
-export default function ProvidersSection() {
+export default function ProvidersSection({ embedded = false }: { embedded?: boolean } = {}) {
   const router = useRouter();
 
   const benefits = [
@@ -127,7 +127,7 @@ export default function ProvidersSection() {
   ];
 
   return (
-    <section className="relative py-20 sm:py-28 overflow-hidden bg-background dark:bg-dark-surface transition-colors duration-300">
+    <section className={`relative overflow-hidden bg-background dark:bg-dark-surface transition-colors duration-300 ${embedded ? 'pt-8 pb-20 sm:pt-10 sm:pb-28' : 'py-20 sm:py-28'}`}>
       {/* ═══ Fondo decorativo (nuevos colores suaves) ═══ */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden>
         {/* Mancha primaria — azul apagado */}

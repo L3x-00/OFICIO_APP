@@ -15,11 +15,16 @@
  * el avance (las fotos viven solo en memoria). Se limpia al crear el perfil.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  useState, useEffect, useCallback, useRef,
+  cloneElement, isValidElement, Children, type ReactElement,
+} from 'react';
 import Image from 'next/image';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
   Wrench, Store, Briefcase, Loader2, Check, X, MapPin, Image as ImageIcon,
   ShieldCheck, Plus, Star, ChevronLeft, ChevronRight, LogIn, Gift,
+  ChevronDown, AlertCircle, Crosshair,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { api, type RegisterProviderPayload, type FeaturedCategory } from '@/lib/api';
@@ -30,6 +35,7 @@ import { PROFILE_TYPE_META, normalizeProfileType, type ProfileType } from '@/lib
 import OnboardingPlansModal from '@/components/modals/onboarding-plans-modal';
 
 type Variant = 'full' | 'wizard';
+type FieldState = 'idle' | 'valid' | 'invalid';
 
 const SCHEDULE_DAYS: { key: string; label: string }[] = [
   { key: 'lun', label: 'Lunes' },
@@ -72,8 +78,24 @@ function parseLatLngFromMaps(url: string): { lat: number; lng: number } | null {
   return null;
 }
 
-/* Pasos del wizard. Horario (NEGOCIO) va junto a Ubicación. */
-const WIZARD_STEPS = ['Tipo', 'Datos', 'Categorías', 'Ubicación', 'Extras', 'Confirmar'] as const;
+/* Pasos del wizard — consolidados para un registro más corto.
+   "Detalles" junta Categorías + Ubicación + Extras (redes/fotos) en un solo
+   paso con secciones colapsables, para reducir la cantidad de pasos. */
+const WIZARD_STEPS = ['Tipo', 'Datos', 'Detalles', 'Confirmar'] as const;
+
+/* Orden de los campos para llevar el foco al PRIMER error tras un submit. */
+const ERROR_FIELD_ORDER = [
+  'businessName', 'description', 'phone', 'dni', 'ruc',
+  'professionalSpecialty', 'professionalInstitution', 'professionalTitle',
+  'professionalRegistrationNumber', 'professionalRegistrationIssuer',
+  'professionalYearsExperience', 'categories', 'department', 'province', 'district',
+] as const;
+
+/** Grupos de error que viven dentro del acordeón "Datos del oficio/…". */
+const MORE_DATA_ERROR_KEYS = [
+  'dni', 'ruc', 'professionalSpecialty', 'professionalInstitution', 'professionalTitle',
+  'professionalRegistrationNumber', 'professionalRegistrationIssuer', 'professionalYearsExperience',
+];
 
 export default function ProviderOnboardingForm({
   variant = 'full',
@@ -141,6 +163,55 @@ export default function ProviderOnboardingForm({
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPlans, setShowPlans] = useState(false);
+
+  // UX: dirección de transición del wizard, acordeón de datos extra, GPS.
+  const [dir, setDir] = useState(1);
+  const [openMore, setOpenMore] = useState(false);
+  const [openExtras, setOpenExtras] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const reduceMotion = useReducedMotion();
+
+  /** Lleva el foco (y hace scroll suave) al primer campo con error. */
+  const focusFirstError = useCallback((e: Record<string, string>) => {
+    const firstKey = ERROR_FIELD_ORDER.find((k) => e[k]);
+    if (!firstKey) return;
+    // Si el error vive en el acordeón de datos extra, ábrelo antes de enfocar.
+    if (MORE_DATA_ERROR_KEYS.includes(firstKey)) setOpenMore(true);
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const el = document.getElementById(`ferr-${firstKey}`);
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.querySelector<HTMLElement>('input, select, textarea')?.focus({ preventScroll: true });
+      }, 60);
+    });
+  }, []);
+
+  /** GPS del navegador → coordenadas (aparece en búsquedas por radio). */
+  const useMyLocation = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      toast.error('Tu navegador no permite geolocalización');
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = Number(pos.coords.latitude.toFixed(6));
+        const lng = Number(pos.coords.longitude.toFixed(6));
+        setCoords({ lat, lng });
+        if (!address.trim()) setAddress(`${lat}, ${lng}`);
+        setLocating(false);
+        toast.success('Ubicación detectada');
+      },
+      (err) => {
+        setLocating(false);
+        toast.error(err.code === err.PERMISSION_DENIED
+          ? 'Permiso de ubicación denegado'
+          : 'No se pudo obtener tu ubicación');
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
+    );
+  };
 
   // En estado (no en render): localStorage no existe en SSR y el texto del
   // botón cambiaría entre server y client (hydration mismatch).
@@ -284,9 +355,11 @@ export default function ProviderOnboardingForm({
   };
 
   /* ── Validación (espejo del RegisterProviderDto) ──────────── */
-  const validate = (fields?: 'basics' | 'categories' | 'location'): boolean => {
+  const validate = (fields?: 'basics' | 'categoriesLocation'): boolean => {
     const e: Record<string, string> = {};
     const wantAll = !fields;
+    const wantCats = wantAll || fields === 'categoriesLocation';
+    const wantLoc = wantAll || fields === 'categoriesLocation';
     if (wantAll || fields === 'basics') {
       if (businessName.trim().length < 2) e.businessName = 'Mínimo 2 caracteres';
       if (businessName.trim().length > 100) e.businessName = 'Máximo 100 caracteres';
@@ -312,11 +385,11 @@ export default function ProviderOnboardingForm({
         }
       }
     }
-    if (wantAll || fields === 'categories') {
+    if (wantCats) {
       if (selected.length === 0) e.categories = 'Selecciona al menos una categoría';
       if (selected.length > MAX_CATEGORIES) e.categories = `Máximo ${MAX_CATEGORIES} categorías`;
     }
-    if (wantAll || fields === 'location') {
+    if (wantLoc) {
       if (!department) e.department = 'Selecciona tu departamento';
       if (!province) e.province = 'Selecciona tu provincia';
       if (!district) e.district = 'Selecciona tu distrito';
@@ -324,9 +397,36 @@ export default function ProviderOnboardingForm({
     setErrors(e);
     if (Object.keys(e).length > 0) {
       toast.error('Revisa los campos marcados');
+      focusFirstError(e);
       return false;
     }
     return true;
+  };
+
+  /* ── Validez EN VIVO por campo (check verde mientras escribes) ──── */
+  const okLen = (v: string, min: number, max: number) => {
+    const t = v.trim();
+    return t.length >= min && t.length <= max;
+  };
+  /** Estado visual de un campo: 'invalid' si ya falló, 'valid' si cumple, 'idle' si vacío. */
+  const stateOf = (key: string, ok: boolean): FieldState =>
+    errors[key] ? 'invalid' : ok ? 'valid' : 'idle';
+
+  const valid = {
+    businessName: okLen(businessName, 2, 100),
+    description: okLen(description, 10, 1000),
+    phone: phone.trim().length >= 6,
+    dni: !dni.trim() || dni.trim().length <= 20,
+    ruc: !ruc.trim() || /^\d{11}$/.test(ruc.trim()),
+    professionalSpecialty: okLen(professionalSpecialty, 2, 120),
+    professionalYearsExperience:
+      !professionalYearsExperience.trim() ||
+      (Number.isInteger(Number(professionalYearsExperience)) &&
+        Number(professionalYearsExperience) >= 0 &&
+        Number(professionalYearsExperience) <= 80),
+    department: !!department,
+    province: !!province,
+    district: !!district,
   };
 
   const buildScheduleJson = (): Record<string, string | null> => {
@@ -433,14 +533,14 @@ export default function ProviderOnboardingForm({
         if (!type) { toast.error('Elige un tipo de perfil'); return false; }
         return true;
       case 1: return validate('basics');
-      case 2: return validate('categories');
-      case 3: return validate('location');
+      // Paso "Detalles" = categorías + ubicación juntas.
+      case 2: return validate('categoriesLocation');
       default: return true;
     }
   };
 
-  const next = () => { if (stepValid(step)) setStep((s) => Math.min(s + 1, WIZARD_STEPS.length - 1)); };
-  const back = () => setStep((s) => Math.max(s - 1, 0));
+  const next = () => { if (stepValid(step)) { setDir(1); setStep((s) => Math.min(s + 1, WIZARD_STEPS.length - 1)); } };
+  const back = () => { setDir(-1); setStep((s) => Math.max(s - 1, 0)); };
 
   /* ── Bloques de contenido (compartidos entre variantes) ───── */
 
@@ -452,56 +552,60 @@ export default function ProviderOnboardingForm({
     </div>
   );
 
+  const moreDataTitle = isOficio ? 'Datos del oficio' : isProfessional ? 'Datos profesionales' : 'Datos del negocio';
+  const moreDataSubtitle = isProfessional
+    ? 'Especialidad, colegiatura y experiencia'
+    : isNegocio ? 'RUC, razón social y atención' : 'DNI y servicio a domicilio (opcional)';
+
   const basicsBlock = (
     <>
       <Section title="Datos básicos">
-        <Field label={isNegocio ? 'Nombre del negocio' : 'Nombre o marca personal'} required error={errors.businessName}>
+        <Field label={isNegocio ? 'Nombre del negocio' : 'Nombre o marca personal'} required name="businessName" error={errors.businessName} state={stateOf('businessName', valid.businessName)}>
           <input className={inputCls} value={businessName} onChange={(e) => setBusinessName(e.target.value)} maxLength={100} placeholder={isNegocio ? 'Ej. Pizzería Don Luigi' : isProfessional ? 'Ej. Mónica Ruiz · Abogada' : 'Ej. Juan Pérez · Electricista'} />
         </Field>
-        <Field label="Descripción" required error={errors.description}>
+        <Field label="Descripción" required name="description" error={errors.description} state={stateOf('description', valid.description)} hint={`${description.length}/1000`}>
           <textarea className={`${inputCls} resize-none`} rows={4} value={description} onChange={(e) => setDescription(e.target.value)} maxLength={1000} placeholder={isNegocio ? 'Qué ofreces, horarios, especialidades...' : isProfessional ? 'Especialidad, formación, años de experiencia...' : 'Experiencia, especialidades, horario de trabajo...'} />
-          <p className="text-white/30 text-[11px] mt-1">{description.length}/1000</p>
         </Field>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="Teléfono" required error={errors.phone}>
-            <input className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={20} placeholder="+51 9..." />
+          <Field label="Teléfono" required name="phone" error={errors.phone} state={stateOf('phone', valid.phone)}>
+            <input className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={20} inputMode="tel" placeholder="+51 9..." />
           </Field>
-          <Field label="WhatsApp">
-            <input className={inputCls} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} maxLength={30} placeholder="+51 9..." />
+          <Field label="WhatsApp" state={whatsapp.trim() ? 'valid' : 'idle'}>
+            <input className={inputCls} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} maxLength={30} inputMode="tel" placeholder="+51 9..." />
           </Field>
         </div>
       </Section>
 
-      <Section title={isOficio ? 'Datos del oficio' : isProfessional ? 'Datos profesionales' : 'Datos del negocio'}>
+      <CollapsibleSection title={moreDataTitle} subtitle={moreDataSubtitle} open={openMore} onToggle={() => setOpenMore((v) => !v)} reduce={!!reduceMotion}>
         {isOficio && (
           <>
-            <Field label="DNI" error={errors.dni}>
-              <input className={inputCls} value={dni} onChange={(e) => setDni(e.target.value)} maxLength={20} placeholder="Documento de identidad" />
+            <Field label="DNI" name="dni" error={errors.dni} state={stateOf('dni', !!dni.trim() && valid.dni)}>
+              <input className={inputCls} value={dni} onChange={(e) => setDni(e.target.value)} maxLength={20} inputMode="numeric" placeholder="Documento de identidad" />
             </Field>
             <Toggle label="Ofrezco servicio a domicilio" checked={hasHomeService} onChange={setHasHomeService} />
           </>
         )}
         {isProfessional && (
           <>
-            <Field label="Especialidad" required error={errors.professionalSpecialty}>
+            <Field label="Especialidad" required name="professionalSpecialty" error={errors.professionalSpecialty} state={stateOf('professionalSpecialty', valid.professionalSpecialty)}>
               <input className={inputCls} value={professionalSpecialty} onChange={(e) => setProfessionalSpecialty(e.target.value)} maxLength={120} placeholder="Ej. Derecho civil, Ingeniería estructural..." />
             </Field>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Institución / universidad" error={errors.professionalInstitution}>
+              <Field label="Institución / universidad" name="professionalInstitution" error={errors.professionalInstitution} state={stateOf('professionalInstitution', !!professionalInstitution.trim())}>
                 <input className={inputCls} value={professionalInstitution} onChange={(e) => setProfessionalInstitution(e.target.value)} maxLength={160} placeholder="Ej. UNCP" />
               </Field>
-              <Field label="Años de experiencia" error={errors.professionalYearsExperience}>
+              <Field label="Años de experiencia" name="professionalYearsExperience" error={errors.professionalYearsExperience} state={stateOf('professionalYearsExperience', !!professionalYearsExperience.trim() && valid.professionalYearsExperience)}>
                 <input className={inputCls} type="number" min={0} max={80} value={professionalYearsExperience} onChange={(e) => setProfessionalYearsExperience(e.target.value)} placeholder="Ej. 5" />
               </Field>
             </div>
-            <Field label="Título o certificado" error={errors.professionalTitle}>
+            <Field label="Título o certificado" name="professionalTitle" error={errors.professionalTitle} state={stateOf('professionalTitle', !!professionalTitle.trim())}>
               <input className={inputCls} value={professionalTitle} onChange={(e) => setProfessionalTitle(e.target.value)} maxLength={160} placeholder="Ej. Abogado colegiado" />
             </Field>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Número de colegiatura / registro" error={errors.professionalRegistrationNumber}>
+              <Field label="Número de colegiatura / registro" name="professionalRegistrationNumber" error={errors.professionalRegistrationNumber} state={stateOf('professionalRegistrationNumber', !!professionalRegistrationNumber.trim())}>
                 <input className={inputCls} value={professionalRegistrationNumber} onChange={(e) => setProfessionalRegistrationNumber(e.target.value)} maxLength={100} placeholder="Ej. CAL 12345" />
               </Field>
-              <Field label="Entidad emisora" error={errors.professionalRegistrationIssuer}>
+              <Field label="Entidad emisora" name="professionalRegistrationIssuer" error={errors.professionalRegistrationIssuer} state={stateOf('professionalRegistrationIssuer', !!professionalRegistrationIssuer.trim())}>
                 <input className={inputCls} value={professionalRegistrationIssuer} onChange={(e) => setProfessionalRegistrationIssuer(e.target.value)} maxLength={160} placeholder="Ej. Colegio de Abogados de Lima" />
               </Field>
             </div>
@@ -509,14 +613,14 @@ export default function ProviderOnboardingForm({
         )}
         {isNegocio && (
           <>
-            <Field label="RUC" error={errors.ruc}>
+            <Field label="RUC" name="ruc" error={errors.ruc} state={stateOf('ruc', !!ruc.trim() && valid.ruc)}>
               <input className={inputCls} value={ruc} onChange={(e) => setRuc(e.target.value)} maxLength={11} inputMode="numeric" placeholder="11 dígitos" />
             </Field>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Nombre comercial">
+              <Field label="Nombre comercial" state={nombreComercial.trim() ? 'valid' : 'idle'}>
                 <input className={inputCls} value={nombreComercial} onChange={(e) => setNombreComercial(e.target.value)} maxLength={100} />
               </Field>
-              <Field label="Razón social">
+              <Field label="Razón social" state={razonSocial.trim() ? 'valid' : 'idle'}>
                 <input className={inputCls} value={razonSocial} onChange={(e) => setRazonSocial(e.target.value)} maxLength={150} />
               </Field>
             </div>
@@ -524,12 +628,12 @@ export default function ProviderOnboardingForm({
             <Toggle label="Atención con plena coordinación" checked={plenaCoordinacion} onChange={setPlenaCoordinacion} />
           </>
         )}
-      </Section>
+      </CollapsibleSection>
     </>
   );
 
   const categoriesBlock = (
-    <Section title={`Categorías (máx ${MAX_CATEGORIES})`} error={errors.categories}>
+    <Section title={`Categorías (máx ${MAX_CATEGORIES})`} name="categories" error={errors.categories}>
       <div className={`space-y-4 ${isWizard ? 'max-h-72 overflow-y-auto pr-1' : ''}`}>
         {categories.map((parent) => {
           const children = parent.children?.length ? parent.children : [parent];
@@ -573,41 +677,57 @@ export default function ProviderOnboardingForm({
     <>
       <Section title="Ubicación">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <Field label="Departamento" required error={errors.department}>
+          <Field label="Departamento" required name="department" error={errors.department} state={stateOf('department', valid.department)}>
             <select className={inputCls} value={department} onChange={(e) => { setDepartment(e.target.value); setProvince(''); setDistrict(''); }}>
               <option value="">Selecciona</option>
               {PERU_DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </Field>
-          <Field label="Provincia" required error={errors.province}>
+          <Field label="Provincia" required name="province" error={errors.province} state={stateOf('province', valid.province)}>
             <select className={inputCls} value={province} disabled={!department} onChange={(e) => { setProvince(e.target.value); setDistrict(''); }}>
               <option value="">Selecciona</option>
               {provincesOf(department).map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
           </Field>
-          <Field label="Distrito" required error={errors.district}>
+          <Field label="Distrito" required name="district" error={errors.district} state={stateOf('district', valid.district)}>
             <select className={inputCls} value={district} disabled={!province} onChange={(e) => setDistrict(e.target.value)}>
               <option value="">Selecciona</option>
               {districtsOf(province).map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </Field>
         </div>
-        <Field label="Dirección">
+        <Field label="Dirección" state={address.trim() ? 'valid' : 'idle'}>
           <input className={inputCls} value={address} onChange={(e) => setAddress(e.target.value)} maxLength={200} placeholder="Jr. Lima 123, Ref..." />
         </Field>
-        <Field label="Enlace de Google Maps (opcional)">
+
+        {/* Ubicación exacta → aparecer en búsquedas por radio.
+            Botón GPS primero (lo más fácil); enlace de Maps como alternativa. */}
+        <div>
+          <label className="block text-white/50 text-[12px] font-semibold mb-1.5">Ubicación exacta (opcional)</label>
+          <button type="button" onClick={useMyLocation} disabled={locating}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary/15 border border-primary/30 text-primary-light py-2.5 text-[13px] font-medium hover:bg-primary/25 transition-colors disabled:opacity-60">
+            {locating ? <Loader2 size={15} className="animate-spin" /> : <Crosshair size={15} />}
+            {locating ? 'Obteniendo tu ubicación…' : 'Usar mi ubicación actual'}
+          </button>
+
+          <div className="flex items-center gap-3 my-2.5">
+            <span className="h-px flex-1 bg-white/10" />
+            <span className="text-white/30 text-[11px]">o pega un enlace de Google Maps</span>
+            <span className="h-px flex-1 bg-white/10" />
+          </div>
+
           <div className="flex gap-2">
-            <input className={inputCls} value={mapsUrl} onChange={(e) => setMapsUrl(e.target.value)} placeholder="Pega el enlace de tu ubicación" />
+            <input className={inputCls} value={mapsUrl} onChange={(e) => setMapsUrl(e.target.value)} placeholder="https://maps.google.com/..." />
             <button type="button" onClick={applyMapsUrl} className="px-3 rounded-xl bg-white/[0.06] border border-white/10 text-white/70 hover:text-white shrink-0 inline-flex items-center gap-1.5 text-[13px]">
               <MapPin size={15} /> Usar
             </button>
           </div>
           {coords && (
-            <p className="text-primary-light/80 text-[11px] mt-1 inline-flex items-center gap-1">
+            <p className="text-emerald-400 text-[11px] mt-2 inline-flex items-center gap-1">
               <Check size={11} /> Coordenadas listas — aparecerás en búsquedas por radio.
             </p>
           )}
-        </Field>
+        </div>
       </Section>
 
       {isNegocio && (
@@ -633,19 +753,18 @@ export default function ProviderOnboardingForm({
     </>
   );
 
+  const extrasCount = photos.length + Object.values(social).filter((v) => v?.trim()).length;
   const extrasBlock = (
-    <>
-      <Section title="Redes sociales (opcional)">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {SOCIAL_FIELDS.map((f) => (
-            <Field key={f.key as string} label={f.label}>
-              <input className={inputCls} value={social[f.key as string] ?? ''} onChange={(e) => setSocial((p) => ({ ...p, [f.key as string]: e.target.value }))} placeholder={f.placeholder} maxLength={255} />
-            </Field>
-          ))}
-        </div>
-      </Section>
-
-      <Section title={`Fotos de tus servicios (máx ${MAX_PHOTOS})`}>
+    <CollapsibleSection
+      title="Fotos y redes"
+      subtitle="Opcional — súmalas para destacar tu perfil"
+      badge={extrasCount > 0 ? `${extrasCount}` : undefined}
+      open={openExtras}
+      onToggle={() => setOpenExtras((v) => !v)}
+      reduce={!!reduceMotion}
+    >
+      <div>
+        <p className="text-white/40 text-[11px] uppercase tracking-wider font-semibold mb-2">Fotos de tus servicios (máx {MAX_PHOTOS})</p>
         <div className="flex flex-wrap gap-3">
           {photos.map((f, i) => (
             <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden border border-white/10">
@@ -664,7 +783,27 @@ export default function ProviderOnboardingForm({
             onChange={(e) => { onPickPhotos(e.target.files); e.target.value = ''; }} />
         </div>
         <p className="text-white/30 text-[11px] mt-2 flex items-center gap-1.5"><ImageIcon size={12} /> JPG/PNG, hasta 5 MB cada una.</p>
-      </Section>
+      </div>
+
+      <div className="pt-4 mt-4 border-t border-white/5">
+        <p className="text-white/40 text-[11px] uppercase tracking-wider font-semibold mb-3">Redes sociales</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {SOCIAL_FIELDS.map((f) => (
+            <Field key={f.key as string} label={f.label} state={social[f.key as string]?.trim() ? 'valid' : 'idle'}>
+              <input className={inputCls} value={social[f.key as string] ?? ''} onChange={(e) => setSocial((p) => ({ ...p, [f.key as string]: e.target.value }))} placeholder={f.placeholder} maxLength={255} />
+            </Field>
+          ))}
+        </div>
+      </div>
+    </CollapsibleSection>
+  );
+
+  /* Paso "Detalles" — categorías + ubicación + extras juntos (registro más corto). */
+  const detailsBlock = (
+    <>
+      {categoriesBlock}
+      {locationBlock}
+      {extrasBlock}
     </>
   );
 
@@ -713,33 +852,48 @@ export default function ProviderOnboardingForm({
           ))}
         </div>
 
-        <div className="space-y-5">
-          {step === 0 && (
-            <>
-              <p className="text-white/60 text-sm">¿Cómo quieres aparecer en Servi?</p>
-              {typeBlock}
-            </>
-          )}
-          {step === 1 && basicsBlock}
-          {step === 2 && categoriesBlock}
-          {step === 3 && locationBlock}
-          {step === 4 && extrasBlock}
-          {step === 5 && (
-            <>
-              <Section title="Resumen">
-                <ul className="text-white/70 text-[13px] space-y-1.5">
-                  <li><span className="text-white/40">Tipo:</span> {type ? PROFILE_TYPE_META[type].label : '—'}</li>
-                  <li><span className="text-white/40">Nombre:</span> {businessName || '—'}</li>
-                  <li><span className="text-white/40">Categorías:</span> {selected.map((s) => s.name).join(', ') || '—'}</li>
-                  <li><span className="text-white/40">Ubicación:</span> {[district, province, department].filter(Boolean).join(', ') || '—'}</li>
-                  <li><span className="text-white/40">Fotos:</span> {photos.length}</li>
-                </ul>
-              </Section>
-              {referralBlock}
-              {submitButton}
-              {disclaimer}
-            </>
-          )}
+        <div className="relative overflow-hidden">
+          <AnimatePresence mode="wait" custom={dir} initial={false}>
+            <motion.div
+              key={step}
+              custom={dir}
+              variants={{
+                enter: (d: number) => ({ opacity: 0, x: reduceMotion ? 0 : d > 0 ? 28 : -28 }),
+                center: { opacity: 1, x: 0 },
+                exit: (d: number) => ({ opacity: 0, x: reduceMotion ? 0 : d > 0 ? -28 : 28 }),
+              }}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              className="space-y-5"
+            >
+              {step === 0 && (
+                <>
+                  <p className="text-white/60 text-sm">¿Cómo quieres aparecer en Servi?</p>
+                  {typeBlock}
+                </>
+              )}
+              {step === 1 && basicsBlock}
+              {step === 2 && detailsBlock}
+              {step === 3 && (
+                <>
+                  <Section title="Resumen">
+                    <ul className="text-white/70 text-[13px] space-y-1.5">
+                      <li><span className="text-white/40">Tipo:</span> {type ? PROFILE_TYPE_META[type].label : '—'}</li>
+                      <li><span className="text-white/40">Nombre:</span> {businessName || '—'}</li>
+                      <li><span className="text-white/40">Categorías:</span> {selected.map((s) => s.name).join(', ') || '—'}</li>
+                      <li><span className="text-white/40">Ubicación:</span> {[district, province, department].filter(Boolean).join(', ') || '—'}</li>
+                      <li><span className="text-white/40">Fotos:</span> {photos.length}</li>
+                    </ul>
+                  </Section>
+                  {referralBlock}
+                  {submitButton}
+                  {disclaimer}
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {/* Navegación */}
@@ -816,24 +970,104 @@ function TypeCard({ active, onClick, icon, title, desc }: { active: boolean; onC
   );
 }
 
-function Section({ title, error, children }: { title: string; error?: string; children: React.ReactNode }) {
+function Section({ title, name, error, children }: { title: string; name?: string; error?: string; children: React.ReactNode }) {
   return (
-    <div className="glass rounded-2xl border-white/5 p-5">
+    <div id={name ? `ferr-${name}` : undefined} className="glass rounded-2xl border-white/5 p-5 scroll-mt-24">
       <h2 className="text-white font-display font-semibold text-[15px] mb-4">{title}</h2>
       <div className="space-y-4">{children}</div>
-      {error && <p className="text-rose-400 text-xs mt-3">{error}</p>}
+      {error && <p className="text-rose-400 text-xs mt-3 flex items-center gap-1"><AlertCircle size={12} /> {error}</p>}
     </div>
   );
 }
 
-function Field({ label, required, error, children }: { label: string; required?: boolean; error?: string; children: React.ReactNode }) {
+/**
+ * Sección colapsable animada (acordeón). Cabecera con flecha; el cuerpo se
+ * despliega/oculta con transición de altura suave. Respeta reduced-motion.
+ */
+function CollapsibleSection({
+  title, subtitle, badge, open, onToggle, reduce, children,
+}: {
+  title: string; subtitle?: string; badge?: string;
+  open: boolean; onToggle: () => void; reduce: boolean; children: React.ReactNode;
+}) {
   return (
-    <div>
-      <label className="block text-white/50 text-[12px] font-semibold mb-1.5">
-        {label}{required && <span className="text-rose-400"> *</span>}
+    <div className="glass rounded-2xl border-white/5 overflow-hidden">
+      <button type="button" onClick={onToggle} aria-expanded={open}
+        className="w-full flex items-center justify-between gap-3 p-5 text-left group">
+        <span className="min-w-0">
+          <span className="flex items-center gap-2">
+            <span className="text-white font-display font-semibold text-[15px]">{title}</span>
+            {badge && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary/20 text-primary-light">{badge}</span>}
+          </span>
+          {subtitle && <span className="block text-white/40 text-[12px] mt-0.5 truncate">{subtitle}</span>}
+        </span>
+        <ChevronDown size={18} className={`text-white/50 shrink-0 transition-transform duration-300 group-hover:text-white/80 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={reduce ? { duration: 0 } : { duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-5 space-y-4">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function Field({
+  label, required, error, state = 'idle', name, hint, children,
+}: {
+  label: string; required?: boolean; error?: string; state?: FieldState;
+  name?: string; hint?: React.ReactNode; children: React.ReactNode;
+}) {
+  const invalid = state === 'invalid' || !!error;
+  const showValid = state === 'valid' && !error;
+
+  // Un único control → le inyectamos borde de estado (verde/rojo) y padding
+  // para el icono. Campos con varios hijos se dejan tal cual.
+  const only = Children.count(children) === 1 && isValidElement(children)
+    ? (children as ReactElement<Record<string, unknown>>)
+    : null;
+  const tag = only && typeof only.type === 'string' ? only.type : '';
+  const isSelect = tag === 'select';
+  const isTextarea = tag === 'textarea';
+  const showOverlay = !!only && !isSelect && (showValid || invalid);
+
+  const control = only
+    ? cloneElement(only, {
+        className: [
+          (only.props.className as string) ?? '',
+          invalid ? 'border-rose-400/70 focus:border-rose-400/70' : '',
+          showValid ? 'border-emerald-500/45 focus:border-emerald-500/45' : '',
+          showOverlay ? 'pr-9' : '',
+        ].filter(Boolean).join(' '),
+        ...(invalid ? { 'aria-invalid': true } : {}),
+      })
+    : children;
+
+  return (
+    <div id={name ? `ferr-${name}` : undefined} className="scroll-mt-24">
+      <label className="flex items-center gap-1.5 text-white/50 text-[12px] font-semibold mb-1.5">
+        <span>{label}{required && <span className="text-rose-400"> *</span>}</span>
+        {showValid && <Check size={12} className="text-emerald-400" aria-hidden />}
       </label>
-      {children}
-      {error && <p className="text-rose-400 text-[11px] mt-1">{error}</p>}
+      <div className="relative">
+        {control}
+        {showOverlay && (
+          <span className={`absolute right-3 ${isTextarea ? 'top-3' : 'top-1/2 -translate-y-1/2'} pointer-events-none`}>
+            {showValid ? <Check size={15} className="text-emerald-400" /> : <AlertCircle size={15} className="text-rose-400" />}
+          </span>
+        )}
+      </div>
+      {error
+        ? <p className="text-rose-400 text-[11px] mt-1 flex items-center gap-1" role="alert"><AlertCircle size={11} /> {error}</p>
+        : hint ? <p className="text-white/30 text-[11px] mt-1">{hint}</p> : null}
     </div>
   );
 }
