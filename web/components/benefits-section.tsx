@@ -95,9 +95,9 @@ export default function BenefitsSection() {
           </p>
         </motion.div>
 
-        {/* Grid con Framer Motion Stagger */}
-        <motion.div 
-          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"
+        {/* Grid con Framer Motion Stagger — sin recuadros: la info flota libre */}
+        <motion.div
+          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 sm:gap-y-14"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -111,40 +111,30 @@ export default function BenefitsSection() {
               <motion.article
                 key={b.title}
                 variants={cardVariants}
-                // AQUÍ SE AGREGÓ rounded-2xl
-                className="relative overflow-hidden rounded-2xl glass glass-hover p-7 group"
+                className="group"
               >
-                {/* Shine sweep — Tailwind `before:` no aplica a glass, así
-                    que usamos un span absoluto que se translateX al hover
-                    del article padre. Pasa una sola vez por hover. */}
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/[0.08] to-transparent skew-x-12 transition-transform duration-700 ease-out group-hover:translate-x-full"
-                />
-
-                <div className="relative">
-                  <div
-                    className={`w-12 h-12 rounded-xl border ${a.border} ${a.bg} flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-glow-sm`}
-                  >
-                    {isSvg ? (
-                      <Image
-                        src={b.icon as string}
-                        alt=""
-                        width={22}
-                        height={22}
-                        className="opacity-90"
-                      />
-                    ) : (
-                      IconComp && <IconComp className={a.text} size={22} strokeWidth={1.75} />
-                    )}
-                  </div>
-                  <h3 className="font-display font-semibold text-white text-[17px] leading-snug mb-2">
-                    {b.title}
-                  </h3>
-                  <p className="text-white/50 text-[14.5px] leading-relaxed">
-                    {b.desc}
-                  </p>
+                {/* Insignia del icono — única forma; título y texto al aire libre */}
+                <div
+                  className={`w-12 h-12 rounded-xl border ${a.border} ${a.bg} flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-glow-sm`}
+                >
+                  {isSvg ? (
+                    <Image
+                      src={b.icon as string}
+                      alt=""
+                      width={22}
+                      height={22}
+                      className="opacity-90"
+                    />
+                  ) : (
+                    IconComp && <IconComp className={a.text} size={22} strokeWidth={1.75} />
+                  )}
                 </div>
+                <h3 className="font-display font-semibold text-white text-[17px] leading-snug mb-2">
+                  {b.title}
+                </h3>
+                <p className="text-white/50 text-[14.5px] leading-relaxed max-w-sm">
+                  {b.desc}
+                </p>
               </motion.article>
             );
           })}
