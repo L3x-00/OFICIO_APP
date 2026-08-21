@@ -559,7 +559,7 @@ export default function ProviderOnboardingForm({
 
   const basicsBlock = (
     <>
-      <Section title="Datos básicos">
+      <Section title="Datos básicos" bare={isWizard}>
         <Field label={isNegocio ? 'Nombre del negocio' : 'Nombre o marca personal'} required name="businessName" error={errors.businessName} state={stateOf('businessName', valid.businessName)}>
           <input className={inputCls} value={businessName} onChange={(e) => setBusinessName(e.target.value)} maxLength={100} placeholder={isNegocio ? 'Ej. Pizzería Don Luigi' : isProfessional ? 'Ej. Mónica Ruiz · Abogada' : 'Ej. Juan Pérez · Electricista'} />
         </Field>
@@ -576,7 +576,7 @@ export default function ProviderOnboardingForm({
         </div>
       </Section>
 
-      <CollapsibleSection title={moreDataTitle} subtitle={moreDataSubtitle} open={openMore} onToggle={() => setOpenMore((v) => !v)} reduce={!!reduceMotion}>
+      <CollapsibleSection title={moreDataTitle} subtitle={moreDataSubtitle} open={openMore} onToggle={() => setOpenMore((v) => !v)} reduce={!!reduceMotion} bare={isWizard}>
         {isOficio && (
           <>
             <Field label="DNI" name="dni" error={errors.dni} state={stateOf('dni', !!dni.trim() && valid.dni)}>
@@ -633,7 +633,7 @@ export default function ProviderOnboardingForm({
   );
 
   const categoriesBlock = (
-    <Section title={`Categorías (máx ${MAX_CATEGORIES})`} name="categories" error={errors.categories}>
+    <Section title={`Categorías (máx ${MAX_CATEGORIES})`} name="categories" error={errors.categories} bare={isWizard}>
       <div className={`space-y-4 ${isWizard ? 'max-h-72 overflow-y-auto pr-1' : ''}`}>
         {categories.map((parent) => {
           const children = parent.children?.length ? parent.children : [parent];
@@ -675,7 +675,7 @@ export default function ProviderOnboardingForm({
 
   const locationBlock = (
     <>
-      <Section title="Ubicación">
+      <Section title="Ubicación" bare={isWizard}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Field label="Departamento" required name="department" error={errors.department} state={stateOf('department', valid.department)}>
             <select className={inputCls} value={department} onChange={(e) => { setDepartment(e.target.value); setProvince(''); setDistrict(''); }}>
@@ -731,7 +731,7 @@ export default function ProviderOnboardingForm({
       </Section>
 
       {isNegocio && (
-        <Section title="Horario de atención">
+        <Section title="Horario de atención" bare={isWizard}>
           <div className="space-y-2">
             {SCHEDULE_DAYS.map((d) => {
               const s = schedule[d.key];
@@ -762,6 +762,7 @@ export default function ProviderOnboardingForm({
       open={openExtras}
       onToggle={() => setOpenExtras((v) => !v)}
       reduce={!!reduceMotion}
+      bare={isWizard}
     >
       <div>
         <p className="text-white/40 text-[11px] uppercase tracking-wider font-semibold mb-2">Fotos de tus servicios (máx {MAX_PHOTOS})</p>
@@ -808,7 +809,7 @@ export default function ProviderOnboardingForm({
   );
 
   const referralBlock = REFERRALS_ENABLED ? (
-    <Section title="Código de referido (opcional)">
+    <Section title="Código de referido (opcional)" bare={isWizard}>
       <Field label="¿Alguien te invitó a Servi?">
         <div className="relative">
           <Gift size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" />
@@ -878,7 +879,7 @@ export default function ProviderOnboardingForm({
               {step === 2 && detailsBlock}
               {step === 3 && (
                 <>
-                  <Section title="Resumen">
+                  <Section title="Resumen" bare={isWizard}>
                     <ul className="text-white/70 text-[13px] space-y-1.5">
                       <li><span className="text-white/40">Tipo:</span> {type ? PROFILE_TYPE_META[type].label : '—'}</li>
                       <li><span className="text-white/40">Nombre:</span> {businessName || '—'}</li>
@@ -970,9 +971,14 @@ function TypeCard({ active, onClick, icon, title, desc }: { active: boolean; onC
   );
 }
 
-function Section({ title, name, error, children }: { title: string; name?: string; error?: string; children: React.ReactNode }) {
+function Section({ title, name, error, bare, children }: { title: string; name?: string; error?: string; bare?: boolean; children: React.ReactNode }) {
+  // `bare` (wizard): sin recuadro — solo un separador de línea + título, la
+  // info "al aire libre" en vez de una caja dentro de la caja del formulario.
+  const shell = bare
+    ? 'border-t border-white/[0.07] pt-5 first:border-t-0 first:pt-0'
+    : 'glass rounded-2xl border-white/5 p-5';
   return (
-    <div id={name ? `ferr-${name}` : undefined} className="glass rounded-2xl border-white/5 p-5 scroll-mt-24">
+    <div id={name ? `ferr-${name}` : undefined} className={`${shell} scroll-mt-24`}>
       <h2 className="text-white font-display font-semibold text-[15px] mb-4">{title}</h2>
       <div className="space-y-4">{children}</div>
       {error && <p className="text-rose-400 text-xs mt-3 flex items-center gap-1"><AlertCircle size={12} /> {error}</p>}
@@ -985,15 +991,19 @@ function Section({ title, name, error, children }: { title: string; name?: strin
  * despliega/oculta con transición de altura suave. Respeta reduced-motion.
  */
 function CollapsibleSection({
-  title, subtitle, badge, open, onToggle, reduce, children,
+  title, subtitle, badge, open, onToggle, reduce, bare, children,
 }: {
   title: string; subtitle?: string; badge?: string;
-  open: boolean; onToggle: () => void; reduce: boolean; children: React.ReactNode;
+  open: boolean; onToggle: () => void; reduce: boolean; bare?: boolean; children: React.ReactNode;
 }) {
+  // `bare` (wizard): sin caja — separador de línea + cabecera clicable.
+  const shell = bare ? 'border-t border-white/[0.07] pt-1' : 'glass rounded-2xl border-white/5 overflow-hidden';
+  const headPad = bare ? 'py-4' : 'p-5';
+  const bodyPad = bare ? 'pb-4 pt-1' : 'px-5 pb-5';
   return (
-    <div className="glass rounded-2xl border-white/5 overflow-hidden">
+    <div className={shell}>
       <button type="button" onClick={onToggle} aria-expanded={open}
-        className="w-full flex items-center justify-between gap-3 p-5 text-left group">
+        className={`w-full flex items-center justify-between gap-3 ${headPad} text-left group`}>
         <span className="min-w-0">
           <span className="flex items-center gap-2">
             <span className="text-white font-display font-semibold text-[15px]">{title}</span>
@@ -1012,7 +1022,7 @@ function CollapsibleSection({
             transition={reduce ? { duration: 0 } : { duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-5 space-y-4">{children}</div>
+            <div className={`${bodyPad} space-y-4`}>{children}</div>
           </motion.div>
         )}
       </AnimatePresence>

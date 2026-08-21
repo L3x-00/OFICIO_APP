@@ -293,38 +293,36 @@ export default function HeroSection() {
                 <motion.div
                   key={step.title}
                   variants={stepItemVariants}
-                  className="relative group cursor-default"
+                  className="group cursor-default flex flex-col items-center text-center px-4 transition-transform duration-500 hover:-translate-y-1.5"
                 >
-                  <div className="relative overflow-hidden rounded-2xl bg-white/70 dark:bg-black/40 backdrop-blur-sm hover:bg-white/80 dark:hover:bg-black/50 transition-all duration-500 h-[220px] flex flex-col items-center justify-center p-6 group-hover:-translate-y-2 border border-white/20 dark:border-white/10">
-                    
-                    <span className="absolute top-3 right-4 font-display font-extrabold text-[80px] leading-none text-gray-300/50 dark:text-white/[0.06] select-none pointer-events-none group-hover:text-primary/20 dark:group-hover:text-primary/[0.10] transition-colors duration-500">
-                      {step.num}
-                    </span>
-
-                    <div className="relative z-10 w-16 h-16 rounded-2xl bg-primary/20 dark:bg-primary/10 flex items-center justify-center mb-4 transition-all duration-500 group-hover:scale-110 group-hover:bg-primary/30 dark:group-hover:bg-primary/20 group-hover:shadow-glow-sm">
-                      {isSvg ? (
-                        <Image
-                          src={step.icon as string}
-                          alt=""
-                          width={28}
-                          height={28}
-                          className="opacity-90 group-hover:opacity-100 transition-opacity"
-                        />
-                      ) : (
-                        IconComp && (
-                          <IconComp className="text-primary dark:text-primary-light" size={28} strokeWidth={1.75} />
-                        )
-                      )}
-                    </div>
-
-                    <h3 className="relative z-10 font-display font-bold text-gray-800 dark:text-white text-[17px] text-center transition-all duration-500 group-hover:text-primary dark:group-hover:text-primary-light">
-                      {step.title}
-                    </h3>
-
-                    <p className="relative z-10 mt-3 text-gray-600 dark:text-white/60 text-[13px] leading-relaxed text-center max-w-[240px] opacity-0 max-h-0 overflow-hidden transition-all duration-500 group-hover:opacity-100 group-hover:max-h-[100px]">
-                      {step.desc}
-                    </p>
+                  {/* Insignia del icono — único elemento con forma; el resto flota libre */}
+                  <div className="relative w-16 h-16 rounded-2xl bg-primary/20 dark:bg-primary/10 flex items-center justify-center mb-4 transition-all duration-500 group-hover:scale-110 group-hover:bg-primary/30 dark:group-hover:bg-primary/20 group-hover:shadow-glow-sm">
+                    {isSvg ? (
+                      <Image
+                        src={step.icon as string}
+                        alt=""
+                        width={28}
+                        height={28}
+                        className="opacity-90 group-hover:opacity-100 transition-opacity"
+                      />
+                    ) : (
+                      IconComp && (
+                        <IconComp className="text-primary dark:text-primary-light" size={28} strokeWidth={1.75} />
+                      )
+                    )}
                   </div>
+
+                  <span className="font-display font-extrabold text-[11px] tracking-[0.2em] text-primary dark:text-primary-light/80 mb-1.5 [text-shadow:0_1px_6px_rgba(255,255,255,0.6)] dark:[text-shadow:0_1px_4px_rgba(0,0,0,0.7)]">
+                    PASO {step.num}
+                  </span>
+
+                  <h3 className="font-display font-bold text-gray-900 dark:text-white text-[18px] transition-colors duration-500 group-hover:text-primary dark:group-hover:text-primary-light [text-shadow:0_1px_8px_rgba(255,255,255,0.7)] dark:[text-shadow:0_2px_8px_rgba(0,0,0,0.75)]">
+                    {step.title}
+                  </h3>
+
+                  <p className="mt-2 text-gray-700 dark:text-white/70 text-[13.5px] leading-relaxed max-w-[260px] [text-shadow:0_1px_6px_rgba(255,255,255,0.75)] dark:[text-shadow:0_1px_5px_rgba(0,0,0,0.6)]">
+                    {step.desc}
+                  </p>
                 </motion.div>
               );
             })}
