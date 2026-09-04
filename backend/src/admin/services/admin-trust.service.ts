@@ -298,14 +298,36 @@ export class AdminTrustService {
     const provider = await this.prisma.provider.findUnique({ where: { id } });
     if (!provider) throw new NotFoundException('Proveedor no encontrado');
 
+    const message = `Necesitamos más información para verificar tu perfil: ${reason}`;
+
     await this.prisma.adminNotification.create({
       data: {
         providerId: id,
         type: 'MAS_INFO',
-        message: `Necesitamos más información para verificar tu perfil: ${reason}`,
+        message,
         targetProfileType: provider.type,
         targetUserId: provider.userId,
       },
+    });
+
+    // Entrega real al proveedor. Antes solo se creaba la fila en BD: sin WS
+    // ni push, la solicitud no llegaba a nadie hasta que el dueño abriera el
+    // historial de notificaciones — de ahí la sensación de "no pasa nada".
+    // `MAS_INFO` ya está en `_skipPersist` del gateway, así que emitir NO
+    // duplica la fila que acabamos de crear.
+    // NOTA: a diferencia de rechazar, esto no cambia `verificationStatus`
+    // (sigue PENDIENTE, el proveedor debe poder completar y ser aprobado
+    // después) ni invalida la caché pública (su visibilidad no cambia).
+    this.eventsGateway.emitNotification({
+      type: 'MAS_INFO',
+      title: 'Información requerida',
+      body: message,
+      targetUserId: provider.userId,
+      targetProfileType: provider.type,
+    });
+
+    this.push.sendToUser(provider.userId, 'Información requerida', message, {
+      type: 'MAS_INFO',
     });
 
     return { success: true, message: 'Solicitud de información enviada' };
