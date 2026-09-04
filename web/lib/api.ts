@@ -263,6 +263,15 @@ export interface PublicProvider {
   availability?: "DISPONIBLE" | "OCUPADO" | "CON_DEMORA";
   images?: { url: string; isCover?: boolean; order?: number }[];
   category?: { name: string; slug?: string; iconUrl?: string };
+  /**
+   * Categorías crudas del proveedor, ordenadas con la insignia primero.
+   * `GET /providers/featured-grouped` NO aplana `category` — solo manda esto,
+   * así que quien necesite el nombre de la categoría debe caer aquí.
+   */
+  providerCategories?: {
+    isPrimary?: boolean;
+    category?: { id: number; name: string; slug?: string; iconUrl?: string | null } | null;
+  }[];
   locality?: {
     name?: string;
     department?: string;
@@ -1079,6 +1088,19 @@ export const api = {
   async markChatRoomRead(roomId: number): Promise<{ updated: number }> {
     return apiFetch<{ updated: number }>(`/chat/rooms/${roomId}/read`, {
       method: "PATCH",
+    });
+  },
+
+  /**
+   * Crea (o recupera) la sala entre el cliente autenticado y un proveedor.
+   * Idempotente en el backend: si ya existe, devuelve la misma sala. Lo usa
+   * el botón "Chatear" de la ficha pública, que abre el hilo sin salir de
+   * la página (un cliente sin perfil de proveedor no puede entrar a /panel).
+   */
+  async createChatRoom(clientId: number, providerId: number): Promise<ChatRoomSummary> {
+    return apiFetch<ChatRoomSummary>("/chat/rooms", {
+      method: "POST",
+      body: JSON.stringify({ clientId, providerId }),
     });
   },
 };

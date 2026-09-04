@@ -218,6 +218,11 @@ export class PublicProfileController implements OnModuleInit {
 
     // Reshape para SSR-friendly. Omite IDs internos del frontend público.
     return {
+      // Id numérico: lo necesitan las acciones autenticadas de la ficha web
+      // (favorito `POST /favorites/:id`, sala de chat `POST /chat/rooms`).
+      // No es dato sensible — `GET /providers` ya lo publica en cada tarjeta
+      // del listado y las URLs `/p/:id` lo aceptan como identificador.
+      id: provider.id,
       slug: provider.slug,
       businessName: provider.businessName,
       description: provider.description,

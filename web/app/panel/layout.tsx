@@ -12,6 +12,7 @@ import {
 } from '@/lib/auth';
 import Sidebar from '@/components/sidebar';
 import { AccountMenu } from '@/components/account-menu';
+import ThemeToggle from '@/components/theme/theme-toggle';
 import { getSocket } from '@/lib/socket';
 import { toast } from 'sonner';
 import {
@@ -190,8 +191,11 @@ function PanelGate({ children }: { children: React.ReactNode }) {
 
       {/* Contenido principal con transición de páginas */}
       <main className="flex-1 relative z-10 p-4 pt-16 sm:p-6 md:pt-6 lg:p-8 overflow-x-hidden pb-24 md:pb-8">
-        {/* Menú de cuenta desktop-only (mobile lo tiene en MobileTopBar) */}
-        <div className="hidden md:flex justify-end mb-4">
+        {/* Menú de cuenta desktop-only (mobile lo tiene en MobileTopBar).
+            El navbar global no se monta en /panel, así que el cambio de tema
+            vive aquí. */}
+        <div className="hidden md:flex justify-end items-center gap-2 mb-4">
+          <ThemeToggle />
           <AccountMenu />
         </div>
         <AnimatePresence mode="wait">
@@ -227,8 +231,11 @@ function MobileTopBar() {
       <div className="flex items-center justify-between gap-3 px-4 h-14">
         {/* Lado izquierdo: switcher de perfil (o label estático). */}
         <MobilePanelSwitcher />
-        {/* Lado derecho: menú de cuenta (foto, ajustes, cerrar sesión). */}
-        <AccountMenu compact />
+        {/* Lado derecho: tema + menú de cuenta (foto, ajustes, cerrar sesión). */}
+        <div className="flex items-center gap-1.5">
+          <ThemeToggle />
+          <AccountMenu compact />
+        </div>
       </div>
     </motion.div>
   );

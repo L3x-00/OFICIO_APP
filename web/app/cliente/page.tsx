@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { getSocket } from '@/lib/socket';
 import { AccountMenu } from '@/components/account-menu';
+import ThemeToggle from '@/components/theme/theme-toggle';
 import ReferralPanel from '@/components/referral-panel';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -196,7 +197,12 @@ function ClienteContent() {
               Mi Panel
             </h1>
           </div>
-          <AccountMenu hasProvider={hasProvider} />
+          {/* El navbar global no se monta en /cliente → el cambio de tema
+              vive junto al menú de cuenta. */}
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <AccountMenu hasProvider={hasProvider} />
+          </div>
         </motion.div>
 
         {/* Perfil */}
