@@ -13,12 +13,26 @@ import {
   Phone,
   GraduationCap,
   Crown,
+  Truck,
+  CalendarCheck,
+  ThumbsUp,
 } from 'lucide-react';
 import { SOCIAL_DEFS, SCHEDULE_DAYS, buildSocialUrl } from '@/lib/social-utils';
 import { PROFILE_TYPE_META, type ProfileType } from '@/lib/types';
+import type { PublicProvider } from '@/lib/api';
+import ThemeToggle from '@/components/theme/theme-toggle';
+import ProfileActions from '@/components/profile/profile-actions';
+import RelatedProviders from '@/components/profile/related-providers';
+
+type RelatedProvider = PublicProvider;
+
+/** Cuántos similares se cargan en total (se reparten entre ambas columnas). */
+const RELATED_TOTAL = 10;
 
 // ── Tipos locales (contrato real de /profiles/{slug}) ─────
 interface PublicProfile {
+  /** Id del provider — lo usan las acciones autenticadas (favorito, chat). */
+  id: number;
   slug: string;
   businessName: string;
   description: string | null;
@@ -35,6 +49,7 @@ interface PublicProfile {
   isTrusted: boolean;
   hasHomeService: boolean;
   hasDelivery?: boolean;
+  plenaCoordinacion?: boolean;
   coverUrl: string | null;
   images?: Array<{ url: string; isCover?: boolean; order?: number }>;
   categories: Array<{ name: string; slug: string }>;
@@ -87,6 +102,44 @@ async function fetchProfile(slug: string): Promise<PublicProfile | null> {
   }
 }
 
+/**
+ * Proveedores de las mismas categorías, para las columnas laterales.
+ *
+ * Fetch en el servidor (no en cliente): la ficha ya es `force-dynamic`, así
+ * evitamos un flash de carga y el listado queda indexable. Se piden las
+ * categorías del propio perfil y, si aún hay hueco, se completa con los
+ * mejor puntuados para que la página nunca quede coja.
+ */
+async function fetchRelated(profile: PublicProfile): Promise<RelatedProvider[]> {
+  const out: RelatedProvider[] = [];
+  const seen = new Set<number>([profile.id]);
+
+  const pull = async (qs: string) => {
+    try {
+      const res = await fetch(`${API_URL}/providers?${qs}`, { cache: 'no-store' });
+      if (!res.ok) return;
+      const json = (await res.json()) as { data?: RelatedProvider[] } | RelatedProvider[];
+      const list = Array.isArray(json) ? json : (json.data ?? []);
+      for (const p of list) {
+        if (!p?.id || seen.has(p.id) || p.slug === profile.slug) continue;
+        seen.add(p.id);
+        out.push(p);
+      }
+    } catch {
+      /* la ficha se muestra igual sin columnas laterales */
+    }
+  };
+
+  for (const c of profile.categories.slice(0, 2)) {
+    if (out.length >= RELATED_TOTAL) break;
+    await pull(`categorySlug=${encodeURIComponent(c.slug)}&limit=8&page=1&sortBy=rating`);
+  }
+  if (out.length < RELATED_TOTAL) {
+    await pull(`limit=12&page=1&sortBy=rating`);
+  }
+  return out.slice(0, RELATED_TOTAL);
+}
+
 // ── Metadata ───────────────────────────────────────────────
 export async function generateMetadata({
   params,
@@ -135,6 +188,10 @@ export default async function PublicProfilePage({
   const { slug } = await params;
   const profile = await fetchProfile(slug);
   if (!profile) notFound();
+
+  const related = await fetchRelated(profile);
+  const relatedLeft = related.slice(0, Math.ceil(related.length / 2));
+  const relatedRight = related.slice(Math.ceil(related.length / 2));
 
   const typeLabel = PROFILE_TYPE_META[profile.type].label;
   const typeBadgeClass: Record<ProfileType, string> = {
@@ -187,15 +244,20 @@ export default async function PublicProfilePage({
     return s.unit ? `${n} ${s.unit}` : n;
   };
 
-  // WhatsApp principal
-  const whatsappNumber = profile.contact.whatsapp?.replace(/\D/g, '') || null;
-  const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}` : null;
+  // ¿El backend publicó algún dato de contacto? Con plan GRATIS los deja
+  // todos en null (regla de negocio del propio endpoint público).
+  const hasPublicContact = Object.values(profile.contact).some(
+    (v) => typeof v === 'string' && v.trim(),
+  );
+
+  // WhatsApp Business: no está en SOCIAL_DEFS, se muestra aparte.
+  const whatsappBiz = profile.contact.whatsappBiz?.trim() || null;
 
   return (
     <div className="min-h-screen bg-white dark:bg-dark-premium text-gray-900 dark:text-white transition-colors duration-300">
       {/* ── Header Servi ── */}
       <header className="sticky top-0 z-40 glass border-b border-white/10 backdrop-blur-xl">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
             <div className="relative w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 group-hover:shadow-glow-sm transition-shadow">
               <Image
@@ -213,6 +275,9 @@ export default async function PublicProfilePage({
           </Link>
 
           <div className="flex items-center gap-2">
+            {/* El navbar global no se monta en las vanity URLs (`/:slug`), así
+                que el cambio de tema tiene que vivir en este header propio. */}
+            <ThemeToggle />
             <Link
               href="/"
               className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"
@@ -231,13 +296,22 @@ export default async function PublicProfilePage({
         </div>
       </header>
 
-      {/* ── CONTENEDOR ÚNICO PRINCIPAL ── */}
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-        <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-dark-card shadow-xl dark:shadow-glow-lg transition-colors duration-300">
-          
+      {/* ── LAYOUT: ficha central + columnas de servicios similares ── */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_248px] xl:grid-cols-[232px_minmax(0,1fr)_248px]">
+        {/* Columna izquierda (solo XL): se retira antes que la derecha al
+            angostar, para que la ficha nunca quede espachurrada. */}
+        <div className="hidden xl:block">
+          <div className="sticky top-20">
+            <RelatedProviders providers={relatedLeft} />
+          </div>
+        </div>
+
+        <div className="min-w-0 rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-dark-card shadow-xl dark:shadow-glow-lg transition-colors duration-300">
+
           {/* ═══ PORTADA ═══ */}
           {profile.coverUrl ? (
-            <div className="relative h-48 sm:h-56 overflow-hidden">
+            <div className="relative h-40 sm:h-44 overflow-hidden">
               <Image
                 src={profile.coverUrl}
                 alt={profile.businessName}
@@ -248,7 +322,7 @@ export default async function PublicProfilePage({
               <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-dark-card via-white/20 dark:via-dark-card/20 to-transparent" />
             </div>
           ) : (
-            <div className="h-36 sm:h-44 bg-gradient-to-br from-primary to-accent flex items-center justify-center relative overflow-hidden">
+            <div className="h-28 sm:h-36 bg-gradient-to-br from-primary to-accent flex items-center justify-center relative overflow-hidden">
               <div className="absolute inset-0 bg-[url('/images/logo/servi.png')] bg-center bg-no-repeat opacity-10 bg-[length:120px]" />
               <span className="text-5xl sm:text-6xl font-display font-bold text-white/20 select-none">
                 {profile.businessName.slice(0, 2).toUpperCase()}
@@ -257,7 +331,7 @@ export default async function PublicProfilePage({
           )}
 
           {/* ═══ CONTENIDO PRINCIPAL ═══ */}
-          <div className="px-5 sm:px-7 py-5 sm:py-6 space-y-6">
+          <div className="px-5 sm:px-6 py-5 space-y-5">
             
             {/* ── Badges ── */}
             <div className="flex flex-wrap items-center gap-2">
@@ -294,7 +368,7 @@ export default async function PublicProfilePage({
 
             {/* ── Nombre + Rating + Ubicación ── */}
             <div>
-              <h1 className="text-2xl sm:text-3xl font-display font-bold text-gray-900 dark:text-white mb-2">
+              <h1 className="text-xl sm:text-2xl font-display font-bold text-gray-900 dark:text-white mb-2">
                 {profile.businessName}
               </h1>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
@@ -341,35 +415,53 @@ export default async function PublicProfilePage({
               </div>
             )}
 
-            {/* ── CTAs Principales ── */}
-            <div className="flex flex-wrap gap-2.5 pt-1">
-              {whatsappUrl && (
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-primary press-effect inline-flex items-center gap-2 text-sm font-semibold"
-                >
-                  <Image
-                    src="/images/social/whatsapp.svg"
-                    alt="WhatsApp"
-                    width={18}
-                    height={18}
-                    className="shrink-0 brightness-0 invert dark:invert-0"
-                  />
-                  WhatsApp
-                </a>
-              )}
-              {profile.contact.phone && (
-                <a
-                  href={`tel:${profile.contact.phone}`}
-                  className="btn btn-glass press-effect inline-flex items-center gap-2 text-sm font-semibold"
-                >
-                  <Phone size={15} />
-                  Llamar
-                </a>
-              )}
-            </div>
+            {/* ── Atributos del servicio (los declara el proveedor) ── */}
+            {(profile.hasHomeService ||
+              profile.hasDelivery ||
+              profile.plenaCoordinacion ||
+              profile.totalRecommendations > 0) && (
+              <div className="flex flex-wrap gap-2">
+                {profile.hasHomeService && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-white/70 border border-gray-200 dark:border-white/10">
+                    <Home size={13} className="text-primary" /> Atiende a domicilio
+                  </span>
+                )}
+                {profile.hasDelivery && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-white/70 border border-gray-200 dark:border-white/10">
+                    <Truck size={13} className="text-primary" /> Delivery
+                  </span>
+                )}
+                {profile.plenaCoordinacion && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-white/70 border border-gray-200 dark:border-white/10">
+                    <CalendarCheck size={13} className="text-primary" /> Coordina previa cita
+                  </span>
+                )}
+                {profile.totalRecommendations > 0 && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-primary/10 text-primary dark:text-primary-light border border-primary/20">
+                    <ThumbsUp size={13} /> {profile.totalRecommendations} recomendaciones
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* ── Acciones: llamar (despliega el número), WhatsApp, chat y favorito ── */}
+            <ProfileActions
+              providerId={profile.id}
+              slug={profile.slug}
+              businessName={profile.businessName}
+              phone={profile.contact.phone ?? null}
+              whatsapp={profile.contact.whatsapp ?? null}
+            />
+
+            {/* Plan GRATIS: el backend no publica teléfono, WhatsApp ni redes
+                (regla anti-burla del plan). Se explica en vez de dejar el
+                bloque vacío — el chat interno sigue siendo vía de contacto. */}
+            {!hasPublicContact && (
+              <p className="text-xs text-gray-500 dark:text-white/45 bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 rounded-xl px-3.5 py-2.5">
+                Este proveedor aún no publica sus datos de contacto directo.
+                Escríbele por el chat de Servi y te responderá por aquí.
+              </p>
+            )}
 
             {/* ── Separador ── */}
             <hr className="border-gray-200 dark:border-white/5" />
@@ -494,32 +586,82 @@ export default async function PublicProfilePage({
             )}
 
             {/* ═══ SECCIÓN: REDES SOCIALES ═══ */}
-            {socials.length > 0 && (
+            {(socials.length > 0 || whatsappBiz || profile.contact.phone) && (
               <section>
                 <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <ExternalLink size={14} className="text-primary" />
                   Redes y contacto
                 </h2>
-                <div className="flex flex-wrap gap-2">
+                {/* Cada canal con su etiqueta y el usuario/número visible —
+                    antes solo se veía el icono y no se sabía a qué cuenta iba. */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {profile.contact.phone && (
+                    <a
+                      href={`tel:${profile.contact.phone}`}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-primary/40 transition-all group"
+                    >
+                      <span className="w-7 h-7 shrink-0 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center">
+                        <Phone size={14} className="text-primary" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[11px] text-gray-500 dark:text-white/45">Teléfono</span>
+                        <span className="block text-[13px] font-medium text-gray-800 dark:text-white/85 truncate">
+                          {profile.contact.phone}
+                        </span>
+                      </span>
+                    </a>
+                  )}
                   {socials.map((s) => (
                     <a
                       key={s.key}
                       href={buildSocialUrl(s.prefix, String(s.value))}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={s.label}
-                      title={s.label}
-                      className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center hover:border-primary/40 dark:hover:border-primary/40 hover:shadow-glow-sm transition-all duration-200 group"
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-primary/40 hover:shadow-glow-sm transition-all group"
                     >
-                      <Image
-                        src={`/images/social/${s.icon}`}
-                        alt={s.label}
-                        width={20}
-                        height={20}
-                        className="opacity-60 group-hover:opacity-100 transition-opacity"
-                      />
+                      <span className="w-7 h-7 shrink-0 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center">
+                        <Image
+                          src={`/images/social/${s.icon}`}
+                          alt=""
+                          width={16}
+                          height={16}
+                          className="opacity-70 group-hover:opacity-100 transition-opacity"
+                        />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[11px] text-gray-500 dark:text-white/45">{s.label}</span>
+                        <span className="block text-[13px] font-medium text-gray-800 dark:text-white/85 truncate">
+                          {String(s.value).replace(/^https?:\/\//, '')}
+                        </span>
+                      </span>
                     </a>
                   ))}
+                  {whatsappBiz && (
+                    <a
+                      href={buildSocialUrl('https://wa.me/', whatsappBiz)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-primary/40 transition-all group"
+                    >
+                      <span className="w-7 h-7 shrink-0 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center">
+                        <Image
+                          src="/images/social/whatsapp.svg"
+                          alt=""
+                          width={16}
+                          height={16}
+                          className="opacity-70 group-hover:opacity-100 transition-opacity"
+                        />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[11px] text-gray-500 dark:text-white/45">
+                          WhatsApp Business
+                        </span>
+                        <span className="block text-[13px] font-medium text-gray-800 dark:text-white/85 truncate">
+                          {whatsappBiz}
+                        </span>
+                      </span>
+                    </a>
+                  )}
                 </div>
               </section>
             )}
@@ -549,6 +691,22 @@ export default async function PublicProfilePage({
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Columna derecha (desde LG) */}
+        <div className="hidden lg:block">
+          <div className="sticky top-20">
+            <RelatedProviders
+              providers={relatedRight}
+              title="También te puede servir"
+            />
+          </div>
+        </div>
+        </div>
+
+        {/* En móvil/tablet los similares van debajo de la ficha */}
+        <div className="lg:hidden mt-8">
+          <RelatedProviders providers={related} />
         </div>
 
         {/* ── Footer mínimo ── */}

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -15,7 +16,29 @@ import type { LoginFormData } from '@/lib/validators';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://oficio-backend.onrender.com';
 const ADMIN_PANEL_URL = 'https://oficioadmin.vercel.app/login';
 
+/**
+ * Destino post-login pedido por quien nos mandó aquí (`/login?next=/mi-slug`).
+ * Solo se acepta una ruta RELATIVA propia: sin esto, un `next` con host
+ * externo (`//evil.com`) convertiría el login en un open redirect.
+ */
+function safeNext(raw: string | null): string | null {
+  if (!raw) return null;
+  if (!raw.startsWith('/') || raw.startsWith('//')) return null;
+  if (raw.startsWith('/login')) return null;
+  return raw;
+}
+
+/* useSearchParams exige un boundary de Suspense al prerender (Next 16). */
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
+  );
+}
+
+function LoginPageInner() {
+  const nextPath = safeNext(useSearchParams().get('next'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -63,6 +86,12 @@ export default function LoginPage() {
     }
     if (sessionUser.role === 'ADMIN') {
       window.location.href = `${ADMIN_PANEL_URL}?email=${encodeURIComponent(sessionEmail)}`;
+      return;
+    }
+    // Volver a donde el usuario estaba (ficha pública que pidió sesión para
+    // dar corazón o chatear). Solo aplica a no-ADMIN.
+    if (nextPath) {
+      window.location.href = nextPath;
       return;
     }
     let hasProvider = false;
