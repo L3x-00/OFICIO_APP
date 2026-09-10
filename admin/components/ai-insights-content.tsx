@@ -8,6 +8,7 @@ import {
 import {
   Brain, Target, MousePointerClick, Eye, ShieldCheck, Sparkles, Gauge,
   RefreshCw, Loader2, AlertTriangle, TrendingUp, Lightbulb, Ban, Clock,
+  Search, X,
 } from 'lucide-react';
 import { MetricCard } from '@/components/metric-card';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -15,10 +16,10 @@ import { Badge } from '@/components/ui/badge';
 import {
   getInsightsDashboard, getInsightsConversion, getInsightsDataQuality,
   getInsightsPatterns, getInsightsModel, getInsightsRecentPredictions,
-  trainInsightsModel, predictConversion,
+  trainInsightsModel, predictConversion, getProviders,
   type InsightsDashboard, type InsightsConversion, type InsightsDataQuality,
   type InsightsPatterns, type InsightsModelStatus, type RecentPrediction,
-  type PredictionResult,
+  type PredictionResult, type Provider,
 } from '@/lib/api';
 
 // Paleta categórica de planes — VALIDADA (colorblind-safe) contra superficie
@@ -98,8 +99,11 @@ export default function AiInsightsContent() {
   const [error, setError] = useState<string | null>(null);
   const [training, setTraining] = useState(false);
 
-  // Predicción "what-if" por proveedor.
-  const [providerId, setProviderId] = useState('');
+  // Predicción "what-if": búsqueda de proveedor por nombre (o ID) → predicción.
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<Provider[]>([]);
+  const [selected, setSelected] = useState<{ id: number; name: string } | null>(null);
+  const [searching, setSearching] = useState(false);
   const [predicting, setPredicting] = useState(false);
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const [predictError, setPredictError] = useState<string | null>(null);
@@ -141,10 +145,32 @@ export default function AiInsightsContent() {
     }
   };
 
+  // Autocompletado de proveedores por nombre (debounced). Si el texto es un
+  // número puro se trata como ID directo y no se busca.
+  useEffect(() => {
+    if (selected) { setResults([]); setSearching(false); return; }
+    const q = query.trim();
+    if (q.length < 2 || /^\d+$/.test(q)) { setResults([]); setSearching(false); return; }
+    let cancelled = false;
+    setSearching(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await getProviders(1, q);
+        if (!cancelled) setResults(res.data.slice(0, 6));
+      } catch {
+        if (!cancelled) setResults([]);
+      } finally {
+        if (!cancelled) setSearching(false);
+      }
+    }, 300);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [query, selected]);
+
   const runPrediction = async () => {
-    const id = Number.parseInt(providerId, 10);
+    const q = query.trim();
+    const id = selected?.id ?? (/^\d+$/.test(q) ? Number.parseInt(q, 10) : NaN);
     if (!Number.isFinite(id) || id <= 0) {
-      setPredictError('Ingresa un ID de proveedor válido.');
+      setPredictError('Elige un proveedor de la lista o ingresa un ID válido.');
       return;
     }
     setPredicting(true);
@@ -423,30 +449,75 @@ export default function AiInsightsContent() {
           <CardHeader><CardTitle>Probar predicción</CardTitle></CardHeader>
           <CardContent>
             <p style={{ fontSize: 11.5, color: 'var(--text-tertiary)', marginBottom: 10 }}>
-              Predice la probabilidad de conversión de un proveedor por su ID.
+              Busca un proveedor por nombre (o ID) y predice su probabilidad de conversión.
             </p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input
-                value={providerId}
-                onChange={(e) => setProviderId(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') runPrediction(); }}
-                placeholder="ID de proveedor"
-                inputMode="numeric"
-                style={{
-                  flex: 1, padding: '9px 12px', borderRadius: 8, fontSize: 13,
-                  background: 'var(--surface-3)', border: '1px solid var(--border-default)',
-                  color: 'var(--text-primary)',
-                }}
-              />
-              <button onClick={runPrediction} disabled={predicting} style={{
-                display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px',
-                background: HUE, border: 'none', borderRadius: 8, color: '#fff',
-                cursor: 'pointer', fontSize: 12.5, fontWeight: 600,
-              }}>
-                {predicting ? <Loader2 size={14} className="animate-spin" /> : <TrendingUp size={14} />}
-                Predecir
-              </button>
+            <div style={{ position: 'relative' }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <Search size={14} color="var(--text-tertiary)" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }} />
+                  <input
+                    value={query}
+                    onChange={(e) => { setQuery(e.target.value); setSelected(null); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') runPrediction(); }}
+                    placeholder="Nombre del proveedor o ID…"
+                    style={{
+                      width: '100%', padding: '9px 12px 9px 30px', borderRadius: 8, fontSize: 13,
+                      background: 'var(--surface-3)', border: '1px solid var(--border-default)',
+                      color: 'var(--text-primary)',
+                    }}
+                  />
+                </div>
+                <button onClick={runPrediction} disabled={predicting} style={{
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px',
+                  background: HUE, border: 'none', borderRadius: 8, color: '#fff',
+                  cursor: 'pointer', fontSize: 12.5, fontWeight: 600,
+                }}>
+                  {predicting ? <Loader2 size={14} className="animate-spin" /> : <TrendingUp size={14} />}
+                  Predecir
+                </button>
+              </div>
+
+              {/* Dropdown de coincidencias por nombre */}
+              {!selected && (searching || results.length > 0) && (
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 20,
+                  background: 'var(--surface-1)', border: '1px solid var(--border-default)',
+                  borderRadius: 10, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                }}>
+                  {searching && results.length === 0 ? (
+                    <div style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-tertiary)' }}>Buscando…</div>
+                  ) : results.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => { setSelected({ id: p.id, name: p.businessName }); setQuery(p.businessName); setResults([]); }}
+                      style={{
+                        display: 'flex', width: '100%', textAlign: 'left', gap: 10, alignItems: 'center',
+                        padding: '9px 12px', background: 'none', border: 'none',
+                        borderBottom: '1px solid var(--border-default)', cursor: 'pointer',
+                      }}
+                    >
+                      <span style={{ flex: 1, fontSize: 12.5, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {p.businessName}
+                      </span>
+                      <span style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>#{p.id} · {p.type}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+
+            {/* Proveedor elegido */}
+            {selected && (
+              <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Badge tone="info">{selected.name} · #{selected.id}</Badge>
+                <button type="button" onClick={() => { setSelected(null); setQuery(''); }} style={{
+                  background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)',
+                  display: 'flex', alignItems: 'center', gap: 3, fontSize: 11,
+                }}><X size={12} /> cambiar</button>
+              </div>
+            )}
+
             {predictError && (
               <p style={{ fontSize: 12, color: '#EF4444', marginTop: 10 }}>{predictError}</p>
             )}
@@ -457,7 +528,7 @@ export default function AiInsightsContent() {
                 display: 'flex', alignItems: 'center', gap: 16,
               }}>
                 <div style={{
-                  width: 68, height: 68, borderRadius: '50%',
+                  width: 68, height: 68, borderRadius: '50%', flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 20, fontWeight: 800, color: 'var(--text-primary)',
                   background: `conic-gradient(${HUE} ${prediction.probability * 3.6}deg, var(--surface-1) 0deg)`,
@@ -467,7 +538,10 @@ export default function AiInsightsContent() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
                   }}>{prediction.probability}%</div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {selected?.name ?? 'Escenario manual'}
+                  </span>
                   <Badge tone={labelTone(prediction.label)}>Probabilidad {prediction.label}</Badge>
                   <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
                     {prediction.modelVersion ? `modelo ${prediction.modelVersion}` : 'sin modelo entrenado'}
