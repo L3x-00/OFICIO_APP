@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Phone, MessageCircle, Heart, Copy, Check, X, LogIn } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { getUser, isAuthenticated, isSessionExpired } from '@/lib/auth';
+import { trackProviderEvent, getCoordsIfGranted, type ClientCoords } from '@/lib/track';
 import ProfileChatPanel from './profile-chat-panel';
 
 interface Props {
@@ -37,12 +38,29 @@ export default function ProfileActions({
   const [fav, setFav] = useState(false);
   const [favBusy, setFavBusy] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  /* Coords del cliente (solo si ya concedió geolocalización) para etiquetar
+     los eventos con distancia; y guarda de "vista ya registrada" (evita el
+     doble disparo del StrictMode en dev). */
+  const coordsRef = useRef<ClientCoords | null>(null);
+  const viewedRef = useRef(false);
 
   /* Sesión real (no solo "quedó un token viejo"): mismo criterio que el
      navbar — si expiró por inactividad, cuenta como no autenticado. */
   useEffect(() => {
     setAuthed(isAuthenticated() && !isSessionExpired());
   }, []);
+
+  /* Telemetría: registra la VISTA de la ficha (una vez) y precarga las coords
+     del cliente para los clics de contacto. Best-effort, público, sin sesión. */
+  useEffect(() => {
+    if (viewedRef.current) return;
+    if (!Number.isInteger(providerId) || providerId <= 0) return;
+    viewedRef.current = true;
+    void getCoordsIfGranted().then((c) => {
+      coordsRef.current = c;
+      trackProviderEvent(providerId, 'view', c);
+    });
+  }, [providerId]);
 
   /* Estado inicial del corazón: el backend no expone "¿es favorito?" por
      proveedor, así que se resuelve contra la lista del usuario. */
@@ -107,7 +125,11 @@ export default function ProfileActions({
         {phone && (
           <button
             type="button"
-            onClick={() => setShowPhone((v) => !v)}
+            onClick={() => {
+              // Al ABRIR (no al ocultar) se registra la intención de llamada.
+              if (!showPhone) trackProviderEvent(providerId, 'call_click', coordsRef.current);
+              setShowPhone((v) => !v);
+            }}
             aria-expanded={showPhone}
             className={`${btnBase} bg-primary text-white px-4 py-2.5 hover:bg-primary/90 shadow-lg shadow-primary/20`}
           >
@@ -121,6 +143,7 @@ export default function ProfileActions({
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackProviderEvent(providerId, 'whatsapp_click', coordsRef.current)}
             className={`${btnBase} bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25 px-4 py-2.5 hover:bg-emerald-500/20`}
           >
             <Image
