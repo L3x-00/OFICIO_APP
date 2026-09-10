@@ -36,6 +36,12 @@ export interface ConversionMetricsDto {
   };
   byPlan: ConversionBucket[];
   byHour: ConversionBucket[];
+  /**
+   * Conversión por rango de distancia cliente↔proveedor (km). VACÍO hasta que
+   * los eventos empiecen a traer coords del cliente (tracking de la sub-fase 3):
+   * distinguir [] de "todo cero" evita mostrar un gráfico engañoso.
+   */
+  byDistance: ConversionBucket[];
   responseRateByPlan: ResponseRateBucket[];
   /**
    * Aviso honesto para el consumidor: los mensajes de chat se purgan a los
@@ -98,6 +104,9 @@ interface ResponseRow {
   total_rooms: bigint | number;
   rooms_with_reply: bigint | number;
 }
+interface BucketRow extends CountRow {
+  bucket: string;
+}
 interface QualityScanRow {
   total: bigint | number;
   has_desc: bigint | number;
@@ -118,6 +127,7 @@ interface UniquenessRow {
 
 const HOUR = 60 * 60 * 1000;
 const PLANS = ['GRATIS', 'ESTANDAR', 'PREMIUM'] as const;
+const DISTANCE_ORDER = ['0-2', '2-5', '5-10', '10-20', '20+'] as const;
 
 /**
  * Analítica predictiva / de conversión para el panel Admin (sección
@@ -163,20 +173,27 @@ export class AiInsightsService {
         general: { views: 0, contacts: 0, conversionRate: 0, chatRooms: 0 },
         byPlan: [],
         byHour: this.zeroHours(),
+        byDistance: [],
         responseRateByPlan: [],
         caveats: this.conversionCaveats(),
       };
       try {
-        const [generalRows, planRows, hourRows, responseRows, chatRooms] =
-          await Promise.all([
-            this.prisma.$queryRaw<CountRow[]>`
+        const [
+          generalRows,
+          planRows,
+          hourRows,
+          distanceRows,
+          responseRows,
+          chatRooms,
+        ] = await Promise.all([
+          this.prisma.$queryRaw<CountRow[]>`
               SELECT
                 count(*) FILTER (WHERE a."eventType"::text = 'view')                             AS views,
                 count(*) FILTER (WHERE a."eventType"::text IN ('whatsapp_click','call_click'))   AS contacts
               FROM provider_analytics a
               WHERE a."createdAt" >= ${since}
             `,
-            this.prisma.$queryRaw<PlanCountRow[]>`
+          this.prisma.$queryRaw<PlanCountRow[]>`
               SELECT s.plan::text AS plan,
                 count(*) FILTER (WHERE a."eventType"::text = 'view')                           AS views,
                 count(*) FILTER (WHERE a."eventType"::text IN ('whatsapp_click','call_click')) AS contacts
@@ -186,9 +203,9 @@ export class AiInsightsService {
               WHERE a."createdAt" >= ${since}
               GROUP BY s.plan
             `,
-            // Hora del día en Perú: "createdAt" es timestamp SIN tz (wall-clock
-            // UTC), por eso se interpreta como UTC y recién se convierte a Lima.
-            this.prisma.$queryRaw<HourCountRow[]>`
+          // Hora del día en Perú: "createdAt" es timestamp SIN tz (wall-clock
+          // UTC), por eso se interpreta como UTC y recién se convierte a Lima.
+          this.prisma.$queryRaw<HourCountRow[]>`
               SELECT extract(hour FROM (("createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'America/Lima'))::int AS hour,
                 count(*) FILTER (WHERE a."eventType"::text = 'view')                           AS views,
                 count(*) FILTER (WHERE a."eventType"::text IN ('whatsapp_click','call_click')) AS contacts
@@ -196,7 +213,25 @@ export class AiInsightsService {
               WHERE a."createdAt" >= ${since}
               GROUP BY 1
             `,
-            this.prisma.$queryRaw<ResponseRow[]>`
+          // Conversión por rango de distancia (km). Solo eventos con coords
+          // del cliente (distanceKm no nulo) — vacío hasta que se adopte el
+          // tracking. Buckets: 0-2, 2-5, 5-10, 10-20, 20+.
+          this.prisma.$queryRaw<BucketRow[]>`
+              SELECT
+                CASE
+                  WHEN a."distanceKm" < 2  THEN '0-2'
+                  WHEN a."distanceKm" < 5  THEN '2-5'
+                  WHEN a."distanceKm" < 10 THEN '5-10'
+                  WHEN a."distanceKm" < 20 THEN '10-20'
+                  ELSE '20+'
+                END AS bucket,
+                count(*) FILTER (WHERE a."eventType"::text = 'view')                           AS views,
+                count(*) FILTER (WHERE a."eventType"::text IN ('whatsapp_click','call_click')) AS contacts
+              FROM provider_analytics a
+              WHERE a."createdAt" >= ${since} AND a."distanceKm" IS NOT NULL
+              GROUP BY 1
+            `,
+          this.prisma.$queryRaw<ResponseRow[]>`
               SELECT s.plan::text AS plan,
                 count(DISTINCT r.id)                                 AS total_rooms,
                 count(DISTINCT r.id) FILTER (WHERE m.id IS NOT NULL) AS rooms_with_reply
@@ -208,10 +243,10 @@ export class AiInsightsService {
               WHERE r."createdAt" >= ${since}
               GROUP BY s.plan
             `,
-            this.prisma.chatRoom.count({
-              where: { createdAt: { gte: since } },
-            }),
-          ]);
+          this.prisma.chatRoom.count({
+            where: { createdAt: { gte: since } },
+          }),
+        ]);
 
         const g = generalRows[0] ?? { views: 0, contacts: 0 };
         const views = Number(g.views);
@@ -229,6 +264,11 @@ export class AiInsightsService {
             planRows.map((r) => this.toBucket(r.plan, r.views, r.contacts)),
           ),
           byHour: this.fillHours(hourRows),
+          byDistance: this.orderDistance(
+            distanceRows.map((r) =>
+              this.toBucket(r.bucket, r.views, r.contacts),
+            ),
+          ),
           responseRateByPlan: this.orderByPlan(
             responseRows.map((r) => ({
               plan: r.plan,
@@ -401,7 +441,24 @@ export class AiInsightsService {
       patterns.push(`Las horas de mayor conversión son ${horas}.`);
     }
 
-    // Patrón 3: mejor tasa de respuesta por plan.
+    // Patrón 3: distancia → conversión (solo si hay datos de distancia).
+    const near = metrics.byDistance[0];
+    const far = metrics.byDistance[metrics.byDistance.length - 1];
+    if (
+      near &&
+      far &&
+      near.key !== far.key &&
+      near.views >= 5 &&
+      far.views >= 5 &&
+      near.conversionRate - far.conversionRate >= 1
+    ) {
+      patterns.push(
+        `A menor distancia, mayor conversión: ${near.conversionRate}% a ` +
+          `${near.key} km frente a ${far.conversionRate}% a ${far.key} km.`,
+      );
+    }
+
+    // Patrón 4: mejor tasa de respuesta por plan.
     const bestResp = [...metrics.responseRateByPlan]
       .filter((r) => r.totalRooms >= 3)
       .sort((a, b) => b.responseRate - a.responseRate)[0];
@@ -495,6 +552,15 @@ export class AiInsightsService {
       const r = map.get(h);
       return this.toBucket(String(h), r?.views ?? 0, r?.contacts ?? 0);
     });
+  }
+
+  /** Ordena buckets de distancia por su orden natural (cercano→lejano). */
+  private orderDistance(items: ConversionBucket[]): ConversionBucket[] {
+    const rank = (k: string) => {
+      const idx = (DISTANCE_ORDER as readonly string[]).indexOf(k);
+      return idx === -1 ? DISTANCE_ORDER.length : idx;
+    };
+    return [...items].sort((a, b) => rank(a.key) - rank(b.key));
   }
 
   private zeroHours(): ConversionBucket[] {

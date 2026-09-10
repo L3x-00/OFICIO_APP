@@ -144,7 +144,16 @@ export class ProvidersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() body: TrackEventDto,
   ) {
-    return this.providersService.trackEvent(id, body.eventType);
+    // Endpoint PÚBLICO (sin JWT): NO se confía en `userId` del body (anti-IDOR,
+    // trust boundary verificado en public-controller-security.spec). Las coords
+    // sí son telemetría propia del cliente (no una afirmación de identidad).
+    const coords =
+      body.clientLat != null && body.clientLng != null
+        ? { lat: body.clientLat, lng: body.clientLng }
+        : undefined;
+    return coords
+      ? this.providersService.trackEvent(id, body.eventType, undefined, coords)
+      : this.providersService.trackEvent(id, body.eventType);
   }
 
   // Máximo 5 recomendaciones por minuto por IP (anti-spam)

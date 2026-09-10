@@ -20,6 +20,7 @@ interface FakeData {
   general?: any[];
   plan?: any[];
   hour?: any[];
+  distance?: any[];
   response?: any[];
   scan?: any[];
   uniq?: any[];
@@ -36,6 +37,7 @@ function fakePrisma(data: FakeData = {}) {
     if (t.includes('has_desc')) return Promise.resolve(data.scan ?? []);
     if (t.includes('chat_rooms r')) return Promise.resolve(data.response ?? []);
     if (t.includes('extract(hour')) return Promise.resolve(data.hour ?? []);
+    if (t.includes('distanceKm')) return Promise.resolve(data.distance ?? []);
     if (t.includes('GROUP BY s.plan')) return Promise.resolve(data.plan ?? []);
     if (t.includes('provider_analytics'))
       return Promise.resolve(data.general ?? [{ views: 0, contacts: 0 }]);
@@ -132,6 +134,39 @@ describe('AiInsightsService', () => {
       expect(m.byHour.every((h) => h.views === 0 && h.contacts === 0)).toBe(
         true,
       );
+    });
+
+    it('agrega conversión por distancia y la ordena (cerca→lejos)', async () => {
+      const db = fakePrisma({
+        general: [{ views: 10, contacts: 3 }],
+        distance: [
+          { bucket: '20+', views: 20, contacts: 2 },
+          { bucket: '0-2', views: 20, contacts: 10 },
+          { bucket: '5-10', views: 10, contacts: 3 },
+        ],
+      });
+      const service = new AiInsightsService(db, fakeCache(), fakeModel());
+
+      const m = await service.getConversionMetrics(30);
+
+      // Presente-only (no rellena buckets sin datos), y ordenado cerca→lejos.
+      expect(m.byDistance.map((b) => b.key)).toEqual(['0-2', '5-10', '20+']);
+      expect(m.byDistance.find((b) => b.key === '0-2')?.conversionRate).toBe(
+        50,
+      );
+      expect(m.byDistance.find((b) => b.key === '20+')?.conversionRate).toBe(
+        10,
+      );
+    });
+
+    it('byDistance vacío cuando no hay coords', async () => {
+      const service = new AiInsightsService(
+        fakePrisma({ general: [{ views: 5, contacts: 1 }] }),
+        fakeCache(),
+        fakeModel(),
+      );
+      const m = await service.getConversionMetrics(30);
+      expect(m.byDistance).toEqual([]);
     });
 
     it('clampa days fuera de rango (usa la caché por período efectivo)', async () => {
@@ -231,6 +266,21 @@ describe('AiInsightsService', () => {
       expect(
         patterns.some((p) => p.includes('10:00') && p.includes('16:00')),
       ).toBe(true);
+    });
+
+    it('detecta el patrón de distancia cuando hay coords', async () => {
+      const db = fakePrisma({
+        general: [{ views: 40, contacts: 12 }],
+        distance: [
+          { bucket: '0-2', views: 20, contacts: 12 },
+          { bucket: '20+', views: 20, contacts: 2 },
+        ],
+      });
+      const service = new AiInsightsService(db, fakeCache(), fakeModel());
+
+      const { patterns } = await service.getPatterns(30);
+
+      expect(patterns.some((p) => /menor distancia/i.test(p))).toBe(true);
     });
 
     it('devuelve un mensaje de "sin datos" cuando no hay señal', async () => {

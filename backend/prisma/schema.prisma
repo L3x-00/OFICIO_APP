@@ -593,6 +593,12 @@ model ProviderAnalytic {
   providerId Int
   eventType  AnalyticEvent
   userId     Int?
+  /// Ubicación del cliente al momento del evento y distancia al proveedor (km).
+  /// OPCIONALES y aditivos: solo se llenan si el cliente envía coords (adopción
+  /// gradual desde web/móvil). Habilitan la métrica "conversión por distancia".
+  clientLat  Float?
+  clientLng  Float?
+  distanceKm Float?
   createdAt  DateTime      @default(now())
   provider   Provider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
