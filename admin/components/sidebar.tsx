@@ -7,6 +7,7 @@ import {
   Tag, Zap, Bell, FileBarChart, ChevronRight,
   Activity, MessageSquare,
   ShieldCheck, UsersRound, MapPin, Bot, Mail, GraduationCap, Store, MessageCircle,
+  Brain,
 } from 'lucide-react';
 
 // Sidebar reorganizada en torno a flujos: las páginas duales
@@ -20,6 +21,7 @@ const navGroups = [
       { href: '/', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/analytics', label: 'Analytics', icon: BarChart2 },
       { href: '/analytics/ia', label: 'Observabilidad IA', icon: Bot },
+      { href: '/analytics/prediccion', label: 'Análisis Predictivo', icon: Brain },
       { href: '/users-geo', label: 'Mapa de usuarios', icon: MapPin },
       { href: '/reports', label: 'Reportes', icon: FileBarChart },
     ],

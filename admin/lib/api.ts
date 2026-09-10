@@ -189,6 +189,141 @@ export const acknowledgeWhatsappDeliveryFailure = (id: number) =>
     { method: 'POST' },
   );
 
+// ── ANALÍTICA PREDICTIVA / CONVERSIÓN ("Usabilidad de IA") ──
+// Módulo backend ai-insights (admin-only, solo lectura). Conversión = proxy
+// contactos/vistas; el modelo es regresión logística entrenada en TS.
+
+export interface ConversionBucket {
+  key: string;
+  views: number;
+  contacts: number;
+  conversionRate: number;
+}
+
+export interface ResponseRateBucket {
+  plan: string;
+  totalRooms: number;
+  roomsWithReply: number;
+  responseRate: number;
+}
+
+export interface InsightsConversion {
+  periodDays: number;
+  general: {
+    views: number;
+    contacts: number;
+    conversionRate: number;
+    chatRooms: number;
+  };
+  byPlan: ConversionBucket[];
+  byHour: ConversionBucket[];
+  byDistance: ConversionBucket[];
+  responseRateByPlan: ResponseRateBucket[];
+  caveats: string[];
+}
+
+export interface QualityDimension {
+  score: number;
+  detail: Record<string, number>;
+}
+
+export interface InsightsDataQuality {
+  sampleSize: number;
+  completeness: QualityDimension;
+  consistency: QualityDimension;
+  validity: QualityDimension;
+  uniqueness: QualityDimension;
+  accuracy: QualityDimension;
+  overall: number;
+}
+
+export interface InsightsDashboard {
+  periodDays: number;
+  totalProviders: number;
+  activeProviders: number;
+  views: number;
+  contacts: number;
+  conversionRate: number;
+  chatRooms: number;
+  dataQualityScore: number;
+  modelVersion: string | null;
+  modelAccuracy: number | null;
+  predictionsCount: number;
+}
+
+export interface InsightsPatterns {
+  periodDays: number;
+  patterns: string[];
+}
+
+export interface ModelMetrics {
+  accuracy: number;
+  auc: number;
+  folds: number;
+  sampleSize: number;
+  positives: number;
+}
+
+export interface InsightsModelStatus {
+  trained: boolean;
+  version?: string;
+  algorithm?: string;
+  featureNames?: string[];
+  metrics?: ModelMetrics;
+  trainedAt?: string;
+}
+
+export interface RecentPrediction {
+  id: number;
+  providerId: number | null;
+  modelVersion: string;
+  probability: number;
+  label: string;
+  createdAt: string;
+}
+
+export interface PredictionResult {
+  probability: number;
+  label: string;
+  modelVersion: string | null;
+  features: Record<string, number | string> | null;
+}
+
+export const getInsightsDashboard = (days = 30) =>
+  fetchApi<InsightsDashboard>(`/ai-insights/dashboard?days=${days}`);
+
+export const getInsightsConversion = (days = 30) =>
+  fetchApi<InsightsConversion>(`/ai-insights/conversion?days=${days}`);
+
+export const getInsightsDataQuality = () =>
+  fetchApi<InsightsDataQuality>('/ai-insights/data-quality');
+
+export const getInsightsPatterns = (days = 30) =>
+  fetchApi<InsightsPatterns>(`/ai-insights/patterns?days=${days}`);
+
+export const getInsightsModel = () =>
+  fetchApi<InsightsModelStatus>('/ai-insights/model');
+
+export const getInsightsRecentPredictions = (limit = 10) =>
+  fetchApi<RecentPrediction[]>(
+    `/ai-insights/predictions/recent?limit=${limit}`,
+  );
+
+export const trainInsightsModel = () =>
+  fetchApi<{ trained: boolean; version: string | null; reason?: string }>(
+    '/ai-insights/train',
+    { method: 'POST' },
+  );
+
+export const predictConversion = (body: {
+  providerId?: number;
+  features?: Record<string, number | string>;
+}) =>
+  fetchApi<PredictionResult>('/predict/conversion', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+
 // ── BROADCAST DE NOTIFICACIONES PUSH ───────────────────────
 // El admin envía un push masivo a todos los usuarios con FCM token.
 // El backend responde con `enqueued` (cantidad de tokens encolados)
