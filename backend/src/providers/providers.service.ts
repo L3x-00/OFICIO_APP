@@ -13,6 +13,7 @@ import {
   visibleProviderFeatures,
 } from '../common/provider-features.service.js';
 import { normalizeProviderType } from '../common/provider-type.js';
+import { haversineKm } from '../common/geo.util.js';
 import { visibleInLocalities } from '../coverage/coverage.service.js';
 
 const PRIVATE_PUBLIC_PROVIDER_FIELDS = [
@@ -855,10 +856,42 @@ export class ProvidersService {
   // `eventType` se valida via DTO con @IsEnum contra los valores
   // permitidos de AnalyticEvent — el cast a `any` aquí solo
   // satisface al type checker porque Prisma ahora exige el enum.
-  async trackEvent(providerId: number, eventType: string, userId?: number) {
-    const created = await this.prisma.providerAnalytic.create({
-      data: { providerId, eventType: eventType as any, userId },
-    });
+  async trackEvent(
+    providerId: number,
+    eventType: string,
+    userId?: number,
+    coords?: { lat: number; lng: number },
+  ) {
+    // ADITIVO: solo si el cliente envía coords se anota su ubicación y la
+    // distancia al proveedor (habilita "conversión por distancia"). Sin coords
+    // el payload es idéntico al histórico. La distancia se calcula con
+    // haversine sobre la lat/lng registrada del proveedor.
+    const data: {
+      providerId: number;
+      eventType: any;
+      userId?: number;
+      clientLat?: number;
+      clientLng?: number;
+      distanceKm?: number;
+    } = { providerId, eventType: eventType as any, userId };
+    if (coords && Number.isFinite(coords.lat) && Number.isFinite(coords.lng)) {
+      data.clientLat = coords.lat;
+      data.clientLng = coords.lng;
+      const prov = await this.prisma.provider.findUnique({
+        where: { id: providerId },
+        select: { latitude: true, longitude: true },
+      });
+      if (prov?.latitude != null && prov?.longitude != null) {
+        data.distanceKm = haversineKm(
+          coords.lat,
+          coords.lng,
+          prov.latitude,
+          prov.longitude,
+        );
+      }
+    }
+
+    const created = await this.prisma.providerAnalytic.create({ data });
 
     // FASE 4 #3: avisa al dueño del provider en tiempo real para que sus
     // contadores (WhatsApp/Llamadas/Vistas) suban sin recargar. Best-effort:
