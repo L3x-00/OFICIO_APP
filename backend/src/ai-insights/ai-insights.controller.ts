@@ -1,14 +1,20 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 import { Roles } from '../auth/roles.decorator.js';
 import { AiInsightsService } from './ai-insights.service.js';
+import { ConversionModelService } from './conversion-model.service.js';
 import type {
   ConversionMetricsDto,
   DataQualityDto,
   InsightsDashboardDto,
   InsightsPatternsDto,
 } from './ai-insights.service.js';
+import type {
+  ModelStatusDto,
+  RecentPredictionDto,
+  TrainResultDto,
+} from './conversion-model.service.js';
 
 /**
  * Analítica predictiva / de conversión para el panel Admin ("Usabilidad de
@@ -19,7 +25,10 @@ import type {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('ADMIN')
 export class AiInsightsController {
-  constructor(private readonly insights: AiInsightsService) {}
+  constructor(
+    private readonly insights: AiInsightsService,
+    private readonly model: ConversionModelService,
+  ) {}
 
   /** KPIs de cabecera del dashboard. */
   @Get('dashboard')
@@ -43,6 +52,27 @@ export class AiInsightsController {
   @Get('patterns')
   patterns(@Query('days') days?: string): Promise<InsightsPatternsDto> {
     return this.insights.getPatterns(this.parseDays(days));
+  }
+
+  /** Estado del modelo de conversión entrenado (versión + métricas). */
+  @Get('model')
+  model_(): Promise<ModelStatusDto> {
+    return this.model.getModelStatus();
+  }
+
+  /** Últimas predicciones servidas (para el panel "en tiempo real"). */
+  @Get('predictions/recent')
+  recentPredictions(
+    @Query('limit') limit?: string,
+  ): Promise<RecentPredictionDto[]> {
+    const n = limit ? Number.parseInt(limit, 10) : 10;
+    return this.model.recentPredictions(Number.isFinite(n) ? n : 10);
+  }
+
+  /** Reentrena el modelo bajo demanda (además del cron nocturno). */
+  @Post('train')
+  train(): Promise<TrainResultDto> {
+    return this.model.train();
   }
 
   private parseDays(raw?: string): number {

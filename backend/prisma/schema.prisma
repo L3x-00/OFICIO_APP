@@ -1076,6 +1076,46 @@ model AiLearningCandidate {
   @@map("ai_learning_candidates")
 }
 
+/// Snapshot de un modelo de conversión entrenado (regresión logística en TS).
+/// El servicio lee el más reciente por `trainedAt`. Aditivo y desacoplado
+/// (no FK): módulo de analítica predictiva del panel Admin.
+model AiConversionModel {
+  id           Int      @id @default(autoincrement())
+  version      String
+  algorithm    String   @default("logistic_regression")
+  /// string[] — orden de las features (índice ↔ peso).
+  featureNames Json
+  /// number[] — pesos del modelo en el espacio estandarizado.
+  weights      Json
+  bias         Float    @default(0)
+  /// number[] — media por feature (estandarización).
+  featureMeans Json
+  /// number[] — desviación estándar por feature.
+  featureStds  Json
+  /// { accuracy, auc, folds, sampleSize, positives } de la validación cruzada.
+  metrics      Json
+  trainedAt    DateTime @default(now())
+
+  @@index([trainedAt])
+  @@map("ai_conversion_models")
+}
+
+/// Log ACOTADO (últimas 1000) de predicciones de conversión servidas, para el
+/// panel "predicciones en tiempo real". `providerId` sin FK (desacoplado).
+model AiConversionPrediction {
+  id           Int      @id @default(autoincrement())
+  providerId   Int?
+  modelVersion String
+  probability  Float
+  label        String
+  /// Features usadas en la predicción (JSON nombrado).
+  features     Json
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("ai_conversion_predictions")
+}
+
 enum UserRole {
   USUARIO
   PROVEEDOR

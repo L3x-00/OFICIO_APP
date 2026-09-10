@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { ConversionModelService } from './conversion-model.service.js';
 
 // ── DTOs de respuesta (lo que consumirá el panel admin) ─────────────
 // Se exportan desde el servicio (misma convención que ai-analytics.service).
@@ -75,6 +76,10 @@ export interface InsightsDashboardDto {
   conversionRate: number;
   chatRooms: number;
   dataQualityScore: number;
+  /** KPIs del modelo predictivo (null/0 si aún no está entrenado). */
+  modelVersion: string | null;
+  modelAccuracy: number | null;
+  predictionsCount: number;
 }
 
 // ── Filas crudas de SQL ─────────────────────────────────────────────
@@ -145,6 +150,7 @@ export class AiInsightsService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
+    private readonly model: ConversionModelService,
   ) {}
 
   // ── Métricas de conversión ────────────────────────────────────────
@@ -418,13 +424,21 @@ export class AiInsightsService {
   // ── Dashboard (KPIs de cabecera) ──────────────────────────────────
   async getDashboard(days = 30): Promise<InsightsDashboardDto> {
     const period = this.clampDays(days);
-    const [metrics, quality, totalProviders, activeProviders] =
-      await Promise.all([
-        this.getConversionMetrics(period),
-        this.getDataQuality(),
-        this.prisma.provider.count(),
-        this.prisma.provider.count({ where: { isVisible: true } }),
-      ]);
+    const [
+      metrics,
+      quality,
+      totalProviders,
+      activeProviders,
+      modelStatus,
+      predictionsCount,
+    ] = await Promise.all([
+      this.getConversionMetrics(period),
+      this.getDataQuality(),
+      this.prisma.provider.count(),
+      this.prisma.provider.count({ where: { isVisible: true } }),
+      this.model.getModelStatus(),
+      this.model.countPredictions(),
+    ]);
 
     return {
       periodDays: period,
@@ -435,6 +449,9 @@ export class AiInsightsService {
       conversionRate: metrics.general.conversionRate,
       chatRooms: metrics.general.chatRooms,
       dataQualityScore: quality.overall,
+      modelVersion: modelStatus.version ?? null,
+      modelAccuracy: modelStatus.metrics?.accuracy ?? null,
+      predictionsCount,
     };
   }
 

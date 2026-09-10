@@ -60,6 +60,15 @@ function fakeCache() {
   } as any;
 }
 
+function fakeModel(opts: { status?: any; count?: number } = {}) {
+  return {
+    getModelStatus: jest
+      .fn()
+      .mockResolvedValue(opts.status ?? { trained: false }),
+    countPredictions: jest.fn().mockResolvedValue(opts.count ?? 0),
+  } as any;
+}
+
 describe('AiInsightsService', () => {
   describe('getConversionMetrics', () => {
     it('agrega general/plan/hora/respuesta con tasas correctas', async () => {
@@ -76,7 +85,7 @@ describe('AiInsightsService', () => {
         response: [{ plan: 'PREMIUM', total_rooms: 10, rooms_with_reply: 8 }],
         chatRooms: 12,
       });
-      const service = new AiInsightsService(db, fakeCache());
+      const service = new AiInsightsService(db, fakeCache(), fakeModel());
 
       const m = await service.getConversionMetrics(30);
 
@@ -108,7 +117,7 @@ describe('AiInsightsService', () => {
         $queryRaw: jest.fn().mockRejectedValue(new Error('db down')),
         chatRoom: { count: jest.fn().mockResolvedValue(0) },
       } as any;
-      const service = new AiInsightsService(db, fakeCache());
+      const service = new AiInsightsService(db, fakeCache(), fakeModel());
 
       const m = await service.getConversionMetrics(30);
 
@@ -128,7 +137,7 @@ describe('AiInsightsService', () => {
     it('clampa days fuera de rango (usa la caché por período efectivo)', async () => {
       const cache = fakeCache();
       const db = fakePrisma({ general: [{ views: 10, contacts: 1 }] });
-      const service = new AiInsightsService(db, cache);
+      const service = new AiInsightsService(db, cache, fakeModel());
 
       await service.getConversionMetrics(9999);
 
@@ -157,7 +166,7 @@ describe('AiInsightsService', () => {
         ],
         uniq: [{ total: 10, dup_providers: 2 }],
       });
-      const service = new AiInsightsService(db, fakeCache());
+      const service = new AiInsightsService(db, fakeCache(), fakeModel());
 
       const q = await service.getDataQuality();
 
@@ -189,7 +198,7 @@ describe('AiInsightsService', () => {
         ],
         uniq: [{ total: 0, dup_providers: 0 }],
       });
-      const service = new AiInsightsService(db, fakeCache());
+      const service = new AiInsightsService(db, fakeCache(), fakeModel());
 
       const q = await service.getDataQuality();
 
@@ -212,7 +221,7 @@ describe('AiInsightsService', () => {
         ],
         response: [{ plan: 'PREMIUM', total_rooms: 10, rooms_with_reply: 8 }],
       });
-      const service = new AiInsightsService(db, fakeCache());
+      const service = new AiInsightsService(db, fakeCache(), fakeModel());
 
       const { patterns } = await service.getPatterns(30);
 
@@ -225,7 +234,11 @@ describe('AiInsightsService', () => {
     });
 
     it('devuelve un mensaje de "sin datos" cuando no hay señal', async () => {
-      const service = new AiInsightsService(fakePrisma(), fakeCache());
+      const service = new AiInsightsService(
+        fakePrisma(),
+        fakeCache(),
+        fakeModel(),
+      );
       const { patterns } = await service.getPatterns(30);
       expect(patterns).toHaveLength(1);
       expect(patterns[0]).toMatch(/no hay suficientes datos/i);
@@ -259,7 +272,21 @@ describe('AiInsightsService', () => {
         totalProviders: 20,
         activeProviders: 15,
       });
-      const service = new AiInsightsService(db, fakeCache());
+      const model = fakeModel({
+        status: {
+          trained: true,
+          version: 'lr-test',
+          metrics: {
+            accuracy: 0.8,
+            auc: 0.7,
+            folds: 5,
+            sampleSize: 20,
+            positives: 10,
+          },
+        },
+        count: 5,
+      });
+      const service = new AiInsightsService(db, fakeCache(), model);
 
       const d = await service.getDashboard(30);
 
@@ -272,6 +299,9 @@ describe('AiInsightsService', () => {
         conversionRate: 25,
         chatRooms: 12,
         dataQualityScore: 76,
+        modelVersion: 'lr-test',
+        modelAccuracy: 0.8,
+        predictionsCount: 5,
       });
     });
   });
