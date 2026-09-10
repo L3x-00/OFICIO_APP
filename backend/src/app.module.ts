@@ -38,6 +38,7 @@ import { QuotationsModule } from './quotations/quotations.module.js';
 import { ProfessionalMigrationsModule } from './professional-migrations/professional-migrations.module.js';
 import { LeadConversionModule } from './lead-conversion/lead-conversion.module.js';
 import { WhatsappAssistantModule } from './whatsapp-assistant/whatsapp-assistant.module.js';
+import { AiInsightsModule } from './ai-insights/ai-insights.module.js';
 @Module({
   imports: [
     // 1. Configuración Global
@@ -154,6 +155,9 @@ import { WhatsappAssistantModule } from './whatsapp-assistant/whatsapp-assistant
     // Integración WhatsApp ↔ OpenWA (F1). OFF por defecto
     // (WHATSAPP_ASSISTANT_ENABLED=false): el webhook queda inerte (204).
     WhatsappAssistantModule,
+    // Analítica predictiva / de conversión del panel Admin ("Usabilidad de
+    // IA"). SOLO lectura y admin-only; aislado y aditivo.
+    AiInsightsModule,
   ],
   controllers: [AppController],
   providers: [
