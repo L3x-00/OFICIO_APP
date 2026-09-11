@@ -250,6 +250,111 @@ export class ConversionModelService {
     }
   }
 
+  // ── Scoring de recomendación (público, para "Recomendado por la IA") ──
+  /**
+   * Puntúa por probabilidad de conversión (0-100) un conjunto de proveedores.
+   * Usado por la web para destacar "Recomendado por la IA" dentro de los
+   * resultados que YA obtuvo (no reordena la lista ni expone contacto). Si aún
+   * no hay modelo entrenado, cae a un puntaje heurístico transparente
+   * (rating/completitud/respuesta/plan/reseñas) — la recomendación siempre
+   * funciona. No entrena aquí (ruta pública).
+   */
+  async scoreProviders(ids: number[]): Promise<Record<number, number>> {
+    const clean = [...new Set(ids)]
+      .filter((n) => Number.isInteger(n) && n > 0)
+      .slice(0, 60);
+    if (clean.length === 0) return {};
+    try {
+      const model = await this.loadLatestModel();
+      const rows = await this.fetchRowsByIds(clean);
+      const out: Record<number, number> = {};
+      for (const r of rows) {
+        const named = this.rowToNamed(r);
+        let p: number;
+        if (model) {
+          p = probaRaw(
+            this.namedToVector(named),
+            { weights: model.weights, bias: model.bias },
+            { means: model.featureMeans, stds: model.featureStds },
+          );
+        } else {
+          p = this.heuristicScore(named);
+        }
+        out[Number(r.id)] = Math.round(Math.min(Math.max(p, 0), 1) * 100);
+      }
+      return out;
+    } catch (e) {
+      this.logger.warn(`scoreProviders falló: ${(e as Error)?.message ?? e}`);
+      return {};
+    }
+  }
+
+  /** Puntaje heurístico 0-1 cuando el modelo aún no está entrenado. */
+  private heuristicScore(f: NamedFeatures): number {
+    const rating = Math.min(Math.max(f.rating, 0), 5) / 5;
+    const completeness = Math.min(Math.max(f.completeness, 0), 1);
+    const response = Math.min(Math.max(f.responseRate, 0), 1);
+    const plan = this.planRank(f.plan) / 2;
+    const reviews = Math.min(
+      Math.log(1 + Math.max(0, f.reviews)) / Math.log(51),
+      1,
+    );
+    return (
+      0.4 * rating +
+      0.2 * completeness +
+      0.15 * response +
+      0.15 * plan +
+      0.1 * reviews
+    );
+  }
+
+  /** Features de un conjunto de proveedores (por id) para puntuarlos en bloque. */
+  private async fetchRowsByIds(ids: number[]): Promise<FeatureRow[]> {
+    const since = this.windowStart();
+    return this.prisma.$queryRaw<FeatureRow[]>`
+      WITH agg AS (
+        SELECT a."providerId" AS pid,
+          count(*) FILTER (WHERE a."eventType"::text = 'view')                           AS views,
+          count(*) FILTER (WHERE a."eventType"::text IN ('whatsapp_click','call_click')) AS contacts
+        FROM provider_analytics a
+        WHERE a."createdAt" >= ${since} AND a."providerId" = ANY(${ids})
+        GROUP BY a."providerId"
+      ),
+      resp AS (
+        SELECT r."providerId" AS pid,
+          count(DISTINCT r.id)                                 AS rooms,
+          count(DISTINCT r.id) FILTER (WHERE m.id IS NOT NULL) AS replied
+        FROM chat_rooms r
+        JOIN providers pp ON pp.id = r."providerId"
+        LEFT JOIN chat_messages m ON m."chatRoomId" = r.id AND m."senderId" = pp."userId"
+        WHERE r."providerId" = ANY(${ids})
+        GROUP BY r."providerId"
+      )
+      SELECT p.id,
+        p."averageRating" AS rating,
+        p."totalReviews"  AS reviews,
+        coalesce(s.plan::text, 'GRATIS') AS plan,
+        (   (CASE WHEN p.description IS NOT NULL AND btrim(p.description) <> '' THEN 1 ELSE 0 END)
+          + (CASE WHEN p.whatsapp    IS NOT NULL AND btrim(p.whatsapp)    <> '' THEN 1 ELSE 0 END)
+          + (CASE WHEN p.address      IS NOT NULL AND btrim(p.address)     <> '' THEN 1 ELSE 0 END)
+          + (CASE WHEN p.latitude IS NOT NULL AND p.longitude IS NOT NULL THEN 1 ELSE 0 END)
+          + (CASE WHEN EXISTS (SELECT 1 FROM provider_images i WHERE i."providerId" = p.id) THEN 1 ELSE 0 END)
+        )::float / 5.0 AS completeness,
+        coalesce(agg.views, 0)    AS views,
+        coalesce(agg.contacts, 0) AS contacts,
+        coalesce(resp.replied::float / NULLIF(resp.rooms, 0), 0) AS response_rate,
+        (CASE WHEN EXISTS (
+           SELECT 1 FROM subscriptions s2
+           JOIN payments pay ON pay."subscriptionId" = s2.id
+           WHERE s2."providerId" = p.id) THEN 1 ELSE 0 END) AS has_payments
+      FROM providers p
+      LEFT JOIN subscriptions s ON s."providerId" = p.id
+      LEFT JOIN agg  ON agg.pid  = p.id
+      LEFT JOIN resp ON resp.pid = p.id
+      WHERE p.id = ANY(${ids})
+    `;
+  }
+
   // ── Cron: reentrena de madrugada (Perú) y poda el log ─────────────
   // 08:00 UTC = 03:00 Perú (baja carga). Best-effort: si falla, se loguea.
   @Cron('0 8 * * *')

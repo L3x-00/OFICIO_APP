@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Search, MapPin, Star, Radar, Loader2, X, ChevronDown, ShieldCheck, SearchX } from 'lucide-react';
+import { Search, MapPin, Star, Radar, Loader2, X, ChevronDown, ShieldCheck, SearchX, Sparkles } from 'lucide-react';
 import {
   api,
   type PublicProvider,
@@ -50,6 +50,36 @@ function BuscarPageInner() {
   const [results, setResults] = useState<PublicProvider[] | null>(null);
   const [resultsTitle, setResultsTitle] = useState('');
   const [searching, setSearching] = useState(false);
+  /* Subconjunto "Recomendado por la IA": de los resultados YA obtenidos, los de
+     mayor probabilidad de conversión (modelo o heurística). NO reordena la
+     lista principal — solo destaca arriba. */
+  const [recommended, setRecommended] = useState<PublicProvider[]>([]);
+
+  /* Al cambiar los resultados, pide los puntajes de conversión y arma la tira
+     de recomendados (solo si hay suficientes resultados para que sea útil). */
+  useEffect(() => {
+    if (!results || results.length < 5) {
+      setRecommended([]);
+      return;
+    }
+    let alive = true;
+    api
+      .getConversionScores(results.map((p) => p.id))
+      .then((scores) => {
+        if (!alive) return;
+        const ranked = results
+          .filter((p) => scores[p.id] != null)
+          .sort((a, b) => (scores[b.id] ?? 0) - (scores[a.id] ?? 0))
+          .slice(0, 4);
+        setRecommended(ranked);
+      })
+      .catch(() => {
+        if (alive) setRecommended([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [results]);
 
   useEffect(() => {
     api.getCategories().then(setCategories).catch(() => {});
@@ -232,6 +262,31 @@ function BuscarPageInner() {
                 <X size={14} /> Limpiar
               </button>
             </div>
+            {/* Recomendado por la IA: destaca los perfiles con más probabilidad
+                de responder/convertir, sin alterar el orden de la lista. */}
+            {!searching && recommended.length >= 3 && (
+              <div className="mb-6 rounded-2xl border border-primary/20 dark:border-primary/25 bg-gradient-to-br from-primary/[0.06] to-amber/[0.04] dark:from-primary/10 dark:to-amber/[0.06] p-4 sm:p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-primary/15 text-primary">
+                    <Sparkles size={15} />
+                  </span>
+                  <div>
+                    <h3 className="font-display text-sm font-bold text-gray-900 dark:text-white leading-tight">
+                      Recomendado por la IA
+                    </h3>
+                    <p className="text-[11px] text-gray-500 dark:text-white/50">
+                      Perfiles con más probabilidad de responderte
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {recommended.map((p) => (
+                    <ProviderCard key={`ai-${p.id}`} provider={p} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {searching ? (
               <ResultsSkeleton />
             ) : results.length === 0 ? (

@@ -17,6 +17,7 @@ interface ModelData {
   providerRow?: any;
   recent?: any[];
   predCount?: number;
+  rows?: any[];
 }
 
 function modelPrisma(data: ModelData = {}) {
@@ -31,6 +32,7 @@ function modelPrisma(data: ModelData = {}) {
       return Promise.resolve([{ count: data.predCount ?? 0 }]);
     if (t.includes('FROM ai_conversion_predictions'))
       return Promise.resolve(data.recent ?? []);
+    if (t.includes('ANY(')) return Promise.resolve(data.rows ?? []);
     if (t.includes('LIMIT 1'))
       return Promise.resolve(data.providerRow ? [data.providerRow] : []);
     if (t.includes('coalesce(agg.views, 0) > 0'))
@@ -207,6 +209,69 @@ describe('ConversionModelService', () => {
 
       const sql = sqlText($executeRaw.mock.calls[0][0]);
       expect(sql).toContain('DELETE FROM ai_conversion_predictions');
+    });
+  });
+
+  describe('scoreProviders (Recomendado por la IA)', () => {
+    const featRow = (id: number, over: Record<string, unknown> = {}) => ({
+      id,
+      rating: 3,
+      reviews: 5,
+      plan: 'GRATIS',
+      completeness: 0.5,
+      views: 10,
+      contacts: 1,
+      response_rate: 0.5,
+      has_payments: 0,
+      ...over,
+    });
+
+    it('ids vacíos → {} sin consultar', async () => {
+      const { db, $queryRaw } = modelPrisma();
+      const service = new ConversionModelService(db);
+      await expect(service.scoreProviders([])).resolves.toEqual({});
+      expect($queryRaw).not.toHaveBeenCalled();
+    });
+
+    it('con modelo → puntúa 0-100 los ids presentes', async () => {
+      const { db } = modelPrisma({
+        model: [modelRow()],
+        rows: [featRow(5, { rating: 5, plan: 'PREMIUM', completeness: 1 })],
+      });
+      const service = new ConversionModelService(db);
+
+      const scores = await service.scoreProviders([5, 5]); // dedup
+      expect(Object.keys(scores)).toEqual(['5']);
+      expect(scores[5]).toBeGreaterThanOrEqual(0);
+      expect(scores[5]).toBeLessThanOrEqual(100);
+    });
+
+    it('sin modelo → heurístico: mejor perfil puntúa más alto', async () => {
+      const { db } = modelPrisma({
+        model: [],
+        rows: [
+          featRow(1, {
+            rating: 5,
+            completeness: 1,
+            response_rate: 1,
+            plan: 'PREMIUM',
+            reviews: 40,
+          }),
+          featRow(2, {
+            rating: 1,
+            completeness: 0,
+            response_rate: 0,
+            plan: 'GRATIS',
+            reviews: 0,
+          }),
+        ],
+      });
+      const service = new ConversionModelService(db);
+
+      const scores = await service.scoreProviders([1, 2]);
+      expect(scores[1]).toBeGreaterThan(scores[2]);
+      expect(scores[1]).toBeLessThanOrEqual(100);
+      expect(scores[2]).toBeGreaterThanOrEqual(0);
     });
   });
 });

@@ -108,9 +108,13 @@ export default function AiInsightsContent() {
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const [predictError, setPredictError] = useState<string | null>(null);
 
-  const load = useCallback(async (d: number) => {
-    setLoading(true);
-    setError(null);
+  // `silent`: refresco automático en background — no muestra spinner ni pisa
+  // los datos buenos con una pantalla de error si una tanda falla.
+  const load = useCallback(async (d: number, silent = false) => {
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const [dash, conv, qual, pat, mdl, preds] = await Promise.all([
         getInsightsDashboard(d),
@@ -127,13 +131,21 @@ export default function AiInsightsContent() {
       setModel(mdl);
       setPredictions(preds);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error cargando la analítica predictiva');
+      if (!silent) {
+        setError(e instanceof Error ? e.message : 'Error cargando la analítica predictiva');
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
   useEffect(() => { load(days); }, [load, days]);
+
+  // Auto-refresco cada 45 s (casi tiempo real; la caché del backend es ~60 s).
+  useEffect(() => {
+    const iv = setInterval(() => { void load(days, true); }, 45000);
+    return () => clearInterval(iv);
+  }, [load, days]);
 
   const retrain = async () => {
     setTraining(true);
@@ -245,6 +257,11 @@ export default function AiInsightsContent() {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {/* Indicador de auto-refresco */}
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-tertiary)' }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10B981', animation: 'pulse-ring 2s infinite' }} />
+            En vivo
+          </span>
           {/* Selector de rango */}
           <div style={{ display: 'flex', background: 'var(--surface-3)', borderRadius: 8, padding: 2 }}>
             {DAY_OPTIONS.map((d) => (

@@ -126,6 +126,9 @@ interface UniquenessRow {
 }
 
 const HOUR = 60 * 60 * 1000;
+// TTL corto: el panel debe reflejar interacciones nuevas casi en tiempo real
+// (el admin además auto-refresca). Son counts indexados, baratos en free tier.
+const CACHE_TTL = 60 * 1000;
 const PLANS = ['GRATIS', 'ESTANDAR', 'PREMIUM'] as const;
 const DISTANCE_ORDER = ['0-2', '2-5', '5-10', '10-20', '20+'] as const;
 
@@ -166,34 +169,37 @@ export class AiInsightsService {
   // ── Métricas de conversión ────────────────────────────────────────
   async getConversionMetrics(days = 30): Promise<ConversionMetricsDto> {
     const period = this.clampDays(days);
-    return this.cached(`ai-insights:conversion:${period}`, HOUR, async () => {
-      const since = this.sinceDaysAgo(period);
-      const empty: ConversionMetricsDto = {
-        periodDays: period,
-        general: { views: 0, contacts: 0, conversionRate: 0, chatRooms: 0 },
-        byPlan: [],
-        byHour: this.zeroHours(),
-        byDistance: [],
-        responseRateByPlan: [],
-        caveats: this.conversionCaveats(),
-      };
-      try {
-        const [
-          generalRows,
-          planRows,
-          hourRows,
-          distanceRows,
-          responseRows,
-          chatRooms,
-        ] = await Promise.all([
-          this.prisma.$queryRaw<CountRow[]>`
+    return this.cached(
+      `ai-insights:conversion:${period}`,
+      CACHE_TTL,
+      async () => {
+        const since = this.sinceDaysAgo(period);
+        const empty: ConversionMetricsDto = {
+          periodDays: period,
+          general: { views: 0, contacts: 0, conversionRate: 0, chatRooms: 0 },
+          byPlan: [],
+          byHour: this.zeroHours(),
+          byDistance: [],
+          responseRateByPlan: [],
+          caveats: this.conversionCaveats(),
+        };
+        try {
+          const [
+            generalRows,
+            planRows,
+            hourRows,
+            distanceRows,
+            responseRows,
+            chatRooms,
+          ] = await Promise.all([
+            this.prisma.$queryRaw<CountRow[]>`
               SELECT
                 count(*) FILTER (WHERE a."eventType"::text = 'view')                             AS views,
                 count(*) FILTER (WHERE a."eventType"::text IN ('whatsapp_click','call_click'))   AS contacts
               FROM provider_analytics a
               WHERE a."createdAt" >= ${since}
             `,
-          this.prisma.$queryRaw<PlanCountRow[]>`
+            this.prisma.$queryRaw<PlanCountRow[]>`
               SELECT s.plan::text AS plan,
                 count(*) FILTER (WHERE a."eventType"::text = 'view')                           AS views,
                 count(*) FILTER (WHERE a."eventType"::text IN ('whatsapp_click','call_click')) AS contacts
@@ -203,9 +209,9 @@ export class AiInsightsService {
               WHERE a."createdAt" >= ${since}
               GROUP BY s.plan
             `,
-          // Hora del día en Perú: "createdAt" es timestamp SIN tz (wall-clock
-          // UTC), por eso se interpreta como UTC y recién se convierte a Lima.
-          this.prisma.$queryRaw<HourCountRow[]>`
+            // Hora del día en Perú: "createdAt" es timestamp SIN tz (wall-clock
+            // UTC), por eso se interpreta como UTC y recién se convierte a Lima.
+            this.prisma.$queryRaw<HourCountRow[]>`
               SELECT extract(hour FROM (("createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'America/Lima'))::int AS hour,
                 count(*) FILTER (WHERE a."eventType"::text = 'view')                           AS views,
                 count(*) FILTER (WHERE a."eventType"::text IN ('whatsapp_click','call_click')) AS contacts
@@ -213,10 +219,10 @@ export class AiInsightsService {
               WHERE a."createdAt" >= ${since}
               GROUP BY 1
             `,
-          // Conversión por rango de distancia (km). Solo eventos con coords
-          // del cliente (distanceKm no nulo) — vacío hasta que se adopte el
-          // tracking. Buckets: 0-2, 2-5, 5-10, 10-20, 20+.
-          this.prisma.$queryRaw<BucketRow[]>`
+            // Conversión por rango de distancia (km). Solo eventos con coords
+            // del cliente (distanceKm no nulo) — vacío hasta que se adopte el
+            // tracking. Buckets: 0-2, 2-5, 5-10, 10-20, 20+.
+            this.prisma.$queryRaw<BucketRow[]>`
               SELECT
                 CASE
                   WHEN a."distanceKm" < 2  THEN '0-2'
@@ -231,7 +237,7 @@ export class AiInsightsService {
               WHERE a."createdAt" >= ${since} AND a."distanceKm" IS NOT NULL
               GROUP BY 1
             `,
-          this.prisma.$queryRaw<ResponseRow[]>`
+            this.prisma.$queryRaw<ResponseRow[]>`
               SELECT s.plan::text AS plan,
                 count(DISTINCT r.id)                                 AS total_rooms,
                 count(DISTINCT r.id) FILTER (WHERE m.id IS NOT NULL) AS rooms_with_reply
@@ -243,58 +249,59 @@ export class AiInsightsService {
               WHERE r."createdAt" >= ${since}
               GROUP BY s.plan
             `,
-          this.prisma.chatRoom.count({
-            where: { createdAt: { gte: since } },
-          }),
-        ]);
+            this.prisma.chatRoom.count({
+              where: { createdAt: { gte: since } },
+            }),
+          ]);
 
-        const g = generalRows[0] ?? { views: 0, contacts: 0 };
-        const views = Number(g.views);
-        const contacts = Number(g.contacts);
+          const g = generalRows[0] ?? { views: 0, contacts: 0 };
+          const views = Number(g.views);
+          const contacts = Number(g.contacts);
 
-        return {
-          periodDays: period,
-          general: {
-            views,
-            contacts,
-            conversionRate: this.rate(contacts, views),
-            chatRooms,
-          },
-          byPlan: this.orderByPlan(
-            planRows.map((r) => this.toBucket(r.plan, r.views, r.contacts)),
-          ),
-          byHour: this.fillHours(hourRows),
-          byDistance: this.orderDistance(
-            distanceRows.map((r) =>
-              this.toBucket(r.bucket, r.views, r.contacts),
+          return {
+            periodDays: period,
+            general: {
+              views,
+              contacts,
+              conversionRate: this.rate(contacts, views),
+              chatRooms,
+            },
+            byPlan: this.orderByPlan(
+              planRows.map((r) => this.toBucket(r.plan, r.views, r.contacts)),
             ),
-          ),
-          responseRateByPlan: this.orderByPlan(
-            responseRows.map((r) => ({
-              plan: r.plan,
-              totalRooms: Number(r.total_rooms),
-              roomsWithReply: Number(r.rooms_with_reply),
-              responseRate: this.rate(
-                Number(r.rooms_with_reply),
-                Number(r.total_rooms),
+            byHour: this.fillHours(hourRows),
+            byDistance: this.orderDistance(
+              distanceRows.map((r) =>
+                this.toBucket(r.bucket, r.views, r.contacts),
               ),
-            })),
-            (b) => b.plan,
-          ),
-          caveats: this.conversionCaveats(),
-        };
-      } catch (e) {
-        this.logger.warn(
-          `getConversionMetrics falló: ${(e as Error)?.message ?? e}`,
-        );
-        return empty;
-      }
-    });
+            ),
+            responseRateByPlan: this.orderByPlan(
+              responseRows.map((r) => ({
+                plan: r.plan,
+                totalRooms: Number(r.total_rooms),
+                roomsWithReply: Number(r.rooms_with_reply),
+                responseRate: this.rate(
+                  Number(r.rooms_with_reply),
+                  Number(r.total_rooms),
+                ),
+              })),
+              (b) => b.plan,
+            ),
+            caveats: this.conversionCaveats(),
+          };
+        } catch (e) {
+          this.logger.warn(
+            `getConversionMetrics falló: ${(e as Error)?.message ?? e}`,
+          );
+          return empty;
+        }
+      },
+    );
   }
 
   // ── Calidad de datos ──────────────────────────────────────────────
   async getDataQuality(): Promise<DataQualityDto> {
-    return this.cached('ai-insights:data-quality', HOUR, async () => {
+    return this.cached('ai-insights:data-quality', CACHE_TTL, async () => {
       const empty: DataQualityDto = {
         sampleSize: 0,
         completeness: { score: 0, detail: {} },
