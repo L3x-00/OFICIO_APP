@@ -927,6 +927,28 @@ export const api = {
     return (await res.json()) as FeaturedGroup[];
   },
 
+  /**
+   * Puntajes "Recomendado por la IA" (0-100) para proveedores que la página YA
+   * obtuvo — la web solo destaca un subconjunto, no reordena la búsqueda.
+   * Endpoint público; best-effort: si falla devuelve {} y no se muestra la tira.
+   */
+  async getConversionScores(ids: number[]): Promise<Record<number, number>> {
+    const clean = ids.filter((n) => Number.isInteger(n) && n > 0).slice(0, 60);
+    if (clean.length === 0) return {};
+    try {
+      const res = await fetch(`${API_BASE_URL}/recommendations/scores`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ providerIds: clean }),
+      });
+      if (!res.ok) return {};
+      const json = (await res.json()) as { scores?: Record<number, number> };
+      return json.scores ?? {};
+    } catch {
+      return {};
+    }
+  },
+
   /** Búsqueda por radio (PostGIS). Público. radiusKm 1–50. */
   async getNearby(
     latitude: number,

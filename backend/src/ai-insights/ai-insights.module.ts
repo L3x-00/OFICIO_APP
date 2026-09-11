@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AiInsightsController } from './ai-insights.controller.js';
 import { PredictController } from './predict.controller.js';
+import { RecommendationsController } from './recommendations.controller.js';
 import { AiInsightsService } from './ai-insights.service.js';
 import { ConversionModelService } from './conversion-model.service.js';
 import { RolesGuard } from '../auth/roles.guard.js';
@@ -19,7 +20,11 @@ import { RolesGuard } from '../auth/roles.guard.js';
  * TypeScript nativo — sin Python ni scikit-learn.
  */
 @Module({
-  controllers: [AiInsightsController, PredictController],
+  controllers: [
+    AiInsightsController,
+    PredictController,
+    RecommendationsController,
+  ],
   providers: [AiInsightsService, ConversionModelService, RolesGuard],
   exports: [AiInsightsService, ConversionModelService],
 })
